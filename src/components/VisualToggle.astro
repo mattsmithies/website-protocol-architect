@@ -1,0 +1,58 @@
+---
+// VisualToggle.astro — Minimal mode switcher for visual layers
+// Fixed bottom-right, shows 4 dots + current mode label
+---
+
+<div
+  id="visual-toggle"
+  class="fixed bottom-6 right-6 z-50 flex items-center gap-3 opacity-0 transition-opacity duration-1000"
+  style="transition-delay: 2s;"
+>
+  <!-- Mode label -->
+  <span
+    id="mode-label"
+    class="text-[10px] font-mono tracking-wider uppercase text-text-tertiary select-none"
+  >
+    Topology
+  </span>
+
+  <!-- Mode dots -->
+  <div class="flex items-center gap-2">
+    <button
+      data-mode-dot
+      class="w-2 h-2 rounded-full transition-all duration-500 cursor-pointer hover:opacity-80"
+      style="background: rgba(255,255,255,0.2);"
+      aria-label="Deep mode"
+      title="Deep (1)"
+    ></button>
+    <button
+      data-mode-dot
+      class="w-2 h-2 rounded-full transition-all duration-500 cursor-pointer hover:opacity-80"
+      style="background: #a78bfa; transform: scale(1.3);"
+      aria-label="Topology mode"
+      title="Topology (2)"
+    ></button>
+    <button
+      data-mode-dot
+      class="w-2 h-2 rounded-full transition-all duration-500 cursor-pointer hover:opacity-80"
+      style="background: rgba(255,255,255,0.2);"
+      aria-label="Signal mode"
+      title="Signal (3)"
+    ></button>
+    <button
+      data-mode-dot
+      class="w-2 h-2 rounded-full transition-all duration-500 cursor-pointer hover:opacity-80"
+      style="background: rgba(255,255,255,0.2);"
+      aria-label="Radiant mode"
+      title="Radiant (4)"
+    ></button>
+  </div>
+</div>
+
+<script>
+  // Fade in the toggle after page loads
+  setTimeout(() => {
+    const toggle = document.getElementById('visual-toggle');
+    if (toggle) toggle.style.opacity = '1';
+  }, 100);
+</script>

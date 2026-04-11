@@ -1,5 +1,5 @@
 // aurora-shader.ts — Raw WebGL fullscreen fragment shader
-// Creates flowing aurora/nebula visuals in violet/blue palette
+// Multi-mode visual system: aurora, contour topology, ridge glow
 // Zero external dependencies, GPU-rendered
 
 const VERTEX_SHADER = `
@@ -15,6 +15,8 @@ const FRAGMENT_SHADER = `
   uniform float u_time;
   uniform vec2 u_resolution;
   uniform vec2 u_mouse;
+  uniform float u_contours;   // 0.0 = off, 1.0 = full contour lines
+  uniform float u_ridges;     // 0.0 = off, 1.0 = glowing ridges
 
   // ── Simplex-style noise ───────────────────────────────────
 
@@ -24,18 +26,15 @@ const FRAGMENT_SHADER = `
 
   float snoise(vec2 v) {
     const vec4 C = vec4(
-      0.211324865405187,   // (3.0 - sqrt(3.0)) / 6.0
-      0.366025403784439,   // 0.5 * (sqrt(3.0) - 1.0)
-     -0.577350269189626,   // -1.0 + 2.0 * C.x
-      0.024390243902439    // 1.0 / 41.0
+      0.211324865405187,
+      0.366025403784439,
+     -0.577350269189626,
+      0.024390243902439
     );
 
     vec2 i = floor(v + dot(v, C.yy));
     vec2 x0 = v - i + dot(i, C.xx);
-
-    vec2 i1;
-    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-
+    vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
     vec4 x12 = x0.xyxy + C.xxzz;
     x12.xy -= i1;
 
@@ -74,19 +73,17 @@ const FRAGMENT_SHADER = `
     return value;
   }
 
-  // ── Domain warping (creates organic, flowing distortion) ──
+  // ── Domain warping ────────────────────────────────────────
 
   float warpedNoise(vec2 p, float t) {
     vec2 q = vec2(
       fbm(p + vec2(0.0, 0.0) + t * 0.12),
       fbm(p + vec2(5.2, 1.3) + t * 0.1)
     );
-
     vec2 r = vec2(
       fbm(p + 4.0 * q + vec2(1.7, 9.2) + t * 0.08),
       fbm(p + 4.0 * q + vec2(8.3, 2.8) + t * 0.06)
     );
-
     return fbm(p + 4.0 * r);
   }
 
@@ -100,60 +97,94 @@ const FRAGMENT_SHADER = `
     float t = u_time;
 
     // Palette
-    vec3 void_color = vec3(0.043, 0.043, 0.067);   // #0b0b11
-    vec3 violet     = vec3(0.655, 0.545, 0.98);     // #a78bfa
-    vec3 sky_blue   = vec3(0.22, 0.74, 0.97);       // #38bdf8
-    vec3 indigo     = vec3(0.388, 0.4, 0.945);      // #6366f1
-    vec3 deep_blue  = vec3(0.11, 0.11, 0.25);       // subtle blue undertone
+    vec3 void_color = vec3(0.043, 0.043, 0.067);
+    vec3 violet     = vec3(0.655, 0.545, 0.98);
+    vec3 sky_blue   = vec3(0.22, 0.74, 0.97);
+    vec3 indigo     = vec3(0.388, 0.4, 0.945);
+    vec3 deep_blue  = vec3(0.11, 0.11, 0.25);
 
-    // Primary flowing layer (domain-warped noise)
+    // Noise layers
     float n1 = warpedNoise(p * 1.5, t);
-
-    // Secondary layer at different scale and speed
     float n2 = warpedNoise(p * 2.5 + 10.0, t * 0.7);
-
-    // Tertiary detail layer
     float n3 = fbm(p * 4.0 + t * 0.15);
 
-    // Build color from layers
+    // ── Base aurora ─────────────────────────────────────────
     vec3 color = void_color;
-
-    // Deep blue undertone
     color = mix(color, deep_blue, smoothstep(-0.2, 0.6, n1) * 0.4);
-
-    // Violet aurora band
     color = mix(color, violet, smoothstep(0.1, 0.8, n1) * 0.22);
-
-    // Sky blue secondary
     color = mix(color, sky_blue, smoothstep(0.0, 0.7, n2) * 0.14);
-
-    // Indigo bridging tones
     color = mix(color, indigo, smoothstep(0.2, 0.9, n1 * n2) * 0.12);
-
-    // Fine detail highlights
     color += violet * smoothstep(0.5, 0.9, n3) * 0.06;
     color += sky_blue * smoothstep(0.4, 0.8, n3 * n2) * 0.04;
 
-    // Mouse proximity glow (soft, subtle)
-    if (u_mouse.x > 0.0) {
-      vec2 mouseUV = u_mouse / u_resolution;
-      mouseUV.y = 1.0 - mouseUV.y; // flip Y
-      float mouseDist = distance(uv, mouseUV);
-      float mouseGlow = smoothstep(0.4, 0.0, mouseDist) * 0.08;
-      color += violet * mouseGlow;
+    // ── Topographic contour lines ───────────────────────────
+    if (u_contours > 0.01) {
+      // Primary contour set from warped noise
+      float field1 = n1 * 7.0;
+      float band1 = abs(fract(field1) - 0.5) * 2.0;
+      float line1 = 1.0 - smoothstep(0.0, 0.035, band1);
+
+      // Secondary contour set at different frequency
+      float field2 = n2 * 5.0;
+      float band2 = abs(fract(field2) - 0.5) * 2.0;
+      float line2 = 1.0 - smoothstep(0.0, 0.025, band2);
+
+      // Color contour lines with gradient across viewport
+      vec3 lineColor1 = mix(violet, sky_blue, uv.x + n3 * 0.3) * 0.8;
+      vec3 lineColor2 = mix(indigo, violet, uv.y) * 0.5;
+
+      color += lineColor1 * line1 * 0.18 * u_contours;
+      color += lineColor2 * line2 * 0.08 * u_contours;
+
+      // Intersection glow where contour lines cross
+      float intersection = line1 * line2;
+      color += violet * intersection * 0.25 * u_contours;
     }
 
-    // Vignette (darker at edges, brighter near center-top)
+    // ── Ridge glow (elevated contour edges) ─────────────────
+    if (u_ridges > 0.01) {
+      // Ridges: bright lines at the peaks of the noise field
+      float ridge1 = smoothstep(0.55, 0.7, n1) * smoothstep(0.85, 0.7, n1);
+      float ridge2 = smoothstep(0.45, 0.6, n2) * smoothstep(0.75, 0.6, n2);
+
+      color += violet * ridge1 * 0.35 * u_ridges;
+      color += sky_blue * ridge2 * 0.25 * u_ridges;
+
+      // Pulse effect on ridges
+      float pulse = sin(t * 2.0 + n1 * 6.0) * 0.5 + 0.5;
+      color += indigo * ridge1 * ridge2 * pulse * 0.2 * u_ridges;
+    }
+
+    // ── Mouse proximity glow ────────────────────────────────
+    if (u_mouse.x > 0.0) {
+      vec2 mouseUV = u_mouse / u_resolution;
+      mouseUV.y = 1.0 - mouseUV.y;
+      float mouseDist = distance(uv, mouseUV);
+      float mouseGlow = smoothstep(0.4, 0.0, mouseDist) * 0.1;
+      color += violet * mouseGlow;
+
+      // Mouse-reactive contour brightening
+      if (u_contours > 0.01) {
+        float nearMouse = smoothstep(0.3, 0.0, mouseDist);
+        float field = n1 * 7.0;
+        float band = abs(fract(field) - 0.5) * 2.0;
+        float line = 1.0 - smoothstep(0.0, 0.05, band);
+        color += sky_blue * line * nearMouse * 0.15 * u_contours;
+      }
+    }
+
+    // ── Vignette ────────────────────────────────────────────
     vec2 vigUV = uv - vec2(0.5, 0.55);
     float vignette = 1.0 - dot(vigUV, vigUV) * 1.2;
     vignette = clamp(vignette, 0.0, 1.0);
     color *= 0.7 + vignette * 0.3;
 
-    // Clamp and output
     color = clamp(color, 0.0, 1.0);
     gl_FragColor = vec4(color, 1.0);
   }
 `;
+
+// ── WebGL helpers ─────────────────────────────────────────────
 
 function createShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
   const shader = gl.createShader(type);
@@ -182,7 +213,16 @@ function createProgram(gl: WebGLRenderingContext, vs: WebGLShader, fs: WebGLShad
   return program;
 }
 
-export function initAuroraShader(canvas: HTMLCanvasElement): void {
+// ── Exported state for external control ───────────────────────
+
+export interface ShaderState {
+  setContours: (value: number) => void;
+  setRidges: (value: number) => void;
+  getContours: () => number;
+  getRidges: () => number;
+}
+
+export function initAuroraShader(canvas: HTMLCanvasElement): ShaderState | null {
   const gl = canvas.getContext('webgl', {
     alpha: false,
     antialias: false,
@@ -192,49 +232,53 @@ export function initAuroraShader(canvas: HTMLCanvasElement): void {
   });
 
   if (!gl) {
-    // WebGL not available — CSS aurora fallback remains visible
     console.warn('WebGL not available, using CSS aurora fallback');
-    return;
+    return null;
   }
 
-  // Hide CSS aurora fallback since WebGL is working
   const cssAurora = document.querySelector('.aurora') as HTMLElement;
   if (cssAurora) cssAurora.style.display = 'none';
 
-  // Compile shaders
   const vs = createShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
   const fs = createShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
-  if (!vs || !fs) return;
+  if (!vs || !fs) return null;
 
   const program = createProgram(gl, vs, fs);
-  if (!program) return;
+  if (!program) return null;
 
   gl.useProgram(program);
 
-  // Fullscreen triangle (covers viewport with a single triangle — more efficient than a quad)
+  // Fullscreen triangle
   const positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    -1, -1,
-     3, -1,
-    -1,  3,
-  ]), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
 
   const posLoc = gl.getAttribLocation(program, 'a_position');
   gl.enableVertexAttribArray(posLoc);
   gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
-  // Uniform locations
+  // Uniforms
   const uTime = gl.getUniformLocation(program, 'u_time');
   const uResolution = gl.getUniformLocation(program, 'u_resolution');
   const uMouse = gl.getUniformLocation(program, 'u_mouse');
+  const uContours = gl.getUniformLocation(program, 'u_contours');
+  const uRidges = gl.getUniformLocation(program, 'u_ridges');
 
   let mouseX = 0;
   let mouseY = 0;
   let animationId = 0;
+  let contourValue = 1.0;  // Default: contours ON
+  let ridgeValue = 0.0;    // Default: ridges OFF
+
+  const state: ShaderState = {
+    setContours: (v) => { contourValue = v; },
+    setRidges: (v) => { ridgeValue = v; },
+    getContours: () => contourValue,
+    getRidges: () => ridgeValue,
+  };
 
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = window.innerWidth;
     const h = window.innerHeight;
     canvas.width = w * dpr;
@@ -245,40 +289,37 @@ export function initAuroraShader(canvas: HTMLCanvasElement): void {
   }
 
   function render(time: number) {
-    gl!.uniform1f(uTime, time * 0.001); // Convert ms to seconds
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    gl!.uniform1f(uTime, time * 0.001);
     gl!.uniform2f(uResolution, canvas.width, canvas.height);
-    gl!.uniform2f(uMouse, mouseX * (Math.min(window.devicePixelRatio, 2)), mouseY * (Math.min(window.devicePixelRatio, 2)));
+    gl!.uniform2f(uMouse, mouseX * dpr, mouseY * dpr);
+    gl!.uniform1f(uContours, contourValue);
+    gl!.uniform1f(uRidges, ridgeValue);
     gl!.drawArrays(gl!.TRIANGLES, 0, 3);
     animationId = requestAnimationFrame(render);
   }
 
-  // Event listeners
-  window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
-
+  window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
   window.addEventListener('resize', resize);
 
-  // Reduced motion: render one frame and stop
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (prefersReduced.matches) {
     resize();
-    gl.uniform1f(uTime, 0);
+    gl.uniform1f(uTime, 5); // Use t=5 for a nicer static frame
     gl.uniform2f(uResolution, canvas.width, canvas.height);
     gl.uniform2f(uMouse, 0, 0);
+    gl.uniform1f(uContours, contourValue);
+    gl.uniform1f(uRidges, ridgeValue);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
-    return;
+    return state;
   }
 
   prefersReduced.addEventListener('change', (e) => {
-    if (e.matches) {
-      cancelAnimationFrame(animationId);
-    } else {
-      animationId = requestAnimationFrame(render);
-    }
+    if (e.matches) cancelAnimationFrame(animationId);
+    else animationId = requestAnimationFrame(render);
   });
 
   resize();
   animationId = requestAnimationFrame(render);
+  return state;
 }

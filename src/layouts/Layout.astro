@@ -55,6 +55,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
     <!-- WebGL aurora shader background (primary) -->
     <canvas id="aurora-canvas" class="fixed inset-0 z-0 w-full h-full" aria-hidden="true"></canvas>
 
+    <!-- Flow field particle overlay -->
+    <canvas id="flow-canvas" class="fixed inset-0 z-[1] w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
     <!-- CSS aurora fallback (shown when WebGL unavailable) -->
     <div class="aurora" aria-hidden="true">
       <div class="aurora-orb aurora-orb-1"></div>
@@ -77,8 +80,16 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
 
     <script>
       import { initAuroraShader } from '../scripts/aurora-shader';
-      const canvas = document.getElementById('aurora-canvas') as HTMLCanvasElement;
-      if (canvas) initAuroraShader(canvas);
+      import { initFlowField } from '../scripts/flow-field';
+      import { initVisualModes } from '../scripts/visual-modes';
+
+      const auroraCanvas = document.getElementById('aurora-canvas') as HTMLCanvasElement;
+      const flowCanvas = document.getElementById('flow-canvas') as HTMLCanvasElement;
+
+      const shader = auroraCanvas ? initAuroraShader(auroraCanvas) : null;
+      const flowField = flowCanvas ? initFlowField(flowCanvas) : { setVisible: () => {}, isVisible: () => false, destroy: () => {} };
+
+      initVisualModes(shader, flowField);
     </script>
   </body>
 </html>
