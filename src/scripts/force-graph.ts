@@ -297,22 +297,71 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
 
     for (const edge of edges) edge.age++;
 
-    // ── Pruning: refine the structure over time ───────────
-    // Mark overcrowded or overconnected anchored nodes for removal
-    // NEVER orphan a neighbor — only prune if all neighbors keep at least 1 edge
-    if (frame % PRUNE_CHECK_INTERVAL === 0 && nodes.length > 15) {
+    // ── BFS: find which nodes are reachable from the root ──
+    function getReachable(): Set<number> {
+      const visited = new Set<number>();
+      if (nodes.length === 0) return visited;
+      const queue = [0]; // start from seed
+      visited.add(0);
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        for (const edge of edges) {
+          let neighbor = -1;
+          if (edge.a === current) neighbor = edge.b;
+          else if (edge.b === current) neighbor = edge.a;
+          if (neighbor >= 0 && !visited.has(neighbor) && nodes[neighbor] && !nodes[neighbor].pruning) {
+            visited.add(neighbor);
+            queue.push(neighbor);
+          }
+        }
+      }
+      return visited;
+    }
+
+    // ── Reconnect orphans to nearest reachable node ─────────
+    function healOrphans() {
+      const reachable = getReachable();
+      if (reachable.size === nodes.length) return; // all connected
+
       for (let i = 0; i < nodes.length; i++) {
+        if (reachable.has(i) || nodes[i].pruning) continue;
+
+        // Find nearest reachable node
+        let bestIdx = -1;
+        let bestDist = Infinity;
+        for (const ri of reachable) {
+          const dx = nodes[i].x - nodes[ri].x;
+          const dy = nodes[i].y - nodes[ri].y;
+          const d = dx * dx + dy * dy;
+          if (d < bestDist) {
+            bestDist = d;
+            bestIdx = ri;
+          }
+        }
+
+        if (bestIdx >= 0) {
+          // Add a healing edge
+          edges.push({ a: i, b: bestIdx, age: 0 });
+          nodes[i].connections++;
+          nodes[bestIdx].connections++;
+          reachable.add(i); // now reachable, its neighbors might chain-connect
+        }
+      }
+    }
+
+    // ── Pruning: refine the structure over time ───────────
+    if (frame % PRUNE_CHECK_INTERVAL === 0 && nodes.length > 15) {
+      // First: simulate removing each candidate and check if graph stays connected
+      for (let i = 1; i < nodes.length; i++) { // never prune node 0 (seed)
         const node = nodes[i];
         if (!node.anchored || node.pruning) continue;
 
         let shouldPrune = false;
 
-        // Overconnected: too many edges — redundant hub
         if (node.connections > PRUNE_OVERCONNECTED && Math.random() < 0.3) {
           shouldPrune = true;
         }
 
-        // Overcrowded: another anchored node too close
         if (!shouldPrune) {
           for (let j = 0; j < nodes.length; j++) {
             if (i === j || !nodes[j].anchored || nodes[j].pruning) continue;
@@ -327,32 +376,18 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
           }
         }
 
-        // Safety: don't prune if ANY neighbor would be left with 0 connections
         if (shouldPrune) {
-          let safe = true;
-          for (const edge of edges) {
-            if (edge.a !== i && edge.b !== i) continue;
-            const neighborIdx = edge.a === i ? edge.b : edge.a;
-            const neighbor = nodes[neighborIdx];
-            if (!neighbor || neighbor.pruning) continue;
-            // Count how many non-pruning edges this neighbor has (excluding edges to us)
-            let neighborEdgeCount = 0;
-            for (const e2 of edges) {
-              if (e2.a === neighborIdx || e2.b === neighborIdx) {
-                const otherEnd = e2.a === neighborIdx ? e2.b : e2.a;
-                if (otherEnd !== i && nodes[otherEnd] && !nodes[otherEnd].pruning) {
-                  neighborEdgeCount++;
-                }
-              }
-            }
-            if (neighborEdgeCount === 0) {
-              // This neighbor would be orphaned — can't prune
-              safe = false;
-              break;
-            }
-          }
-          if (safe) {
-            node.pruning = true;
+          // Simulate: would removing this node disconnect the graph?
+          // Temporarily mark as pruning, run BFS, check all non-pruning nodes reachable
+          node.pruning = true;
+          const reachable = getReachable();
+          const allReachable = nodes.every((n, idx) => n.pruning || reachable.has(idx));
+          if (allReachable) {
+            // Safe to prune — graph stays connected
+            // (leave pruning = true, it will fade out)
+          } else {
+            // Would break the graph — cancel
+            node.pruning = false;
           }
         }
       }
@@ -366,7 +401,6 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       node.pruneProgress += PRUNE_FADE_SPEED;
 
       if (node.pruneProgress >= 1) {
-        // Remove all edges referencing this node
         for (let e = edges.length - 1; e >= 0; e--) {
           if (edges[e].a === i || edges[e].b === i) {
             const otherIdx = edges[e].a === i ? edges[e].b : edges[e].a;
@@ -375,7 +409,6 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
           }
         }
         nodes.splice(i, 1);
-        // Reindex edges
         for (const edge of edges) {
           if (edge.a > i) edge.a--;
           if (edge.b > i) edge.b--;
@@ -383,11 +416,9 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       }
     }
 
-    // Safety net: if any node somehow has 0 connections, prune it too
-    for (const node of nodes) {
-      if (node.connections <= 0 && node.anchored && !node.pruning && nodes.indexOf(node) > 0) {
-        node.pruning = true;
-      }
+    // Heal any orphans that slipped through (e.g. from spawning)
+    if (frame % 60 === 0) {
+      healOrphans();
     }
   }
 
