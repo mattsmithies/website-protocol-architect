@@ -1,0 +1,55 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import '../../styles/global.css';
+
+export async function getStaticPaths() {
+  const essays = await getCollection('essays');
+  return essays.map((essay) => ({
+    params: { slug: essay.id },
+    props: { essay },
+  }));
+}
+
+const { essay } = Astro.props;
+const { Content } = await render(essay);
+---
+
+<Layout title={`${essay.data.title} — Matt Smithies`} description={essay.data.title}>
+  <Nav />
+  <main>
+    <article class="section-padding px-6">
+      <div class="max-w-3xl mx-auto">
+
+        <div class="reveal mb-12">
+          <a href="/#thinking" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-6 inline-block">
+            &larr; Back
+          </a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+            {essay.data.category}
+          </p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight">
+            {essay.data.title}
+          </h1>
+        </div>
+
+        <div class="reveal prose-custom space-y-6 text-text-secondary text-lg leading-relaxed">
+          <Content />
+        </div>
+
+      </div>
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { initScrollAnimations } from '../../scripts/scroll-animations';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>
