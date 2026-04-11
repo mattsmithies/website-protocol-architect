@@ -1,0 +1,91 @@
+---
+const articles = [
+  {
+    category: "Authority",
+    title: "Authority as a time-bound system",
+    description:
+      "Why most permission models fail: they treat authority as static when it is inherently temporal. Expiration, delegation, and revocation should be system primitives.",
+  },
+  {
+    category: "Auditability",
+    title: "Why auditability is a systems problem",
+    description:
+      "Audit is not logging. It requires intentional architecture: event sourcing, immutable records, separation of record and view, and designed-in replayability.",
+  },
+  {
+    category: "Workflow",
+    title: "Where workflow systems fail",
+    description:
+      "Most workflow engines model the happy path. Real systems need to model exceptions, partial completion, authority changes, and evidence requirements at every step.",
+  },
+  {
+    category: "Trust",
+    title: "Trust as explicit structure, not brand",
+    description:
+      "Trust in digital systems cannot rely on reputation or brand. It requires verifiable evidence, cryptographic proof, and designed-in accountability structures.",
+  },
+  {
+    category: "Incentives",
+    title: "Why incentives distort architecture",
+    description:
+      "When economic incentives are bolted on after the fact, they create misalignment that degrades system integrity. Mechanism design must be foundational.",
+  },
+  {
+    category: "Architecture",
+    title: "Designing for replayability",
+    description:
+      "If you cannot reconstruct how a system reached its current state, you cannot trust it. Replayability is not a feature — it is an architectural property.",
+  },
+];
+---
+
+<section id="thinking" class="section-padding px-6">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Section Header -->
+    <div class="reveal mb-16 md:mb-20">
+      <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+        Thinking
+      </p>
+      <h2 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+        Systems thinking in practice
+      </h2>
+      <p class="text-text-secondary text-lg max-w-2xl leading-relaxed">
+        Notes on architecture, trust, authority, and the structural decisions that shape how systems behave under pressure.
+      </p>
+    </div>
+
+    <!-- Articles Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {articles.map((article, i) => (
+        <article
+          class="reveal glass-card p-7 group hover:border-signal/20 transition-all duration-500 cursor-pointer"
+          style={`transition-delay: ${i * 80}ms`}
+        >
+          <span class="text-signal/60 text-xs font-semibold tracking-[0.2em] uppercase mb-4 block">
+            {article.category}
+          </span>
+          <h3 class="text-text-primary font-semibold text-lg mb-3 tracking-tight group-hover:text-signal transition-colors duration-300">
+            {article.title}
+          </h3>
+          <p class="text-text-tertiary text-sm leading-relaxed">
+            {article.description}
+          </p>
+          <div class="mt-5 flex items-center gap-2 text-signal/50 group-hover:text-signal text-xs font-medium transition-colors duration-300">
+            <span>Coming soon</span>
+            <svg
+              class="w-3 h-3 group-hover:translate-x-1 transition-transform"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M2 6h8M7 3l3 3-3 3" />
+            </svg>
+          </div>
+        </article>
+      ))}
+    </div>
+
+  </div>
+</section>
