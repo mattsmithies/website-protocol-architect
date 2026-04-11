@@ -1,0 +1,64 @@
+---
+// About.astro — Bio and domain list in two-column layout
+
+const domains = [
+  "Carbon &amp; ESG infrastructure",
+  "Workflow &amp; audit systems",
+  "Identity &amp; authority models",
+  "Token &amp; incentive design",
+  "Supply chain provenance",
+  "Protocol architecture",
+  "Enterprise data systems",
+  "AI coordination layers",
+];
+---
+
+<section id="about" class="section-padding px-6">
+  <div class="max-w-6xl mx-auto">
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-16 lg:gap-24">
+
+      <!-- Left column: Bio -->
+      <div class="lg:col-span-3 reveal">
+        <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+          About
+        </p>
+        <h2 class="text-gradient text-3xl md:text-4xl font-bold tracking-tight mb-8 leading-tight">
+          The architecture beneath trust, workflow, authority, and evidence
+        </h2>
+
+        <div class="space-y-5 text-text-secondary text-base leading-relaxed">
+          <p>
+            I am a senior systems architect and technical operator. My work focuses on designing infrastructure where trust, workflow, evidence, and incentives matter &mdash; especially when authority, provenance, identity, and coordination cannot be left vague.
+          </p>
+          <p>
+            As CTO and architect at <a href="https://dovu.ai" target="_blank" rel="noopener" class="text-signal hover:underline">DOVU</a>, I designed the core architecture for an audit trail and workflow platform now serving programs managing over $1B in value. More recently, I designed <a href="https://authority.dovu.ai" target="_blank" rel="noopener" class="text-signal hover:underline">Authority Trail</a> &mdash; a protocol for provable authority in carbon markets.
+          </p>
+          <p>
+            I think in terms of state, authority, time, verifiability, replayability, coordination under constraints, and economic alignment. I operate best at the layer beneath products, where primitives, models, and economic logic shape what a system can become.
+          </p>
+          <p>
+            My edge is the combination: systems architecture, trust and provenance thinking, identity and authority design, workflow and process modelling, protocol and platform thinking, incentive and token design, and commercial reality. That combination is rare.
+          </p>
+        </div>
+      </div>
+
+      <!-- Right column: Domains -->
+      <div class="lg:col-span-2 reveal">
+        <div class="glass-card p-8">
+          <h3 class="text-text-primary font-semibold text-sm tracking-[0.15em] uppercase mb-6">
+            Domains
+          </h3>
+          <ul class="space-y-0">
+            {domains.map((domain) => (
+              <li class="py-3 border-b border-border last:border-0">
+                <span class="text-text-secondary text-sm" set:html={domain} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
