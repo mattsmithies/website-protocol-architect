@@ -76,35 +76,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
     </div>
 
     <script>
-      import { initShader } from '../scripts/shader-switcher';
-
-      // Switch between: 'topographic', 'gradient', 'space', 'aurora'
-      // Press T / G / S / A to switch live, or change the default here:
-      const DEFAULT_SHADER = 'topographic';
-
+      import { initTopographicShader } from '../scripts/shader-topographic';
       const canvas = document.getElementById('aurora-canvas') as HTMLCanvasElement;
-      let currentShader = DEFAULT_SHADER;
-
-      function loadShader(mode: string) {
-        // WebGL context is lost on re-init, so we reload the page with a hash
-        if (mode !== currentShader) {
-          window.location.hash = mode;
-          window.location.reload();
-        }
-      }
-
-      // Read shader from URL hash or use default
-      const hashMode = window.location.hash.replace('#', '');
-      const mode = ['topographic', 'gradient', 'space', 'aurora'].includes(hashMode) ? hashMode : DEFAULT_SHADER;
-      if (canvas) initShader(canvas, mode);
-
-      // Keyboard shortcuts for live comparison
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 't' || e.key === 'T') loadShader('topographic');
-        if (e.key === 'g' || e.key === 'G') loadShader('gradient');
-        if (e.key === 's' || e.key === 'S') loadShader('space');
-        if (e.key === 'a' || e.key === 'A') loadShader('aurora');
-      });
+      if (canvas) initTopographicShader(canvas);
     </script>
   </body>
 </html>
