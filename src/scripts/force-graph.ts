@@ -10,6 +10,7 @@ interface Node {
   connections: number;
   opacity: number;
   age: number;
+  anchorAge: number;   // random per node: when it freezes
   anchored: boolean;
 }
 
@@ -26,7 +27,8 @@ const SPAWN_INTERVAL = 80;
 const CONNECT_RADIUS = 160;
 const MAX_EDGES_PER_SPAWN = 2;
 const MIN_SPAWN_DIST = 70;
-const ANCHOR_AGE = 180;          // ~3s then freeze
+const ANCHOR_AGE_MIN = 60;       // ~1s minimum
+const ANCHOR_AGE_MAX = 300;      // ~5s maximum
 
 // Forces
 const REPULSION = 600;
@@ -110,6 +112,7 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       connections: 0,
       opacity: 0,
       age: 0,
+      anchorAge: ANCHOR_AGE_MIN + Math.random() * (ANCHOR_AGE_MAX - ANCHOR_AGE_MIN),
       anchored: false,
     });
   }
@@ -158,6 +161,7 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
         connections: 0,
         opacity: 0,
         age: 0,
+        anchorAge: ANCHOR_AGE_MIN + Math.random() * (ANCHOR_AGE_MAX - ANCHOR_AGE_MIN),
         anchored: false,
       });
 
@@ -234,7 +238,7 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       node.opacity = Math.min(node.age / FADE_IN, 1.0);
       node.radius = Math.min(BASE_RADIUS + node.connections * HUB_BONUS, MAX_RADIUS);
 
-      if (!node.anchored && node.age >= ANCHOR_AGE) {
+      if (!node.anchored && node.age >= node.anchorAge) {
         node.anchored = true;
         node.vx = 0;
         node.vy = 0;
