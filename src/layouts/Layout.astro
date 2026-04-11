@@ -7,7 +7,7 @@ interface Props {
 
 const {
   title = 'Matt Smithies — Systems Architect',
-  description = 'Senior systems architect specialising in distributed systems, protocol design, and high-integrity infrastructure.',
+  description = 'Systems architect for trust, workflow, provenance, identity, authority, and incentive design. Designing verifiable systems where process, evidence, and incentives hold under real world pressure.',
   ogImage = '/og-image.png',
 } = Astro.props;
 
@@ -58,5 +58,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
     <div class="relative z-10">
       <slot />
     </div>
+    <script>
+      import { initMeshBackground } from '../scripts/mesh-background';
+      const canvas = document.getElementById('mesh-bg') as HTMLCanvasElement;
+      if (canvas) initMeshBackground(canvas);
+    </script>
   </body>
 </html>
