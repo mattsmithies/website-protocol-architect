@@ -1,0 +1,50 @@
+---
+// Philosophy.astro — Operating model section with structured systems layer list
+
+const items = [
+  "Who has authority",
+  "How decisions are recorded",
+  "How evidence is preserved",
+  "How workflows evolve",
+  "What can be replayed",
+  "How incentives shape behaviour",
+];
+---
+
+<section id="philosophy" class="section-padding">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+
+      <!-- Left column -->
+      <div class="reveal">
+        <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+          Operating Model
+        </p>
+        <h2 class="text-gradient text-3xl md:text-4xl font-bold tracking-tight mb-8 leading-tight">
+          I work on the parts of systems that most teams leave implicit
+        </h2>
+        <p class="text-text-secondary text-lg leading-relaxed mb-6">
+          Most products are built on assumptions that never get made explicit. The authority model is informal. The audit trail is an afterthought. The incentive structure is accidental. The workflow is hardcoded and brittle.
+        </p>
+        <p class="text-text-secondary text-lg leading-relaxed">
+          I work at the layer where these things need to be designed with the same rigour as the code itself — because when they fail, the whole system fails.
+        </p>
+      </div>
+
+      <!-- Right column -->
+      <div class="reveal">
+        {items.map((label, index) => (
+          <div class="group flex items-center gap-5 py-5 border-b border-border hover:border-signal/20 transition-colors duration-500">
+            <span class="text-signal/40 text-xs font-mono tabular-nums group-hover:text-signal/80 transition-colors">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span class="text-text-secondary text-lg group-hover:text-text-primary transition-colors duration-300">
+              {label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </div>
+</section>
