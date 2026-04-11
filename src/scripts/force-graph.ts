@@ -10,8 +10,10 @@ interface Node {
   connections: number;
   opacity: number;
   age: number;
-  anchorAge: number;   // random per node: when it freezes
+  anchorAge: number;
   anchored: boolean;
+  pruning: boolean;      // marked for removal
+  pruneProgress: number; // 0→1 fade-out with red hue
 }
 
 interface Edge {
@@ -36,7 +38,11 @@ const LINK_STRENGTH = 0.01;
 const LINK_REST = 110;
 const DAMPING = 0.94;
 const COLLISION_PAD = 12;
-const FLY_UP_STRENGTH = 0.15;    // pull stray nodes back up into hero zone
+const FLY_UP_STRENGTH = 0.15;
+const PRUNE_CHECK_INTERVAL = 200; // frames between prune checks
+const PRUNE_FADE_SPEED = 0.012;   // how fast pruned nodes fade out
+const PRUNE_OVERCROWDED_DIST = 55; // nodes closer than this are candidates
+const PRUNE_OVERCONNECTED = 3;     // nodes with more edges than this
 
 // Visuals
 const BASE_RADIUS = 3.5;
@@ -114,6 +120,8 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       age: 0,
       anchorAge: ANCHOR_AGE_MIN + Math.random() * (ANCHOR_AGE_MAX - ANCHOR_AGE_MIN),
       anchored: false,
+      pruning: false,
+      pruneProgress: 0,
     });
   }
 
@@ -163,6 +171,8 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
         age: 0,
         anchorAge: ANCHOR_AGE_MIN + Math.random() * (ANCHOR_AGE_MAX - ANCHOR_AGE_MIN),
         anchored: false,
+        pruning: false,
+        pruneProgress: 0,
       });
 
       // Connect to parent
@@ -286,6 +296,68 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     }
 
     for (const edge of edges) edge.age++;
+
+    // ── Pruning: refine the structure over time ───────────
+    // Mark overcrowded or overconnected anchored nodes for removal
+    if (frame % PRUNE_CHECK_INTERVAL === 0 && nodes.length > 15) {
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        if (!node.anchored || node.pruning) continue;
+
+        let shouldPrune = false;
+
+        // Overconnected: too many edges — redundant hub
+        if (node.connections > PRUNE_OVERCONNECTED && Math.random() < 0.3) {
+          shouldPrune = true;
+        }
+
+        // Overcrowded: another anchored node too close
+        if (!shouldPrune) {
+          for (let j = 0; j < nodes.length; j++) {
+            if (i === j || !nodes[j].anchored || nodes[j].pruning) continue;
+            const dx = node.x - nodes[j].x;
+            const dy = node.y - nodes[j].y;
+            if (dx * dx + dy * dy < PRUNE_OVERCROWDED_DIST * PRUNE_OVERCROWDED_DIST) {
+              // Prune the one with fewer connections (keep the stronger node)
+              if (node.connections <= nodes[j].connections && Math.random() < 0.25) {
+                shouldPrune = true;
+                break;
+              }
+            }
+          }
+        }
+
+        if (shouldPrune) {
+          node.pruning = true;
+        }
+      }
+    }
+
+    // Advance prune fade-out and remove dead nodes
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const node = nodes[i];
+      if (!node.pruning) continue;
+
+      node.pruneProgress += PRUNE_FADE_SPEED;
+
+      if (node.pruneProgress >= 1) {
+        // Remove all edges referencing this node
+        for (let e = edges.length - 1; e >= 0; e--) {
+          if (edges[e].a === i || edges[e].b === i) {
+            // Decrement connection count on the other node
+            const otherIdx = edges[e].a === i ? edges[e].b : edges[e].a;
+            if (nodes[otherIdx]) nodes[otherIdx].connections--;
+            edges.splice(e, 1);
+          }
+        }
+        nodes.splice(i, 1);
+        // Reindex edges (indices shifted)
+        for (const edge of edges) {
+          if (edge.a > i) edge.a--;
+          if (edge.b > i) edge.b--;
+        }
+      }
+    }
   }
 
   function render(now: number) {
@@ -305,21 +377,35 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       const edge = edges[i];
       const a = nodes[edge.a], b = nodes[edge.b];
       if (!a || !b) continue;
-      const alpha = Math.min(a.opacity, b.opacity) * EDGE_ALPHA;
+
+      // Fade edges connected to pruning nodes
+      const pruneMax = Math.max(a.pruning ? a.pruneProgress : 0, b.pruning ? b.pruneProgress : 0);
+      const fadeMult = 1 - pruneMax;
+      const alpha = Math.min(a.opacity, b.opacity) * EDGE_ALPHA * fadeMult;
       if (alpha < 0.005) continue;
 
-      const [cr, cg, cb] = nodeColor(a, bounds);
+      let [cr, cg, cb] = nodeColor(a, bounds);
       const [cr2, cg2, cb2] = nodeColor(b, bounds);
+      let mr = (cr + cr2) >> 1;
+      let mg = (cg + cg2) >> 1;
+      let mb = (cb + cb2) >> 1;
+
+      // Shift edge toward red if connected to a pruning node
+      if (pruneMax > 0) {
+        mr = Math.round(mr + (200 - mr) * pruneMax);
+        mg = Math.round(mg * (1 - pruneMax * 0.7));
+        mb = Math.round(mb * (1 - pruneMax * 0.5));
+      }
 
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
-      ctx.strokeStyle = `rgba(${(cr + cr2) >> 1}, ${(cg + cg2) >> 1}, ${(cb + cb2) >> 1}, ${alpha})`;
+      ctx.strokeStyle = `rgba(${mr}, ${mg}, ${mb}, ${alpha})`;
       ctx.lineWidth = EDGE_WIDTH;
       ctx.stroke();
 
-      // Signal pulse on anchored edges
-      if (edge.age > 40 && a.anchored && b.anchored) {
+      // Signal pulse on anchored edges (not pruning)
+      if (edge.age > 40 && a.anchored && b.anchored && !a.pruning && !b.pruning) {
         const pt = (time * 0.5 + i * 0.2) % 1;
         ctx.beginPath();
         ctx.arc(a.x + (b.x - a.x) * pt, a.y + (b.y - a.y) * pt, 1.2, 0, Math.PI * 2);
@@ -332,32 +418,43 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       if (node.opacity < 0.01) continue;
-      const [cr, cg, cb] = nodeColor(node, bounds);
+
+      // Color: shift toward red when pruning
+      let [cr, cg, cb] = nodeColor(node, bounds);
+      const fadeAlpha = node.pruning ? (1 - node.pruneProgress) : 1;
+      if (node.pruning) {
+        const p = node.pruneProgress;
+        cr = Math.round(cr + (220 - cr) * p);  // shift red up
+        cg = Math.round(cg * (1 - p * 0.8));   // drop green
+        cb = Math.round(cb * (1 - p * 0.6));    // drop blue
+      }
+
       const pulse = Math.sin(time * 1.5 + i * 0.8) * 0.1 + 0.9;
-      const r = node.radius * pulse;
+      const r = node.radius * pulse * (node.pruning ? (1 - node.pruneProgress * 0.3) : 1);
 
       // Glow
       const glowA = node.anchored ? 0.14 : 0.08;
       const glowR = r * GLOW_MULT;
       const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowR);
-      grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * glowA})`);
-      grad.addColorStop(0.5, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.02})`);
+      grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * glowA * fadeAlpha})`);
+      grad.addColorStop(0.5, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.02 * fadeAlpha})`);
       grad.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
       ctx.fill();
 
-      // Outer
+      // Outer ring
       ctx.beginPath();
       ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * (node.anchored ? 0.65 : 0.4)})`;
+      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * (node.anchored ? 0.65 : 0.4) * fadeAlpha})`;
       ctx.fill();
 
       // Core
+      const coreWhite = node.pruning ? `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.6 * fadeAlpha})` : `rgba(232, 232, 240, ${node.opacity * 0.8})`;
       ctx.beginPath();
       ctx.arc(node.x, node.y, r * 0.35, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(232, 232, 240, ${node.opacity * 0.8})`;
+      ctx.fillStyle = coreWhite;
       ctx.fill();
     }
 
