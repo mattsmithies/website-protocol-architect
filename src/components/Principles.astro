@@ -1,0 +1,69 @@
+---
+const principles = [
+  {
+    title: "Model truth, not screens",
+    description: "Design the underlying truth model first. Interfaces are views onto structure, not the structure itself.",
+  },
+  {
+    title: "Make authority explicit",
+    description: "If a system has roles, permissions, or decisions, those should be first-class objects — not buried in application logic.",
+  },
+  {
+    title: "Make time first class",
+    description: "Most system failures involve time: expiration, ordering, validity windows, temporal authority. Treat time as a primitive.",
+  },
+  {
+    title: "Separate record from view",
+    description: "The system of record and derived views serve different purposes. Conflating them creates brittleness and audit gaps.",
+  },
+  {
+    title: "Design for replayability",
+    description: "If you cannot replay how a state was reached, you cannot audit, debug, or trust it. Events are evidence.",
+  },
+  {
+    title: "Align incentives with behaviour",
+    description: "A system that rewards the wrong behaviour will produce the wrong outcomes regardless of how well it is built.",
+  },
+  {
+    title: "Prefer clear primitives",
+    description: "Complexity should be composed from simple, well-defined pieces. Fragile abstraction is worse than deliberate repetition.",
+  },
+  {
+    title: "Build for consequence",
+    description: "Architecture decisions compound. Optimise for the decisions that are hardest to reverse and most consequential to get wrong.",
+  },
+];
+---
+
+<section id="principles" class="section-padding px-6">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Section Header -->
+    <div class="reveal mb-16 md:mb-20 text-center">
+      <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+        Principles
+      </p>
+      <h2 class="text-gradient text-3xl md:text-4xl font-bold tracking-tight mb-6">
+        How I think about systems
+      </h2>
+    </div>
+
+    <!-- Principles Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      {principles.map((principle, index) => (
+        <div
+          class="reveal group py-6 px-1 border-t border-border hover:border-signal/30 transition-colors duration-500"
+          style={`transition-delay: ${index * 60}ms`}
+        >
+          <h3 class="text-text-primary text-sm font-semibold mb-3 group-hover:text-signal transition-colors duration-300">
+            {principle.title}
+          </h3>
+          <p class="text-text-tertiary text-sm leading-relaxed">
+            {principle.description}
+          </p>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>
