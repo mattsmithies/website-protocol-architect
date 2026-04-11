@@ -1,52 +1,64 @@
 ---
-const articles = [
+// Writing.astro — Architectural essays and systems thinking
+const essays = [
   {
     category: "Authority",
     title: "Authority as a time-bound system",
-    description:
-      "Why most permission models fail: they treat authority as static when it is inherently temporal. Expiration, delegation, and revocation should be system primitives.",
+    body: [
+      "Most permission models treat authority as a static property. A user has a role. The role has permissions. The permissions are checked. But this misses the dimension that causes most real-world failures: time.",
+      "Authority expires. Delegations have windows. Approvals are valid for a period. A signatory who was authorised last quarter may not be authorised today. If your system cannot express this, it will silently enforce stale authority — and you will not know until an audit finds it.",
+      "Treating time as a first-class primitive in authority design means modelling expiration, delegation chains, validity windows, and temporal revocation as system objects, not afterthoughts. The systems that survive real-world pressure are the ones that got this right from the beginning.",
+    ],
   },
   {
     category: "Auditability",
-    title: "Why auditability is a systems problem",
-    description:
-      "Audit is not logging. It requires intentional architecture: event sourcing, immutable records, separation of record and view, and designed-in replayability.",
+    title: "Why auditability is a systems problem, not a logging problem",
+    body: [
+      "Teams often confuse auditability with logging. They add log lines, store events in a database, and assume the system is auditable. It is not. Logging records what happened. Auditability proves what happened, to whom, under what authority, and whether it was legitimate.",
+      "Real auditability requires intentional architecture: event sourcing where state is derived from an immutable sequence of facts. Separation of the system of record from derived views. Designed-in replayability where any state can be reconstructed from its history. Without these, your logs are just text files that nobody trusts when it matters.",
+      "The gap between logging and auditability is the gap between recording noise and preserving evidence. One is a feature. The other is an architectural property that must be designed in from the start.",
+    ],
   },
   {
     category: "Workflow",
     title: "Where workflow systems fail",
-    description:
-      "Most workflow engines model the happy path. Real systems need to model exceptions, partial completion, authority changes, and evidence requirements at every step.",
-  },
-  {
-    category: "Trust",
-    title: "Trust as explicit structure, not brand",
-    description:
-      "Trust in digital systems cannot rely on reputation or brand. It requires verifiable evidence, cryptographic proof, and designed-in accountability structures.",
+    body: [
+      "Most workflow engines model the happy path well. Step one, step two, step three, done. But real workflows involve exceptions, partial completion, authority changes mid-process, evidence requirements that vary by context, and rollback conditions that nobody anticipated at design time.",
+      "The failure mode is always the same: the workflow engine cannot express what actually needs to happen, so humans work around it. They email approvals. They skip steps and backfill later. They create shadow processes that the system does not know about. At that point, the workflow engine is not modelling the workflow — it is modelling a fantasy that the real process has already abandoned.",
+      "Designing workflow systems that hold under pressure means modelling exceptions as first-class states, not error conditions. It means making evidence binding explicit at every step. It means designing for the process as it actually is, not as a product manager imagined it might be.",
+    ],
   },
   {
     category: "Token Economy",
     title: "Demand sinks, supply sinks, and why most tokens fail",
-    description:
-      "A token without credible demand is a slow bleed. Understanding where value enters, where it leaks, and what structural conditions let a token hold relevance over time.",
+    body: [
+      "A token without credible demand is a slow bleed. It does not matter how elegant the issuance schedule is, or how carefully the vesting is structured. If the system does not create genuine reasons for participants to acquire and hold the token, supply pressure will win eventually.",
+      "Understanding where value enters a token economy, where it leaks, and what structural conditions allow a token to hold relevance over time — this is mechanism design, not marketing. It requires mapping demand sinks against supply sinks, modelling issuance pressure, and honestly assessing whether the token plays a durable role inside the network or is simply a speculative wrapper around utility that could exist without it.",
+      "The systems that sustain long-term token value are the ones where usage, coordination, and incentives reinforce each other. Where supply pressure is understood in advance. Where the economic structure strengthens the integrity of the network instead of quietly undermining it.",
+    ],
   },
   {
-    category: "Incentives",
-    title: "Why incentives distort architecture",
-    description:
-      "When economic incentives are bolted on after the fact, they create misalignment that degrades system integrity. Mechanism design must be foundational.",
+    category: "Trust",
+    title: "Trust as explicit structure, not brand",
+    body: [
+      "In physical systems, trust is contextual and earned over time. In digital systems, it must be designed. You cannot rely on reputation or brand to guarantee that a counterparty did what they claim, that evidence was not tampered with, or that a process was followed correctly.",
+      "Explicit trust means verifiable evidence at every step. It means cryptographic proof where claims need to be independently checkable. It means accountability structures that are designed in, not bolted on after a breach. The organisations that understand this build systems where trust is a structural property. The ones that do not build systems where trust is a hope.",
+    ],
   },
   {
     category: "Architecture",
     title: "Designing for replayability",
-    description:
-      "If you cannot reconstruct how a system reached its current state, you cannot trust it. Replayability is not a feature — it is an architectural property.",
+    body: [
+      "If you cannot reconstruct how a system reached its current state, you cannot audit it, you cannot debug it, and you cannot trust it. Replayability is not a feature you add later. It is an architectural property that shapes every design decision from the start.",
+      "This means treating events as the source of truth, not database rows. It means separating the system of record from derived views so that current state can always be rebuilt from first principles. It means accepting that storage is cheap but trust is expensive, and that the ability to prove what happened is worth more than the ability to query what exists now.",
+      "Systems designed for replayability are systems that can survive an audit, a dispute, a regulatory inquiry, or a catastrophic failure. Systems designed without it are systems that hope none of those things ever happen.",
+    ],
   },
 ];
 ---
 
 <section id="thinking" class="section-padding px-6">
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-5xl mx-auto">
 
     <!-- Section Header -->
     <div class="reveal mb-16 md:mb-20">
@@ -61,33 +73,31 @@ const articles = [
       </p>
     </div>
 
-    <!-- Articles Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      {articles.map((article, i) => (
-        <article
-          class="reveal glass-card p-7 group hover:border-signal/20 transition-all duration-500 cursor-pointer"
-          style={`transition-delay: ${i * 80}ms`}
-        >
-          <span class="text-signal/60 text-xs font-semibold tracking-[0.2em] uppercase mb-4 block">
-            {article.category}
-          </span>
-          <h3 class="text-text-primary font-display font-semibold text-lg mb-3 tracking-tight group-hover:text-signal transition-colors duration-300">
-            {article.title}
-          </h3>
-          <p class="text-text-tertiary text-sm leading-relaxed">
-            {article.description}
-          </p>
-          <div class="mt-5 flex items-center gap-2 text-signal/50 group-hover:text-signal text-xs font-medium transition-colors duration-300">
-            <span>Coming soon</span>
-            <svg
-              class="w-3 h-3 group-hover:translate-x-1 transition-transform"
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M2 6h8M7 3l3 3-3 3" />
-            </svg>
+    <!-- Essays -->
+    <div class="space-y-0">
+      {essays.map((essay, i) => (
+        <article class="reveal border-t border-border py-12 md:py-16">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12">
+
+            {/* Left: meta */}
+            <div class="md:col-span-3">
+              <span class="text-signal/60 text-xs font-semibold tracking-[0.2em] uppercase">
+                {essay.category}
+              </span>
+            </div>
+
+            {/* Right: content */}
+            <div class="md:col-span-9">
+              <h3 class="text-text-primary font-display font-bold text-xl md:text-2xl tracking-tight mb-6">
+                {essay.title}
+              </h3>
+              <div class="space-y-5 text-text-secondary text-base leading-relaxed">
+                {essay.body.map((para) => (
+                  <p>{para}</p>
+                ))}
+              </div>
+            </div>
+
           </div>
         </article>
       ))}
