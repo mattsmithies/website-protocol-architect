@@ -22,19 +22,20 @@ interface Edge {
 
 // ── Config ──────────────────────────────────────────────────
 
-const MAX_NODES = 120;
-const SPAWN_INTERVAL = 90;       // slower spawning — time to breathe
-const CONNECT_RADIUS = 160;      // max px to form an edge
-const MAX_EDGES_PER_SPAWN = 3;
+const MAX_NODES = 80;
+const SPAWN_INTERVAL = 110;      // even slower — room to settle
+const CONNECT_RADIUS = 180;      // max px to form an edge
+const MAX_EDGES_PER_SPAWN = 2;   // fewer edges — less tangling
 
-// Forces — slow, drifting, no gravity
-const REPULSION = 350;
-const LINK_STRENGTH = 0.015;     // softer springs
-const LINK_REST = 100;           // more space between connected nodes
-const DAMPING = 0.97;            // much less friction — things drift longer
-const COLLISION_PAD = 8;
+// Forces
+const REPULSION = 800;           // much stronger push-apart
+const LINK_STRENGTH = 0.008;     // very soft springs — don't pull tight
+const LINK_REST = 130;           // long rest length — lots of space
+const DAMPING = 0.97;
+const COLLISION_PAD = 12;        // more breathing room
 
 // Visuals
+const MIN_SPAWN_DIST = 70;       // don't spawn too close to existing nodes
 const BASE_RADIUS = 3.5;
 const HUB_BONUS = 0.8;
 const MAX_RADIUS = 12;
@@ -100,11 +101,18 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     const parentIdx = Math.floor(Math.random() * nodes.length);
     const parent = nodes[parentIdx];
 
-    // New node spawns nearby, any direction
+    // New node spawns at a comfortable distance, any direction
     const angle = Math.random() * Math.PI * 2;
-    const dist = 50 + Math.random() * 70;
+    const dist = 90 + Math.random() * 80;
     const nx = parent.x + Math.cos(angle) * dist;
     const ny = parent.y + Math.sin(angle) * dist;
+
+    // Don't spawn if too close to any existing node
+    for (const n of nodes) {
+      const dx = n.x - nx;
+      const dy = n.y - ny;
+      if (dx * dx + dy * dy < MIN_SPAWN_DIST * MIN_SPAWN_DIST) return;
+    }
 
     const newIdx = nodes.length;
     nodes.push({
