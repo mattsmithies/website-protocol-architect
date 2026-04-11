@@ -51,14 +51,16 @@ const domains = [
       <div class="lg:col-span-2 reveal space-y-6">
 
         <!-- Headshot: drop your image at public/headshot.jpg -->
-        <div class="glass-card p-2 overflow-hidden">
+        <div class="glass-card p-2 overflow-hidden relative">
           <img
             src="/headshot.jpg"
             alt="Matt Smithies"
-            class="w-full aspect-[3/4] object-cover object-top rounded-xl"
+            class="w-full aspect-[3/4] object-cover object-top rounded-xl brightness-[0.45] contrast-[1.1] saturate-[0.3]"
             loading="lazy"
             onerror="this.parentElement.style.display='none'"
           />
+          <!-- Violet overlay tint -->
+          <div class="absolute inset-0 rounded-xl bg-gradient-to-b from-signal/10 via-transparent to-void/60 mix-blend-screen pointer-events-none"></div>
         </div>
 
         <!-- Domains -->
