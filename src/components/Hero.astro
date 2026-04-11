@@ -1,0 +1,40 @@
+---
+// Hero.astro — Full-viewport hero section with signature headline and positioning
+---
+
+<section id="hero" class="relative flex min-h-screen items-center justify-center px-6">
+  <div class="max-w-4xl mx-auto text-center">
+
+    <!-- Eyebrow -->
+    <p class="reveal text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-8">
+      Systems Architecture &middot; Trust Infrastructure &middot; Protocol Design
+    </p>
+
+    <!-- Main headline -->
+    <h1 class="reveal text-gradient text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-8">
+      I design systems where trust<br class="hidden sm:block" /> cannot be left vague
+    </h1>
+
+    <!-- Supporting paragraph -->
+    <p class="reveal text-text-secondary text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-12">
+      Systems architect for trust, workflow, provenance, identity, authority, and incentive design. I work at the intersection of protocol architecture, verifiable process, and mechanism design&nbsp;&mdash; where evidence, roles, and economic logic need to hold under real world pressure.
+    </p>
+
+    <!-- CTAs -->
+    <div class="reveal flex items-center justify-center gap-4">
+      <a href="#capabilities" class="glow-button px-8 py-3.5 rounded-full text-sm tracking-wide">
+        Explore capabilities
+      </a>
+      <a href="#work" class="ghost-button px-8 py-3.5 rounded-full text-sm tracking-wide">
+        View selected work
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+    <span class="text-[10px] tracking-[0.2em] uppercase text-text-tertiary">Scroll</span>
+    <div class="w-px h-8 bg-gradient-to-b from-signal/40 to-transparent animate-pulse"></div>
+  </div>
+</section>
