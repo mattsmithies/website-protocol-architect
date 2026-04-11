@@ -52,7 +52,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
   </head>
   <body class="min-h-screen bg-void text-text-primary font-sans">
 
-    <!-- Aurora gradient background -->
+    <!-- WebGL aurora shader background (primary) -->
+    <canvas id="aurora-canvas" class="fixed inset-0 z-0 w-full h-full" aria-hidden="true"></canvas>
+
+    <!-- CSS aurora fallback (shown when WebGL unavailable) -->
     <div class="aurora" aria-hidden="true">
       <div class="aurora-orb aurora-orb-1"></div>
       <div class="aurora-orb aurora-orb-2"></div>
@@ -71,5 +74,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
     <div class="relative z-10">
       <slot />
     </div>
+
+    <script>
+      import { initAuroraShader } from '../scripts/aurora-shader';
+      const canvas = document.getElementById('aurora-canvas') as HTMLCanvasElement;
+      if (canvas) initAuroraShader(canvas);
+    </script>
   </body>
 </html>
