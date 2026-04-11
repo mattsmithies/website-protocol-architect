@@ -23,28 +23,26 @@ interface Edge {
 // ── Config ──────────────────────────────────────────────────
 
 const MAX_NODES = 120;
-const SPAWN_INTERVAL = 50;       // frames between spawns
-const CONNECT_RADIUS = 150;      // max px to form an edge
+const SPAWN_INTERVAL = 90;       // slower spawning — time to breathe
+const CONNECT_RADIUS = 160;      // max px to form an edge
 const MAX_EDGES_PER_SPAWN = 3;
 
-// Forces
-const REPULSION = 300;
-const LINK_STRENGTH = 0.025;
-const LINK_REST = 80;
-const GRAVITY_DOWN = 0.08;       // gentle downward pull on new nodes
-const SPREAD_X = 0.002;          // slight horizontal spread from center
-const DAMPING = 0.93;
-const COLLISION_PAD = 6;
+// Forces — slow, drifting, no gravity
+const REPULSION = 350;
+const LINK_STRENGTH = 0.015;     // softer springs
+const LINK_REST = 100;           // more space between connected nodes
+const DAMPING = 0.97;            // much less friction — things drift longer
+const COLLISION_PAD = 8;
 
 // Visuals
-const BASE_RADIUS = 3;
-const HUB_BONUS = 0.8;          // extra radius per connection
+const BASE_RADIUS = 3.5;
+const HUB_BONUS = 0.8;
 const MAX_RADIUS = 12;
 const GLOW_MULT = 5;
-const EDGE_ALPHA = 0.2;
+const EDGE_ALPHA = 0.22;
 const EDGE_WIDTH = 0.7;
 const PULSE_SPEED = 0.0015;
-const FADE_IN = 50;              // frames to fade in
+const FADE_IN = 60;
 
 // ── Palette: violet at top → blue at bottom ─────────────────
 
@@ -82,8 +80,9 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
 
   function seed() {
     const cx = window.innerWidth * 0.5;
+    const cy = window.innerHeight * 0.4;
     nodes.push({
-      x: cx, y: 60,
+      x: cx, y: cy,
       vx: 0, vy: 0,
       radius: 8,
       generation: 0,
@@ -101,18 +100,18 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     const parentIdx = Math.floor(Math.random() * nodes.length);
     const parent = nodes[parentIdx];
 
-    // New node spawns nearby, biased downward
-    const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.4; // mostly downward arc
-    const dist = 50 + Math.random() * 60;
+    // New node spawns nearby, any direction
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 50 + Math.random() * 70;
     const nx = parent.x + Math.cos(angle) * dist;
-    const ny = parent.y + Math.sin(angle) * dist + 20; // bias down
+    const ny = parent.y + Math.sin(angle) * dist;
 
     const newIdx = nodes.length;
     nodes.push({
       x: nx,
-      y: Math.max(ny, 30), // don't go above viewport
-      vx: (Math.random() - 0.5) * 1.5,
-      vy: Math.random() * 1.5,
+      y: ny,
+      vx: (Math.random() - 0.5) * 0.8,  // slow initial velocity
+      vy: (Math.random() - 0.5) * 0.8,
       radius: BASE_RADIUS,
       generation: frame,
       connections: 0,
@@ -157,7 +156,6 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
 
   function simulate() {
     const w = window.innerWidth;
-    const cx = w * 0.5;
 
     // Many-body repulsion
     for (let i = 0; i < nodes.length; i++) {
@@ -192,15 +190,11 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     }
 
     // Per-node forces + integration
+    const h = window.innerHeight;
     for (const node of nodes) {
-      // Gentle downward gravity (pulls graph down over time)
-      node.vy += GRAVITY_DOWN;
+      // No gravity. No centering. Just drift, forces, and walls.
 
-      // Slight horizontal spread from center
-      const dxCenter = node.x - cx;
-      node.vx += dxCenter * SPREAD_X;
-
-      // Damping
+      // Damping (high value = slow, drifting movement)
       node.vx *= DAMPING;
       node.vy *= DAMPING;
 
@@ -208,11 +202,12 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       node.x += node.vx;
       node.y += node.vy;
 
-      // Soft boundaries (horizontal only — let it flow down freely)
+      // Bounce off all walls (elastic, preserves energy)
       const margin = 40;
-      if (node.x < margin) { node.x = margin; node.vx *= -0.5; }
-      if (node.x > w - margin) { node.x = w - margin; node.vx *= -0.5; }
-      if (node.y < 20) { node.y = 20; node.vy *= -0.3; }
+      if (node.x < margin) { node.x = margin; node.vx = Math.abs(node.vx) * 0.6; }
+      if (node.x > w - margin) { node.x = w - margin; node.vx = -Math.abs(node.vx) * 0.6; }
+      if (node.y < margin) { node.y = margin; node.vy = Math.abs(node.vy) * 0.6; }
+      if (node.y > h - margin) { node.y = h - margin; node.vy = -Math.abs(node.vy) * 0.6; }
 
       // Age + fade-in
       node.age++;
