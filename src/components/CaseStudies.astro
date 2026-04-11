@@ -1,0 +1,148 @@
+---
+// CaseStudies.astro — Selected work section with architecture case study cards
+
+const caseStudies = [
+  {
+    label: "Trust Infrastructure",
+    title: "DOVU OS — Evidence for Execution",
+    problem:
+      "Organisations running complex programs need auditable proof that workflows were followed, roles were respected, and evidence was captured — not just claims that work was done.",
+    primitive:
+      "A system-of-record architecture where every action, role assignment, and evidence artifact is captured as an immutable, replayable trail — turning implicit process into verifiable execution.",
+    approach:
+      "Designed the core architecture for a workflow audit platform serving carbon programs, supply chains, and regulated processes. Role-based authority, time-bound permissions, evidence binding, and replayable state transitions.",
+    outcome:
+      "Powers programs managing over $1B in value. Used by Veterans Carbon Holdings, Ketrawe Foundation, and enterprise clients across carbon, ESG, and supply chain verticals.",
+    tags: [
+      "Workflow Architecture",
+      "Audit Trail",
+      "Role-Based Authority",
+      "Evidence Binding",
+    ],
+  },
+  {
+    label: "Protocol Design",
+    title: "Authority Trail — Provable Authority for Carbon Markets",
+    problem:
+      "Carbon credit authorisation lacks independent verifiability. Buyers, registries, and auditors cannot independently check whether credits were issued under legitimate authority.",
+    primitive:
+      "An authority chain protocol that makes credit authorisation independently checkable — separating the system of record from the verification layer.",
+    approach:
+      "Designed a protocol-level system for provable authority in carbon markets. Verifiable credential chains, on-chain attestation anchoring, and a developer-facing verification API.",
+    outcome:
+      "Live protocol for independently verifiable carbon credit authority. Bridges the trust gap between issuance, registry, and market participants.",
+    tags: [
+      "Protocol Architecture",
+      "Verifiable Credentials",
+      "Market Infrastructure",
+      "Provenance",
+    ],
+  },
+  {
+    label: "Identity & Incentives",
+    title: "Token & Incentive Architecture — DOVU Ecosystem",
+    problem:
+      "Building a sustainable token economy for a data and carbon marketplace requires careful mechanism design — not just issuing a token, but designing why and how it creates real coordination.",
+    primitive:
+      "An incentive architecture where token mechanics align participant behaviour with ecosystem health — staking, reputation, access rights, and value flow as system primitives.",
+    approach:
+      "Designed the token economics and participation mechanics for a multi-sided marketplace. Staking models, reputation scoring, access tiers, and governance structures.",
+    outcome:
+      "Functioning token ecosystem with aligned incentives across data providers, validators, and market participants.",
+    tags: [
+      "Mechanism Design",
+      "Token Economics",
+      "Incentive Architecture",
+      "Governance",
+    ],
+  },
+];
+---
+
+<section id="work" class="section-padding">
+  <div class="max-w-6xl mx-auto px-6">
+
+    <!-- Section Header -->
+    <div class="reveal mb-16 md:mb-20">
+      <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+        Selected Work
+      </p>
+      <h2 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+        Architecture in practice
+      </h2>
+      <p class="text-text-secondary text-lg max-w-2xl leading-relaxed">
+        Systems where trust, workflow, authority, and incentives needed to be
+        designed explicitly. Each case required identifying a missing primitive
+        and building the structure around it.
+      </p>
+    </div>
+
+    <!-- Case Study Cards -->
+    <div class="space-y-8">
+      {caseStudies.map((study) => (
+        <div class="reveal glass-card p-8 md:p-10 lg:p-12 hover:border-signal/15 transition-all duration-500">
+
+          <!-- Label row -->
+          <div class="flex items-center gap-3 mb-6">
+            <span class="w-2 h-2 rounded-full bg-signal" />
+            <span class="text-signal text-xs font-semibold tracking-[0.2em] uppercase">
+              {study.label}
+            </span>
+          </div>
+
+          <!-- Title -->
+          <h3 class="text-text-primary text-2xl md:text-3xl font-bold tracking-tight mb-8">
+            {study.title}
+          </h3>
+
+          <!-- Details grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h4 class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-3">
+                Problem
+              </h4>
+              <p class="text-text-secondary text-sm leading-relaxed">
+                {study.problem}
+              </p>
+            </div>
+            <div>
+              <h4 class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-3">
+                Missing Primitive
+              </h4>
+              <p class="text-text-secondary text-sm leading-relaxed">
+                {study.primitive}
+              </p>
+            </div>
+            <div>
+              <h4 class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-3">
+                System Approach
+              </h4>
+              <p class="text-text-secondary text-sm leading-relaxed">
+                {study.approach}
+              </p>
+            </div>
+            <div>
+              <h4 class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-3">
+                Outcome
+              </h4>
+              <p class="text-text-secondary text-sm leading-relaxed">
+                {study.outcome}
+              </p>
+            </div>
+          </div>
+
+          <!-- Tags row -->
+          <div class="flex flex-wrap gap-2">
+            {study.tags.map((tag) => (
+              <span class="text-xs text-text-tertiary px-3 py-1.5 rounded-full border border-border">
+                {tag}
+              </span>
+            ))}
+          </div>
+
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>
