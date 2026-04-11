@@ -1,12 +1,12 @@
 ---
-// Writing.astro — Essay preview cards linking to /thinking/[slug]
+// Writing.astro — Essay grid linking to /thinking/[slug]
 import { getCollection } from 'astro:content';
 
 const essays = (await getCollection('essays')).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <section id="thinking" class="section-padding px-6">
-  <div class="max-w-5xl mx-auto">
+  <div class="max-w-6xl mx-auto">
 
     <div class="reveal mb-16 md:mb-20">
       <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
@@ -17,28 +17,24 @@ const essays = (await getCollection('essays')).sort((a, b) => a.data.order - b.d
       </h2>
     </div>
 
-    <div class="space-y-0">
-      {essays.map((essay) => (
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {essays.map((essay, i) => (
         <a
           href={`/thinking/${essay.id}`}
-          class="reveal block border-t border-border py-8 md:py-10 group transition-colors hover:border-signal/20"
+          class="reveal glass-card p-7 group hover:border-signal/20 transition-all duration-500 flex flex-col"
+          style={`transition-delay: ${i * 60}ms`}
         >
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 items-baseline">
-            <div class="md:col-span-3">
-              <span class="text-signal/50 text-xs font-semibold tracking-[0.2em] uppercase group-hover:text-signal/80 transition-colors">
-                {essay.data.category}
-              </span>
-            </div>
-            <div class="md:col-span-8">
-              <h3 class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight group-hover:text-signal transition-colors duration-300">
-                {essay.data.title}
-              </h3>
-            </div>
-            <div class="md:col-span-1 hidden md:flex justify-end">
-              <svg class="w-4 h-4 text-text-tertiary group-hover:text-signal group-hover:translate-x-1 transition-all" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M3 8h10M10 4l4 4-4 4" />
-              </svg>
-            </div>
+          <span class="text-signal/50 text-xs font-semibold tracking-[0.2em] uppercase mb-4 block group-hover:text-signal/80 transition-colors">
+            {essay.data.category}
+          </span>
+          <h3 class="text-text-primary font-display font-bold text-lg tracking-tight mb-auto group-hover:text-signal transition-colors duration-300">
+            {essay.data.title}
+          </h3>
+          <div class="mt-6 flex items-center gap-2 text-text-tertiary group-hover:text-signal text-xs font-medium transition-colors duration-300">
+            <span>Read</span>
+            <svg class="w-3 h-3 group-hover:translate-x-1 transition-transform" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 6h8M7 3l3 3-3 3" />
+            </svg>
           </div>
         </a>
       ))}
