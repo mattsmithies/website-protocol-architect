@@ -1,6 +1,5 @@
-// force-graph.ts — Force-directed graph that grows and crystallizes
-// Nodes appear, settle briefly via forces, then anchor permanently.
-// The graph builds like a structure, not a soup.
+// force-graph.ts — Force-directed graph that grows on the right side of the hero
+// Unique structure every visit. Nodes settle and anchor. Stray nodes fly back up.
 
 interface Node {
   x: number;
@@ -8,11 +7,10 @@ interface Node {
   vx: number;
   vy: number;
   radius: number;
-  generation: number;
   connections: number;
   opacity: number;
   age: number;
-  anchored: boolean;   // frozen in place after settling
+  anchored: boolean;
 }
 
 interface Edge {
@@ -23,34 +21,51 @@ interface Edge {
 
 // ── Config ──────────────────────────────────────────────────
 
-const MAX_NODES = 80;
-const SPAWN_INTERVAL = 100;
-const CONNECT_RADIUS = 180;
+const MAX_NODES = 65;
+const SPAWN_INTERVAL = 80;
+const CONNECT_RADIUS = 160;
 const MAX_EDGES_PER_SPAWN = 2;
-const MIN_SPAWN_DIST = 80;       // no spawning near existing nodes
-const ANCHOR_AGE = 180;          // ~3 seconds at 60fps — then freeze
+const MIN_SPAWN_DIST = 70;
+const ANCHOR_AGE = 180;          // ~3s then freeze
 
-// Forces (only affect un-anchored nodes during settling)
+// Forces
 const REPULSION = 600;
 const LINK_STRENGTH = 0.01;
-const LINK_REST = 120;
+const LINK_REST = 110;
 const DAMPING = 0.94;
-const COLLISION_PAD = 14;
+const COLLISION_PAD = 12;
+const FLY_UP_STRENGTH = 0.15;    // pull stray nodes back up into hero zone
 
 // Visuals
 const BASE_RADIUS = 3.5;
-const HUB_BONUS = 0.8;
-const MAX_RADIUS = 12;
+const HUB_BONUS = 0.7;
+const MAX_RADIUS = 11;
 const GLOW_MULT = 5;
 const EDGE_ALPHA = 0.22;
 const EDGE_WIDTH = 0.7;
 const PULSE_SPEED = 0.0015;
 const FADE_IN = 50;
 
+// ── Spawn zone: right side of viewport, hero height ────────
+
+function getSpawnBounds(w: number, h: number) {
+  return {
+    left: w * 0.45,         // right ~55% of viewport
+    right: w - 50,
+    top: h * 0.08,          // hero area top
+    bottom: h * 0.82,       // hero area bottom
+    centerX: w * 0.7,       // center of spawn zone
+    centerY: h * 0.42,
+  };
+}
+
 // ── Palette ─────────────────────────────────────────────────
 
-function nodeColor(node: Node, h: number): [number, number, number] {
-  const t = Math.min(node.y / h, 1);
+function nodeColor(node: Node, bounds: ReturnType<typeof getSpawnBounds>): [number, number, number] {
+  // Color based on distance from spawn center — inner violet, outer blue
+  const dx = (node.x - bounds.centerX) / (bounds.right - bounds.left);
+  const dy = (node.y - bounds.centerY) / (bounds.bottom - bounds.top);
+  const t = Math.min(Math.sqrt(dx * dx + dy * dy) * 1.5, 1);
   return [
     Math.round(167 + (56 - 167) * t),
     Math.round(139 + (189 - 139) * t),
@@ -70,24 +85,28 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
   let frame = 0;
   let animationId = 0;
 
+  // Canvas matches the hero section (not full page)
   function resize() {
+    const hero = canvas.parentElement;
+    if (!hero) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    canvas.style.width = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
+    const rect = hero.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // ── Seed ──────────────────────────────────────────────────
-
   function seed() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const bounds = getSpawnBounds(w, h);
     nodes.push({
-      x: window.innerWidth * 0.5,
-      y: window.innerHeight * 0.4,
+      x: bounds.centerX,
+      y: bounds.centerY,
       vx: 0, vy: 0,
-      radius: 8,
-      generation: 0,
+      radius: 7,
       connections: 0,
       opacity: 0,
       age: 0,
@@ -95,30 +114,30 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     });
   }
 
-  // ── Spawn ─────────────────────────────────────────────────
-
   function spawn() {
     if (nodes.length >= MAX_NODES) return;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const bounds = getSpawnBounds(w, h);
 
-    // Pick a random anchored node to branch from (prefer structure)
+    // Pick an anchored node to branch from
     const anchored = nodes.filter(n => n.anchored);
     const pool = anchored.length > 0 ? anchored : nodes;
     const parent = pool[Math.floor(Math.random() * pool.length)];
     const parentIdx = nodes.indexOf(parent);
 
-    // Try a few angles to find one that has space
-    for (let attempt = 0; attempt < 6; attempt++) {
+    for (let attempt = 0; attempt < 8; attempt++) {
       const angle = Math.random() * Math.PI * 2;
-      const dist = 100 + Math.random() * 70;
+      const dist = 80 + Math.random() * 60;
       const nx = parent.x + Math.cos(angle) * dist;
       const ny = parent.y + Math.sin(angle) * dist;
 
-      // Check bounds
-      const margin = 60;
-      if (nx < margin || nx > window.innerWidth - margin) continue;
-      if (ny < margin || ny > window.innerHeight - margin) continue;
+      // Must be within spawn bounds (with some overflow allowed)
+      const overflow = 60;
+      if (nx < bounds.left - overflow || nx > bounds.right + overflow) continue;
+      if (ny < bounds.top - overflow || ny > bounds.bottom + overflow) continue;
 
-      // Check distance from ALL existing nodes
+      // Check distance from existing nodes
       let tooClose = false;
       for (const n of nodes) {
         const dx = n.x - nx;
@@ -130,14 +149,12 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       }
       if (tooClose) continue;
 
-      // Good spot found
       const newIdx = nodes.length;
       nodes.push({
         x: nx, y: ny,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
         radius: BASE_RADIUS,
-        generation: frame,
         connections: 0,
         opacity: 0,
         age: 0,
@@ -149,7 +166,7 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       parent.connections++;
       nodes[newIdx].connections++;
 
-      // Connect to one nearby node (not parent)
+      // Connect to one nearby node
       let bestIdx = -1;
       let bestDist = Infinity;
       for (let i = 0; i < nodes.length - 1; i++) {
@@ -172,99 +189,89 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
           nodes[bestIdx].connections++;
         }
       }
-
-      return; // spawned successfully
+      return;
     }
-    // All attempts failed — skip this spawn cycle
   }
 
-  // ── Physics ───────────────────────────────────────────────
-
   function simulate() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const bounds = getSpawnBounds(w, h);
 
-    // Many-body repulsion (anchored nodes exert force but don't receive it)
+    // Repulsion
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const a = nodes[i], b = nodes[j];
-        // Skip if both anchored — nothing moves
         if (a.anchored && b.anchored) continue;
-
-        let dx = b.x - a.x;
-        let dy = b.y - a.y;
+        let dx = b.x - a.x, dy = b.y - a.y;
         let distSq = dx * dx + dy * dy;
         if (distSq < 1) distSq = 1;
         const dist = Math.sqrt(distSq);
         const f = -REPULSION / distSq;
         const fx = (dx / dist) * f;
         const fy = (dy / dist) * f;
-
         if (!a.anchored) { a.vx -= fx; a.vy -= fy; }
         if (!b.anchored) { b.vx += fx; b.vy += fy; }
       }
     }
 
-    // Link springs (only pull un-anchored nodes)
+    // Link springs
     for (const edge of edges) {
       const a = nodes[edge.a], b = nodes[edge.b];
-      if (!a || !b) continue;
-      if (a.anchored && b.anchored) continue;
-
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
+      if (!a || !b || (a.anchored && b.anchored)) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      const displacement = dist - LINK_REST;
-      const f = displacement * LINK_STRENGTH;
+      const f = (dist - LINK_REST) * LINK_STRENGTH;
       const fx = (dx / dist) * f;
       const fy = (dy / dist) * f;
-
       if (!a.anchored) { a.vx += fx; a.vy += fy; }
       if (!b.anchored) { b.vx -= fx; b.vy -= fy; }
     }
 
-    // Integration (only un-anchored nodes)
+    // Integration
     for (const node of nodes) {
       node.age++;
       node.opacity = Math.min(node.age / FADE_IN, 1.0);
       node.radius = Math.min(BASE_RADIUS + node.connections * HUB_BONUS, MAX_RADIUS);
 
-      // Anchor after settling period
       if (!node.anchored && node.age >= ANCHOR_AGE) {
         node.anchored = true;
         node.vx = 0;
         node.vy = 0;
         continue;
       }
-
       if (node.anchored) continue;
 
-      // Damping
+      // Fly-up force: nodes below the hero zone get pulled back up
+      if (node.y > bounds.bottom) {
+        node.vy -= FLY_UP_STRENGTH;
+      }
+      // Gentle pull toward spawn zone center if node drifts too far
+      if (node.x < bounds.left - 40) node.vx += 0.05;
+      if (node.x > bounds.right + 40) node.vx -= 0.05;
+      if (node.y < bounds.top - 40) node.vy += 0.05;
+
       node.vx *= DAMPING;
       node.vy *= DAMPING;
-
-      // Integrate
       node.x += node.vx;
       node.y += node.vy;
 
-      // Bounce off walls
-      const margin = 50;
+      // Bounce off canvas edges
+      const margin = 20;
       if (node.x < margin) { node.x = margin; node.vx = Math.abs(node.vx) * 0.5; }
       if (node.x > w - margin) { node.x = w - margin; node.vx = -Math.abs(node.vx) * 0.5; }
       if (node.y < margin) { node.y = margin; node.vy = Math.abs(node.vy) * 0.5; }
       if (node.y > h - margin) { node.y = h - margin; node.vy = -Math.abs(node.vy) * 0.5; }
     }
 
-    // Collision (push un-anchored away from everything)
+    // Collision
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const a = nodes[i], b = nodes[j];
         if (a.anchored && b.anchored) continue;
-
         const dx = b.x - a.x, dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const minDist = a.radius + b.radius + COLLISION_PAD;
-
         if (dist < minDist) {
           const push = (minDist - dist) * 0.5;
           const nx = dx / dist, ny = dy / dist;
@@ -277,20 +284,16 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     for (const edge of edges) edge.age++;
   }
 
-  // ── Render ────────────────────────────────────────────────
-
   function render(now: number) {
     frame++;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const bounds = getSpawnBounds(w, h);
     const time = now * PULSE_SPEED;
 
     ctx.clearRect(0, 0, w, h);
 
-    if (frame % SPAWN_INTERVAL === 0 && nodes.length > 0) {
-      spawn();
-    }
-
+    if (frame % SPAWN_INTERVAL === 0 && nodes.length > 0) spawn();
     simulate();
 
     // Edges
@@ -298,30 +301,24 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       const edge = edges[i];
       const a = nodes[edge.a], b = nodes[edge.b];
       if (!a || !b) continue;
-
       const alpha = Math.min(a.opacity, b.opacity) * EDGE_ALPHA;
       if (alpha < 0.005) continue;
 
-      const [cr, cg, cb] = nodeColor(a, h);
-      const [cr2, cg2, cb2] = nodeColor(b, h);
-      const mr = (cr + cr2) >> 1;
-      const mg = (cg + cg2) >> 1;
-      const mb = (cb + cb2) >> 1;
+      const [cr, cg, cb] = nodeColor(a, bounds);
+      const [cr2, cg2, cb2] = nodeColor(b, bounds);
 
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
-      ctx.strokeStyle = `rgba(${mr}, ${mg}, ${mb}, ${alpha})`;
+      ctx.strokeStyle = `rgba(${(cr + cr2) >> 1}, ${(cg + cg2) >> 1}, ${(cb + cb2) >> 1}, ${alpha})`;
       ctx.lineWidth = EDGE_WIDTH;
       ctx.stroke();
 
-      // Signal pulse along edge
+      // Signal pulse on anchored edges
       if (edge.age > 40 && a.anchored && b.anchored) {
         const pt = (time * 0.5 + i * 0.2) % 1;
-        const px = a.x + (b.x - a.x) * pt;
-        const py = a.y + (b.y - a.y) * pt;
         ctx.beginPath();
-        ctx.arc(px, py, 1.2, 0, Math.PI * 2);
+        ctx.arc(a.x + (b.x - a.x) * pt, a.y + (b.y - a.y) * pt, 1.2, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(232, 232, 240, ${alpha * 2.5})`;
         ctx.fill();
       }
@@ -331,16 +328,15 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       if (node.opacity < 0.01) continue;
-
-      const [cr, cg, cb] = nodeColor(node, h);
+      const [cr, cg, cb] = nodeColor(node, bounds);
       const pulse = Math.sin(time * 1.5 + i * 0.8) * 0.1 + 0.9;
       const r = node.radius * pulse;
 
-      // Glow (brighter once anchored)
-      const glowAlpha = node.anchored ? 0.14 : 0.08;
+      // Glow
+      const glowA = node.anchored ? 0.14 : 0.08;
       const glowR = r * GLOW_MULT;
       const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowR);
-      grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * glowAlpha})`);
+      grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * glowA})`);
       grad.addColorStop(0.5, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.02})`);
       grad.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`);
       ctx.fillStyle = grad;
@@ -348,14 +344,13 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
       ctx.fill();
 
-      // Outer ring
-      const outerAlpha = node.anchored ? 0.65 : 0.4;
+      // Outer
       ctx.beginPath();
       ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * outerAlpha})`;
+      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * (node.anchored ? 0.65 : 0.4)})`;
       ctx.fill();
 
-      // Bright core
+      // Core
       ctx.beginPath();
       ctx.arc(node.x, node.y, r * 0.35, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(232, 232, 240, ${node.opacity * 0.8})`;
@@ -364,8 +359,6 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
 
     animationId = requestAnimationFrame(render);
   }
-
-  // ── Init ──────────────────────────────────────────────────
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     return { getNodeCount: () => 0, destroy: () => {} };

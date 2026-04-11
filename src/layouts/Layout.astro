@@ -55,9 +55,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
     <!-- WebGL aurora shader background (chaos) -->
     <canvas id="aurora-canvas" class="fixed inset-0 z-0 w-full h-full" aria-hidden="true"></canvas>
 
-    <!-- Force-directed graph overlay (structure emerging from observation) -->
-    <canvas id="graph-canvas" class="fixed inset-0 z-[1] w-full h-full pointer-events-none" aria-hidden="true"></canvas>
-
     <!-- CSS aurora fallback (shown when WebGL unavailable) -->
     <div class="aurora" aria-hidden="true">
       <div class="aurora-orb aurora-orb-1"></div>
@@ -80,15 +77,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
 
     <script>
       import { initAuroraShader } from '../scripts/aurora-shader';
-      import { initForceGraph } from '../scripts/force-graph';
-
-      // Layer 1: Flowing chaos (WebGL shader)
       const auroraCanvas = document.getElementById('aurora-canvas') as HTMLCanvasElement;
       if (auroraCanvas) initAuroraShader(auroraCanvas);
-
-      // Layer 2: Structure that grows from observation (force-directed graph)
-      const graphCanvas = document.getElementById('graph-canvas') as HTMLCanvasElement;
-      if (graphCanvas) initForceGraph(graphCanvas);
     </script>
   </body>
 </html>

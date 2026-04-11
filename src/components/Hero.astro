@@ -1,5 +1,5 @@
 ---
-// Hero.astro — Cinematic, asymmetric hero with personal branding and video-ready layout
+// Hero.astro — Cinematic hero with living force graph on the right
 ---
 
 <section id="hero" class="relative min-h-screen flex items-center overflow-hidden">
@@ -12,6 +12,13 @@
     </video>
     -->
   </div>
+
+  <!-- Force graph — lives on the right side of the hero -->
+  <canvas
+    id="hero-graph"
+    class="absolute inset-0 w-full h-full z-[1] pointer-events-none"
+    aria-hidden="true"
+  ></canvas>
 
   <!-- Main content container -->
   <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-10 py-24">
@@ -50,60 +57,10 @@
 
       </div>
 
-      <!-- Right side — decorative geometric element -->
-      <div class="lg:col-span-5 hidden lg:flex items-center justify-center">
-        <div class="reveal relative w-full max-w-md aspect-square">
-          <svg
-            viewBox="0 0 400 400"
-            class="w-full h-full animate-spin-slow"
-            style="animation: hero-rotate 60s linear infinite;"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <linearGradient id="hero-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.45" />
-                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.15" />
-              </linearGradient>
-              <filter id="hero-glow">
-                <feGaussianBlur stdDeviation="6" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            <!-- Outer diamond -->
-            <polygon
-              points="200,20 380,200 200,380 20,200"
-              fill="none"
-              stroke="url(#hero-grad)"
-              stroke-width="1"
-              filter="url(#hero-glow)"
-              opacity="0.5"
-            />
-            <!-- Inner diamond -->
-            <polygon
-              points="200,80 320,200 200,320 80,200"
-              fill="none"
-              stroke="url(#hero-grad)"
-              stroke-width="0.75"
-              filter="url(#hero-glow)"
-              opacity="0.35"
-            />
-            <!-- Core diamond -->
-            <polygon
-              points="200,140 260,200 200,260 140,200"
-              fill="none"
-              stroke="url(#hero-grad)"
-              stroke-width="0.5"
-              filter="url(#hero-glow)"
-              opacity="0.25"
-            />
-            <!-- Crosshair lines -->
-            <line x1="200" y1="20" x2="200" y2="380" stroke="url(#hero-grad)" stroke-width="0.3" opacity="0.15" />
-            <line x1="20" y1="200" x2="380" y2="200" stroke="url(#hero-grad)" stroke-width="0.3" opacity="0.15" />
-          </svg>
-        </div>
+      <!-- Right side — the graph fills this space visually -->
+      <div class="lg:col-span-5 hidden lg:block" aria-hidden="true">
+        <!-- Spacer so grid layout works — the canvas is absolutely positioned -->
+        <div class="aspect-square"></div>
       </div>
 
     </div>
@@ -130,9 +87,9 @@
 
 </section>
 
-<style>
-  @keyframes hero-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-</style>
+<script>
+  import { initForceGraph } from '../scripts/force-graph';
+
+  const canvas = document.getElementById('hero-graph') as HTMLCanvasElement;
+  if (canvas) initForceGraph(canvas);
+</script>
