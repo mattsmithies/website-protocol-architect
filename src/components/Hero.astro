@@ -1,40 +1,138 @@
 ---
-// Hero.astro — Full-viewport hero section with signature headline and positioning
+// Hero.astro — Cinematic, asymmetric hero with personal branding and video-ready layout
 ---
 
-<section id="hero" class="relative flex min-h-screen items-center justify-center px-6">
-  <div class="max-w-4xl mx-auto text-center">
+<section id="hero" class="relative min-h-screen flex items-center overflow-hidden">
 
-    <!-- Eyebrow -->
-    <p class="reveal text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-8">
-      Systems Architecture &middot; Trust Infrastructure &middot; Protocol Design
-    </p>
+  <!-- Video background slot -->
+  <div class="hero-video-container">
+    <!-- Uncomment when video is ready:
+    <video autoplay muted loop playsinline>
+      <source src="/hero-video.mp4" type="video/mp4" />
+    </video>
+    -->
+  </div>
 
-    <!-- Main headline -->
-    <h1 class="reveal text-gradient text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-8">
-      I design systems where trust<br class="hidden sm:block" /> cannot be left vague
-    </h1>
+  <!-- Main content container -->
+  <div class="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-10 py-24">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
 
-    <!-- Supporting paragraph -->
-    <p class="reveal text-text-secondary text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-12">
-      Systems architect for trust, workflow, provenance, identity, authority, and incentive design. I work at the intersection of protocol architecture, verifiable process, and mechanism design&nbsp;&mdash; where evidence, roles, and economic logic need to hold under real world pressure.
-    </p>
+      <!-- Left side — primary content -->
+      <div class="lg:col-span-7">
 
-    <!-- CTAs -->
-    <div class="reveal flex items-center justify-center gap-4">
-      <a href="#capabilities" class="glow-button px-8 py-3.5 rounded-full text-sm tracking-wide">
-        Explore capabilities
-      </a>
-      <a href="#work" class="ghost-button px-8 py-3.5 rounded-full text-sm tracking-wide">
-        View selected work
-      </a>
+        <!-- Name -->
+        <h1 class="reveal text-gradient-hero text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-tighter leading-[1.05]">
+          Matt Smithies
+        </h1>
+
+        <!-- Accent line -->
+        <div class="reveal w-20 h-px bg-signal mt-6 mb-6" style="box-shadow: 0 0 12px rgba(167, 139, 250, 0.4);"></div>
+
+        <!-- Title -->
+        <p class="reveal text-xl md:text-2xl font-display text-signal font-medium tracking-wide">
+          Systems Architect
+        </p>
+
+        <!-- Positioning statement -->
+        <p class="reveal text-text-secondary text-lg md:text-xl leading-relaxed max-w-xl mt-8">
+          I design systems where trust, workflow, authority, provenance, and incentives need to hold under real&nbsp;world&nbsp;pressure.
+        </p>
+
+        <!-- CTAs -->
+        <div class="reveal flex gap-4 mt-10">
+          <a href="#work" class="glow-button magnetic px-8 py-4 rounded-full text-sm">
+            Explore my work
+          </a>
+          <a href="#contact" class="ghost-button magnetic px-8 py-4 rounded-full text-sm">
+            Get in touch
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Right side — decorative geometric element -->
+      <div class="lg:col-span-5 hidden lg:flex items-center justify-center">
+        <div class="reveal relative w-full max-w-md aspect-square">
+          <svg
+            viewBox="0 0 400 400"
+            class="w-full h-full animate-spin-slow"
+            style="animation: hero-rotate 60s linear infinite;"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="hero-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.45" />
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.15" />
+              </linearGradient>
+              <filter id="hero-glow">
+                <feGaussianBlur stdDeviation="6" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <!-- Outer diamond -->
+            <polygon
+              points="200,20 380,200 200,380 20,200"
+              fill="none"
+              stroke="url(#hero-grad)"
+              stroke-width="1"
+              filter="url(#hero-glow)"
+              opacity="0.5"
+            />
+            <!-- Inner diamond -->
+            <polygon
+              points="200,80 320,200 200,320 80,200"
+              fill="none"
+              stroke="url(#hero-grad)"
+              stroke-width="0.75"
+              filter="url(#hero-glow)"
+              opacity="0.35"
+            />
+            <!-- Core diamond -->
+            <polygon
+              points="200,140 260,200 200,260 140,200"
+              fill="none"
+              stroke="url(#hero-grad)"
+              stroke-width="0.5"
+              filter="url(#hero-glow)"
+              opacity="0.25"
+            />
+            <!-- Crosshair lines -->
+            <line x1="200" y1="20" x2="200" y2="380" stroke="url(#hero-grad)" stroke-width="0.3" opacity="0.15" />
+            <line x1="20" y1="200" x2="380" y2="200" stroke="url(#hero-grad)" stroke-width="0.3" opacity="0.15" />
+          </svg>
+        </div>
+      </div>
+
     </div>
+  </div>
 
+  <!-- Capability tags strip -->
+  <div class="absolute bottom-16 left-0 w-full z-10 px-6 lg:px-10">
+    <div class="max-w-7xl mx-auto">
+      <div class="reveal flex flex-wrap gap-3">
+        <span class="text-[11px] text-text-tertiary px-3 py-1.5 rounded-full border border-border/50">Trust Infrastructure</span>
+        <span class="text-[11px] text-text-tertiary px-3 py-1.5 rounded-full border border-border/50">Protocol Design</span>
+        <span class="text-[11px] text-text-tertiary px-3 py-1.5 rounded-full border border-border/50">Workflow Systems</span>
+        <span class="text-[11px] text-text-tertiary px-3 py-1.5 rounded-full border border-border/50">Identity &amp; Authority</span>
+        <span class="text-[11px] text-text-tertiary px-3 py-1.5 rounded-full border border-border/50">Mechanism Design</span>
+        <span class="text-[11px] text-text-tertiary px-3 py-1.5 rounded-full border border-border/50">Provenance</span>
+      </div>
+    </div>
   </div>
 
   <!-- Scroll indicator -->
-  <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-    <span class="text-[10px] tracking-[0.2em] uppercase text-text-tertiary">Scroll</span>
-    <div class="w-px h-8 bg-gradient-to-b from-signal/40 to-transparent animate-pulse"></div>
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-10">
+    <div class="w-px h-8 bg-gradient-to-b from-signal/30 to-transparent animate-pulse"></div>
   </div>
+
 </section>
+
+<style>
+  @keyframes hero-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
