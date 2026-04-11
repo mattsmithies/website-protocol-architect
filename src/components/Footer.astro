@@ -1,0 +1,28 @@
+---
+// Footer.astro — Site footer with copyright and external links
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-border py-10 px-6">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+
+    <!-- Copyright -->
+    <span class="text-text-tertiary text-xs tracking-wide">
+      &copy; {year} Matt Smithies
+    </span>
+
+    <!-- Links -->
+    <div class="flex items-center gap-6">
+      <a href="https://github.com/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-xs hover:text-text-primary transition-colors">
+        GitHub
+      </a>
+      <a href="https://linkedin.com/in/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-xs hover:text-text-primary transition-colors">
+        LinkedIn
+      </a>
+      <a href="https://dovu.ai" target="_blank" rel="noopener" class="text-text-tertiary text-xs hover:text-text-primary transition-colors">
+        DOVU
+      </a>
+    </div>
+
+  </div>
+</footer>
