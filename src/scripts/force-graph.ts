@@ -299,6 +299,7 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
 
     // ── Pruning: refine the structure over time ───────────
     // Mark overcrowded or overconnected anchored nodes for removal
+    // NEVER orphan a neighbor — only prune if all neighbors keep at least 1 edge
     if (frame % PRUNE_CHECK_INTERVAL === 0 && nodes.length > 15) {
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
@@ -318,7 +319,6 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
             const dx = node.x - nodes[j].x;
             const dy = node.y - nodes[j].y;
             if (dx * dx + dy * dy < PRUNE_OVERCROWDED_DIST * PRUNE_OVERCROWDED_DIST) {
-              // Prune the one with fewer connections (keep the stronger node)
               if (node.connections <= nodes[j].connections && Math.random() < 0.25) {
                 shouldPrune = true;
                 break;
@@ -327,8 +327,33 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
           }
         }
 
+        // Safety: don't prune if ANY neighbor would be left with 0 connections
         if (shouldPrune) {
-          node.pruning = true;
+          let safe = true;
+          for (const edge of edges) {
+            if (edge.a !== i && edge.b !== i) continue;
+            const neighborIdx = edge.a === i ? edge.b : edge.a;
+            const neighbor = nodes[neighborIdx];
+            if (!neighbor || neighbor.pruning) continue;
+            // Count how many non-pruning edges this neighbor has (excluding edges to us)
+            let neighborEdgeCount = 0;
+            for (const e2 of edges) {
+              if (e2.a === neighborIdx || e2.b === neighborIdx) {
+                const otherEnd = e2.a === neighborIdx ? e2.b : e2.a;
+                if (otherEnd !== i && nodes[otherEnd] && !nodes[otherEnd].pruning) {
+                  neighborEdgeCount++;
+                }
+              }
+            }
+            if (neighborEdgeCount === 0) {
+              // This neighbor would be orphaned — can't prune
+              safe = false;
+              break;
+            }
+          }
+          if (safe) {
+            node.pruning = true;
+          }
         }
       }
     }
@@ -344,18 +369,24 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
         // Remove all edges referencing this node
         for (let e = edges.length - 1; e >= 0; e--) {
           if (edges[e].a === i || edges[e].b === i) {
-            // Decrement connection count on the other node
             const otherIdx = edges[e].a === i ? edges[e].b : edges[e].a;
             if (nodes[otherIdx]) nodes[otherIdx].connections--;
             edges.splice(e, 1);
           }
         }
         nodes.splice(i, 1);
-        // Reindex edges (indices shifted)
+        // Reindex edges
         for (const edge of edges) {
           if (edge.a > i) edge.a--;
           if (edge.b > i) edge.b--;
         }
+      }
+    }
+
+    // Safety net: if any node somehow has 0 connections, prune it too
+    for (const node of nodes) {
+      if (node.connections <= 0 && node.anchored && !node.pruning && nodes.indexOf(node) > 0) {
+        node.pruning = true;
       }
     }
   }
