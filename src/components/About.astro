@@ -1,5 +1,5 @@
 ---
-// About.astro — Bio and domain list in two-column layout
+// About.astro — Bio, headshot, domains, social links
 
 const domains = [
   "Carbon &amp; ESG infrastructure",
@@ -29,25 +29,39 @@ const domains = [
 
         <div class="space-y-5 text-text-secondary text-base leading-relaxed">
           <p>
-            I am a senior systems architect and technical operator. My work focuses on designing infrastructure where trust, workflow, evidence, and incentives matter &mdash; especially when authority, provenance, identity, and coordination cannot be left vague.
-          </p>
-          <p>
             As CTO and architect at <a href="https://dovu.ai" target="_blank" rel="noopener" class="text-signal hover:underline">DOVU</a>, I designed the core architecture for an audit trail and workflow platform now serving programs managing over $1B in value. More recently, I designed <a href="https://authority.dovu.ai" target="_blank" rel="noopener" class="text-signal hover:underline">Authority Trail</a> &mdash; a protocol for provable authority in carbon markets.
           </p>
           <p>
-            I design token economies with the same mindset I bring to infrastructure: make incentives explicit, understand the pressure points, and build for real world behaviour. My work covers internal value flywheels, demand and supply sinks, mechanism design, utility design, issuance pressure, and the structural conditions that determine whether a token can hold long term relevance inside a network.
+            I design token economies with the same mindset I bring to infrastructure: make incentives explicit, understand the pressure points, and build for real world behaviour. Flywheels, demand sinks, issuance pressure, and the structural conditions that determine whether a token can hold long term relevance inside a network.
           </p>
           <p>
-            I think in terms of state, authority, time, verifiability, replayability, coordination under constraints, and economic alignment. I operate best at the layer beneath products, where primitives, models, and economic logic shape what a system can become.
+            My edge is the combination: systems architecture, trust and provenance thinking, identity and authority design, workflow and process modelling, protocol thinking, token economy design, and commercial reality. That combination is rare.
           </p>
-          <p>
-            My edge is the combination: systems architecture, trust and provenance thinking, identity and authority design, workflow and process modelling, protocol and platform thinking, token economy design, and commercial reality. That combination is rare.
-          </p>
+        </div>
+
+        <!-- Social links -->
+        <div class="flex items-center gap-5 mt-8">
+          <a href="https://github.com/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">GitHub</a>
+          <a href="https://linkedin.com/in/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">LinkedIn</a>
+          <a href="https://dovu.ai" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">DOVU</a>
         </div>
       </div>
 
-      <!-- Right column: Domains -->
-      <div class="lg:col-span-2 reveal">
+      <!-- Right column: Photo + Domains -->
+      <div class="lg:col-span-2 reveal space-y-6">
+
+        <!-- Headshot: drop your image at public/headshot.jpg -->
+        <div class="glass-card p-2 overflow-hidden">
+          <img
+            src="/headshot.jpg"
+            alt="Matt Smithies"
+            class="w-full aspect-[3/4] object-cover object-top rounded-xl"
+            loading="lazy"
+            onerror="this.parentElement.style.display='none'"
+          />
+        </div>
+
+        <!-- Domains -->
         <div class="glass-card p-8">
           <h3 class="text-text-primary font-display font-semibold text-sm tracking-[0.15em] uppercase mb-6">
             Domains
@@ -60,6 +74,7 @@ const domains = [
             ))}
           </ul>
         </div>
+
       </div>
 
     </div>
