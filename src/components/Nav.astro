@@ -1,0 +1,62 @@
+---
+// Nav.astro — Fixed scroll-aware navigation bar
+---
+
+<nav
+  id="main-nav"
+  class="fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300"
+  style="background: transparent; border-bottom: 1px solid transparent;"
+>
+  <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+
+    <!-- Wordmark -->
+    <a
+      href="/"
+      class="text-sm font-semibold tracking-widest uppercase text-text-secondary hover:text-text-primary transition-colors"
+    >
+      Matt Smithies
+    </a>
+
+    <!-- Desktop links (hidden on mobile) -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#capabilities" class="text-sm text-text-tertiary hover:text-text-primary transition-colors">Capabilities</a>
+      <a href="#work"         class="text-sm text-text-tertiary hover:text-text-primary transition-colors">Work</a>
+      <a href="#thinking"     class="text-sm text-text-tertiary hover:text-text-primary transition-colors">Thinking</a>
+      <a href="#about"        class="text-sm text-text-tertiary hover:text-text-primary transition-colors">About</a>
+      <a href="#contact" class="ghost-button text-sm px-5 py-2 rounded-full">Get in touch</a>
+    </div>
+
+    <!-- Mobile hamburger (visible below md) -->
+    <button
+      id="mobile-menu-toggle"
+      class="md:hidden flex flex-col justify-center items-center gap-[6px] w-8 h-8 focus-visible:outline-none"
+      aria-label="Toggle navigation menu"
+      aria-expanded="false"
+    >
+      <span id="bar1" class="block w-5 h-px bg-text-secondary transition-all duration-300 origin-center"></span>
+      <span id="bar2" class="block w-5 h-px bg-text-secondary transition-all duration-300"></span>
+      <span id="bar3" class="block w-5 h-px bg-text-secondary transition-all duration-300 origin-center"></span>
+    </button>
+
+  </div>
+
+  <!-- Mobile menu -->
+  <div
+    id="mobile-menu"
+    class="md:hidden overflow-hidden transition-all duration-300 ease-in-out"
+    style="max-height: 0; opacity: 0;"
+  >
+    <div class="max-w-6xl mx-auto px-6 pb-6 flex flex-col gap-5">
+      <a href="#capabilities" class="text-base text-text-tertiary hover:text-text-primary transition-colors">Capabilities</a>
+      <a href="#work"         class="text-base text-text-tertiary hover:text-text-primary transition-colors">Work</a>
+      <a href="#thinking"     class="text-base text-text-tertiary hover:text-text-primary transition-colors">Thinking</a>
+      <a href="#about"        class="text-base text-text-tertiary hover:text-text-primary transition-colors">About</a>
+      <a href="#contact" class="ghost-button text-base w-full justify-center">Get in touch</a>
+    </div>
+  </div>
+</nav>
+
+<script>
+  import { initNav } from '../scripts/nav';
+  initNav();
+</script>
