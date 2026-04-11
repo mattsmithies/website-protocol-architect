@@ -16,7 +16,7 @@ export function initNav(): void {
 
   function onScroll(): void {
     if (window.scrollY > 80) {
-      nav!.style.background = 'rgba(8, 9, 15, 0.85)';
+      nav!.style.background = 'rgba(11, 11, 17, 0.85)';
       nav!.style.backdropFilter = 'blur(16px)';
       (nav!.style as CSSStyleDeclaration & { webkitBackdropFilter: string }).webkitBackdropFilter = 'blur(16px)';
       nav!.style.borderBottom = '1px solid rgba(255, 255, 255, 0.06)';
