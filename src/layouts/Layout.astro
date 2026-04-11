@@ -52,11 +52,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
   </head>
   <body class="min-h-screen bg-void text-text-primary font-sans">
 
-    <!-- WebGL aurora shader background (primary) -->
+    <!-- WebGL aurora shader background -->
     <canvas id="aurora-canvas" class="fixed inset-0 z-0 w-full h-full" aria-hidden="true"></canvas>
 
-    <!-- Flow field particle overlay -->
-    <canvas id="flow-canvas" class="fixed inset-0 z-[1] w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+    <!-- Network graph overlay (nodes + edges emerge from observation) -->
+    <canvas id="network-canvas" class="fixed inset-0 z-[1] w-full h-full pointer-events-none" aria-hidden="true"></canvas>
 
     <!-- CSS aurora fallback (shown when WebGL unavailable) -->
     <div class="aurora" aria-hidden="true">
@@ -80,16 +80,42 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
 
     <script>
       import { initAuroraShader } from '../scripts/aurora-shader';
-      import { initFlowField } from '../scripts/flow-field';
+      import { createKnowledgeMap } from '../scripts/knowledge-map';
+      import { initNetworkGraph } from '../scripts/network-graph';
       import { initVisualModes } from '../scripts/visual-modes';
 
       const auroraCanvas = document.getElementById('aurora-canvas') as HTMLCanvasElement;
-      const flowCanvas = document.getElementById('flow-canvas') as HTMLCanvasElement;
+      const networkCanvas = document.getElementById('network-canvas') as HTMLCanvasElement;
 
       const shader = auroraCanvas ? initAuroraShader(auroraCanvas) : null;
-      const flowField = flowCanvas ? initFlowField(flowCanvas) : { setVisible: () => {}, isVisible: () => false, destroy: () => {} };
+      const knowledgeMap = createKnowledgeMap();
+      const networkGraph = networkCanvas
+        ? initNetworkGraph(networkCanvas, knowledgeMap.getNodes)
+        : { setVisible: () => {}, isVisible: () => false, destroy: () => {} };
+
+      // Dummy flow field interface for visual-modes compatibility
+      const flowField = {
+        setVisible: (v: boolean) => networkGraph.setVisible(v),
+        isVisible: () => networkGraph.isVisible(),
+        destroy: () => networkGraph.destroy(),
+      };
 
       initVisualModes(shader, flowField);
+
+      // Main loop: update knowledge map and feed texture to shader
+      let mouseX = 0, mouseY = 0;
+      window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        function tick() {
+          knowledgeMap.update(mouseX, mouseY, window.innerWidth, window.innerHeight);
+          if (shader) {
+            shader.updateKnowledge(knowledgeMap.getTextureData(), knowledgeMap.getGridSize());
+          }
+          requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }
     </script>
   </body>
 </html>

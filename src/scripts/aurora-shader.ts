@@ -1,6 +1,7 @@
-// aurora-shader.ts — Raw WebGL fullscreen fragment shader
-// "Architect's Lens" — cursor reveals structure from chaos
-// Scroll deepens the reveal. The visual metaphor: finding patterns in complexity.
+// aurora-shader.ts — Raw WebGL fragment shader with knowledge texture
+// Background starts as chaos. Where the mouse has observed, knowledge
+// accumulates and structure emerges: patterns → contours → clarity.
+// The background *learns* from your attention.
 
 const VERTEX_SHADER = `
   attribute vec2 a_position;
@@ -14,12 +15,11 @@ const FRAGMENT_SHADER = `
 
   uniform float u_time;
   uniform vec2 u_resolution;
-  uniform vec2 u_mouse;
   uniform float u_contours;
   uniform float u_ridges;
-  uniform float u_scroll;     // 0.0 = top of page, 1.0 = scrolled down
+  uniform sampler2D u_knowledge;  // accumulated observation map
 
-  // ── Simplex noise ─────────────────────────────────────────
+  // ── Noise ─────────────────────────────────────────────────
 
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -59,15 +59,6 @@ const FRAGMENT_SHADER = `
     return fbm(p + 4.0 * r);
   }
 
-  // ── Grid pattern (emerges near cursor) ────────────────────
-
-  float gridPattern(vec2 p, float scale) {
-    vec2 g = abs(fract(p * scale) - 0.5) * 2.0;
-    float gx = smoothstep(0.0, 0.03, g.x);
-    float gy = smoothstep(0.0, 0.03, g.y);
-    return 1.0 - min(gx, gy);
-  }
-
   // ── Main ──────────────────────────────────────────────────
 
   void main() {
@@ -75,6 +66,9 @@ const FRAGMENT_SHADER = `
     float aspect = u_resolution.x / u_resolution.y;
     vec2 p = vec2(uv.x * aspect, uv.y);
     float t = u_time;
+
+    // Sample the knowledge map — how much has this area been observed?
+    float knowledge = texture2D(u_knowledge, uv).r;
 
     // Palette
     vec3 void_color = vec3(0.043, 0.043, 0.067);
@@ -88,104 +82,90 @@ const FRAGMENT_SHADER = `
     float n2 = warpedNoise(p * 2.5 + 10.0, t * 0.7);
     float n3 = fbm(p * 4.0 + t * 0.15);
 
-    // ── Calculate the Architect's Lens ──────────────────────
-    // Mouse proximity: 0 = far from cursor (chaos), 1 = at cursor (clarity)
-    float lensRadius = 0.28 + u_scroll * 0.15; // lens grows as you scroll
-    float lensStrength = 0.0;
+    // ── Phase 0: Chaos (knowledge = 0) ──────────────────────
+    // Raw, turbulent aurora. No structure visible.
+    vec3 color = void_color;
+    float chaosAmt = 1.0 - knowledge * 0.4;
+    color = mix(color, deep_blue, smoothstep(-0.2, 0.6, n1) * 0.4 * chaosAmt);
+    color = mix(color, violet * 0.6, smoothstep(0.1, 0.8, n1) * 0.18 * chaosAmt);
+    color = mix(color, sky_blue * 0.5, smoothstep(0.0, 0.7, n2) * 0.1 * chaosAmt);
+    color = mix(color, indigo * 0.4, smoothstep(0.2, 0.9, n1 * n2) * 0.08);
 
-    if (u_mouse.x > 0.0) {
-      vec2 mouseUV = u_mouse / u_resolution;
-      mouseUV.y = 1.0 - mouseUV.y;
-      float mouseDist = distance(uv, mouseUV);
-      lensStrength = smoothstep(lensRadius, lensRadius * 0.15, mouseDist);
+    // ── Phase 1: Patterns emerging (knowledge 0.05 - 0.25) ──
+    // Faint contour hints. The first sign that structure exists.
+    float phase1 = smoothstep(0.05, 0.25, knowledge);
+    if (phase1 > 0.0 && u_contours > 0.01) {
+      float field = n1 * 5.0;
+      float band = abs(fract(field) - 0.5) * 2.0;
+      float line = 1.0 - smoothstep(0.0, 0.08, band); // soft, wide lines
+      vec3 lineCol = mix(violet * 0.3, violet * 0.5, n3);
+      color += lineCol * line * phase1 * 0.1 * u_contours;
     }
 
-    // Scroll adds global structure (the deeper you go, the more you see)
-    float globalStructure = u_scroll * 0.35;
-
-    // Combined clarity: lens + scroll-based global reveal
-    float clarity = clamp(lensStrength + globalStructure, 0.0, 1.0);
-
-    // ── Base aurora (always present, slightly more chaotic away from lens) ──
-    vec3 color = void_color;
-
-    // Chaos layer: more turbulent, less structured
-    float chaosIntensity = 1.0 - clarity * 0.3;
-    color = mix(color, deep_blue, smoothstep(-0.2, 0.6, n1) * 0.4 * chaosIntensity);
-    color = mix(color, violet, smoothstep(0.1, 0.8, n1) * 0.2 * chaosIntensity);
-    color = mix(color, sky_blue, smoothstep(0.0, 0.7, n2) * 0.12 * chaosIntensity);
-    color = mix(color, indigo, smoothstep(0.2, 0.9, n1 * n2) * 0.1);
-    color += violet * smoothstep(0.5, 0.9, n3) * 0.05;
-    color += sky_blue * smoothstep(0.4, 0.8, n3 * n2) * 0.03;
-
-    // ── Structure that emerges with clarity ─────────────────
-
-    // Contour lines: emerge from the noise, visible near cursor and with scroll
-    if (u_contours > 0.01) {
-      float contourClarity = clarity * u_contours;
-
-      // Primary contour set
+    // ── Phase 2: Structure forming (knowledge 0.2 - 0.55) ───
+    // Clear contour lines. Two frequency sets. Intersections glow.
+    float phase2 = smoothstep(0.2, 0.55, knowledge);
+    if (phase2 > 0.0 && u_contours > 0.01) {
+      // Primary contours
       float field1 = n1 * 7.0;
       float band1 = abs(fract(field1) - 0.5) * 2.0;
-      // Lines get sharper near cursor (thinner smoothstep)
-      float sharpness1 = mix(0.06, 0.025, clarity);
+      float sharpness1 = mix(0.06, 0.025, phase2);
       float line1 = 1.0 - smoothstep(0.0, sharpness1, band1);
 
-      // Secondary contour set
+      // Secondary contours
       float field2 = n2 * 5.0;
       float band2 = abs(fract(field2) - 0.5) * 2.0;
-      float sharpness2 = mix(0.05, 0.02, clarity);
+      float sharpness2 = mix(0.05, 0.02, phase2);
       float line2 = 1.0 - smoothstep(0.0, sharpness2, band2);
 
-      // Lines are dim away from lens, bright near it
-      float lineAlpha1 = mix(0.04, 0.22, contourClarity);
-      float lineAlpha2 = mix(0.02, 0.10, contourClarity);
+      vec3 lineColor1 = mix(violet, sky_blue, uv.x + n3 * 0.3);
+      vec3 lineColor2 = mix(indigo, violet, uv.y);
 
-      vec3 lineColor1 = mix(violet * 0.5, mix(violet, sky_blue, uv.x + n3 * 0.3), clarity);
-      vec3 lineColor2 = mix(indigo * 0.3, mix(indigo, violet, uv.y), clarity);
+      color += lineColor1 * line1 * phase2 * 0.2 * u_contours;
+      color += lineColor2 * line2 * phase2 * 0.08 * u_contours;
 
-      color += lineColor1 * line1 * lineAlpha1;
-      color += lineColor2 * line2 * lineAlpha2;
-
-      // Intersection nodes: bright dots where contour lines cross
-      float intersection = line1 * line2;
-      color += mix(violet, sky_blue, n3) * intersection * mix(0.05, 0.35, contourClarity);
+      // Intersection brightening
+      float ix = line1 * line2;
+      color += mix(violet, sky_blue, n3) * ix * phase2 * 0.3 * u_contours;
     }
 
-    // ── Subtle grid (only appears in the lens zone) ─────────
-    if (clarity > 0.1) {
-      float grid = gridPattern(p + n1 * 0.02, 12.0);
-      float gridAlpha = (clarity - 0.1) * 0.07;
-      color += violet * grid * gridAlpha * 0.5;
+    // ── Phase 3: Insight (knowledge 0.5 - 1.0) ─────────────
+    // Full clarity. Grid visible. Colors brighten. Node regions glow.
+    float phase3 = smoothstep(0.5, 1.0, knowledge);
+    if (phase3 > 0.0) {
+      // Subtle grid alignment
+      vec2 g = abs(fract(p * 14.0) - 0.5) * 2.0;
+      float grid = 1.0 - min(smoothstep(0.0, 0.03, g.x), smoothstep(0.0, 0.03, g.y));
+      color += violet * grid * phase3 * 0.04;
+
+      // Brightened, more saturated aurora in observed areas
+      color = mix(color, color * 1.4 + violet * 0.02, phase3 * 0.3);
+
+      // Node glow at high-knowledge peaks (will align with network-graph.ts nodes)
+      if (knowledge > 0.7) {
+        float nodeGlow = smoothstep(0.7, 0.95, knowledge);
+        float pulse = sin(t * 2.0 + uv.x * 20.0 + uv.y * 20.0) * 0.5 + 0.5;
+        color += violet * nodeGlow * pulse * 0.08;
+      }
     }
 
-    // ── Ridge glow ──────────────────────────────────────────
-    if (u_ridges > 0.01) {
-      float ridgeClarity = clarity * u_ridges;
+    // ── Ridge glow (optional mode) ──────────────────────────
+    if (u_ridges > 0.01 && knowledge > 0.15) {
+      float ridgeK = smoothstep(0.15, 0.6, knowledge) * u_ridges;
       float ridge1 = smoothstep(0.55, 0.7, n1) * smoothstep(0.85, 0.7, n1);
       float ridge2 = smoothstep(0.45, 0.6, n2) * smoothstep(0.75, 0.6, n2);
-
-      color += violet * ridge1 * mix(0.08, 0.4, ridgeClarity);
-      color += sky_blue * ridge2 * mix(0.05, 0.3, ridgeClarity);
-
+      color += violet * ridge1 * ridgeK * 0.3;
+      color += sky_blue * ridge2 * ridgeK * 0.2;
       float pulse = sin(t * 2.0 + n1 * 6.0) * 0.5 + 0.5;
-      color += indigo * ridge1 * ridge2 * pulse * 0.2 * ridgeClarity;
-    }
-
-    // ── Lens edge glow (subtle ring at the boundary of clarity) ──
-    if (u_mouse.x > 0.0 && lensStrength > 0.01 && lensStrength < 0.95) {
-      float edgeGlow = smoothstep(0.0, 0.3, lensStrength) * smoothstep(0.6, 0.3, lensStrength);
-      color += violet * edgeGlow * 0.06;
+      color += indigo * ridge1 * ridge2 * pulse * ridgeK * 0.15;
     }
 
     // ── Vignette ────────────────────────────────────────────
     vec2 vigUV = uv - vec2(0.5, 0.55);
     float vignette = 1.0 - dot(vigUV, vigUV) * 1.2;
-    vignette = clamp(vignette, 0.0, 1.0);
-    color *= 0.7 + vignette * 0.3;
+    color *= 0.7 + clamp(vignette, 0.0, 1.0) * 0.3;
 
-    color = clamp(color, 0.0, 1.0);
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
   }
 `;
 
@@ -225,6 +205,7 @@ export interface ShaderState {
   setRidges: (value: number) => void;
   getContours: () => number;
   getRidges: () => number;
+  updateKnowledge: (data: Uint8Array, size: number) => void;
 }
 
 export function initAuroraShader(canvas: HTMLCanvasElement): ShaderState | null {
@@ -233,7 +214,7 @@ export function initAuroraShader(canvas: HTMLCanvasElement): ShaderState | null 
   });
 
   if (!gl) {
-    console.warn('WebGL not available, using CSS aurora fallback');
+    console.warn('WebGL not available');
     return null;
   }
 
@@ -249,75 +230,79 @@ export function initAuroraShader(canvas: HTMLCanvasElement): ShaderState | null 
 
   gl.useProgram(program);
 
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  // Geometry
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-
   const posLoc = gl.getAttribLocation(program, 'a_position');
   gl.enableVertexAttribArray(posLoc);
   gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
+  // Uniforms
   const uTime = gl.getUniformLocation(program, 'u_time');
   const uResolution = gl.getUniformLocation(program, 'u_resolution');
-  const uMouse = gl.getUniformLocation(program, 'u_mouse');
   const uContours = gl.getUniformLocation(program, 'u_contours');
   const uRidges = gl.getUniformLocation(program, 'u_ridges');
-  const uScroll = gl.getUniformLocation(program, 'u_scroll');
+  const uKnowledge = gl.getUniformLocation(program, 'u_knowledge');
 
-  let mouseX = 0;
-  let mouseY = 0;
-  let scrollProgress = 0;
+  // Knowledge texture
+  const knowledgeTex = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, knowledgeTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.uniform1i(uKnowledge, 0);
+
   let animationId = 0;
   let contourValue = 1.0;
   let ridgeValue = 0.0;
+  let knowledgeSize = 128;
 
   const state: ShaderState = {
     setContours: (v) => { contourValue = v; },
     setRidges: (v) => { ridgeValue = v; },
     getContours: () => contourValue,
     getRidges: () => ridgeValue,
+    updateKnowledge: (data, size) => {
+      knowledgeSize = size;
+      gl!.activeTexture(gl!.TEXTURE0);
+      gl!.bindTexture(gl!.TEXTURE_2D, knowledgeTex);
+      gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGBA, size, size, 0, gl!.RGBA, gl!.UNSIGNED_BYTE, data);
+    },
   };
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
     gl!.viewport(0, 0, canvas.width, canvas.height);
   }
 
   function render(time: number) {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     gl!.uniform1f(uTime, time * 0.001);
     gl!.uniform2f(uResolution, canvas.width, canvas.height);
-    gl!.uniform2f(uMouse, mouseX * dpr, mouseY * dpr);
     gl!.uniform1f(uContours, contourValue);
     gl!.uniform1f(uRidges, ridgeValue);
-    gl!.uniform1f(uScroll, scrollProgress);
     gl!.drawArrays(gl!.TRIANGLES, 0, 3);
     animationId = requestAnimationFrame(render);
   }
 
-  window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
   window.addEventListener('resize', resize);
-  window.addEventListener('scroll', () => {
-    // Normalize scroll: 0 at top, 1 after scrolling ~2 viewport heights
-    const maxScroll = window.innerHeight * 2;
-    scrollProgress = Math.min(window.scrollY / maxScroll, 1.0);
-  }, { passive: true });
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (prefersReduced.matches) {
     resize();
+    // Initialize with empty knowledge
+    const emptyData = new Uint8Array(128 * 128 * 4);
+    state.updateKnowledge(emptyData, 128);
     gl.uniform1f(uTime, 5);
     gl.uniform2f(uResolution, canvas.width, canvas.height);
-    gl.uniform2f(uMouse, 0, 0);
     gl.uniform1f(uContours, contourValue);
     gl.uniform1f(uRidges, ridgeValue);
-    gl.uniform1f(uScroll, 0.5); // Show some structure in static mode
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     return state;
   }
@@ -326,6 +311,10 @@ export function initAuroraShader(canvas: HTMLCanvasElement): ShaderState | null 
     if (e.matches) cancelAnimationFrame(animationId);
     else animationId = requestAnimationFrame(render);
   });
+
+  // Init with empty knowledge texture
+  const initData = new Uint8Array(128 * 128 * 4);
+  state.updateKnowledge(initData, 128);
 
   resize();
   animationId = requestAnimationFrame(render);
