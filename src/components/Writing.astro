@@ -5,15 +5,15 @@ import { getCollection } from 'astro:content';
 const essays = (await getCollection('essays')).sort((a, b) => a.data.order - b.data.order);
 ---
 
-<section id="thinking" class="section-padding px-6">
+<section id="essays" class="section-padding px-6">
   <div class="max-w-6xl mx-auto">
 
     <div class="reveal mb-16 md:mb-20">
       <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
-        Thinking
+        Essays
       </p>
       <h2 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight mb-6">
-        Systems thinking in practice
+        Notes on architecture and systems
       </h2>
     </div>
 
