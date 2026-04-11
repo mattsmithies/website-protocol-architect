@@ -45,12 +45,12 @@ const PRUNE_OVERCROWDED_DIST = 55; // nodes closer than this are candidates
 const PRUNE_OVERCONNECTED = 3;     // nodes with more edges than this
 
 // Visuals
-const BASE_RADIUS = 3.5;
-const HUB_BONUS = 0.7;
-const MAX_RADIUS = 11;
-const GLOW_MULT = 5;
-const EDGE_ALPHA = 0.22;
-const EDGE_WIDTH = 0.7;
+const BASE_RADIUS = 4.5;
+const HUB_BONUS = 0.9;
+const MAX_RADIUS = 13;
+const GLOW_MULT = 6;
+const EDGE_ALPHA = 0.32;
+const EDGE_WIDTH = 0.8;
 const PULSE_SPEED = 0.0015;
 const FADE_IN = 50;
 
@@ -433,7 +433,7 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       const r = node.radius * pulse * (node.pruning ? (1 - node.pruneProgress * 0.3) : 1);
 
       // Glow
-      const glowA = node.anchored ? 0.14 : 0.08;
+      const glowA = node.anchored ? 0.18 : 0.10;
       const glowR = r * GLOW_MULT;
       const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowR);
       grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * glowA * fadeAlpha})`);
@@ -447,11 +447,11 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
       // Outer ring
       ctx.beginPath();
       ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * (node.anchored ? 0.65 : 0.4) * fadeAlpha})`;
+      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * (node.anchored ? 0.75 : 0.45) * fadeAlpha})`;
       ctx.fill();
 
       // Core
-      const coreWhite = node.pruning ? `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.6 * fadeAlpha})` : `rgba(232, 232, 240, ${node.opacity * 0.8})`;
+      const coreWhite = node.pruning ? `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.6 * fadeAlpha})` : `rgba(240, 240, 255, ${node.opacity * 0.9})`;
       ctx.beginPath();
       ctx.arc(node.x, node.y, r * 0.35, 0, Math.PI * 2);
       ctx.fillStyle = coreWhite;
