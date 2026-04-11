@@ -1,228 +1,73 @@
-// force-graph.ts — Structured knowledge graph
-// A living tree of concepts that grows from the left side of the viewport.
-// Each node represents a real architectural concept. Growth is time-driven.
-// Gentle forces keep it breathing but layout is intentional, not chaotic.
+// force-graph.ts — Force-directed graph that grows top-to-bottom
+// Starts from a seed and expands outward over time. Physics-driven,
+// alive, striking. Understanding growing from nothing.
 
-// ── Knowledge Tree Data ─────────────────────────────────────
-
-interface TreeNode {
-  id: string;
-  label: string;
-  children?: TreeNode[];
-}
-
-const KNOWLEDGE_TREE: TreeNode = {
-  id: 'root', label: 'Systems Architecture',
-  children: [
-    {
-      id: 'trust', label: 'Trust',
-      children: [
-        { id: 'provenance', label: 'Provenance' },
-        { id: 'audit', label: 'Audit Trail' },
-        { id: 'verification', label: 'Verification' },
-      ],
-    },
-    {
-      id: 'workflow', label: 'Workflow',
-      children: [
-        { id: 'state', label: 'State' },
-        { id: 'evidence', label: 'Evidence' },
-        { id: 'replay', label: 'Replayability' },
-      ],
-    },
-    {
-      id: 'authority', label: 'Authority',
-      children: [
-        { id: 'roles', label: 'Roles' },
-        { id: 'permissions', label: 'Permissions' },
-        { id: 'temporal', label: 'Time-bound' },
-      ],
-    },
-    {
-      id: 'token', label: 'Token Economy',
-      children: [
-        { id: 'flywheel', label: 'Flywheels' },
-        { id: 'sinks', label: 'Demand Sinks' },
-        { id: 'issuance', label: 'Issuance' },
-      ],
-    },
-    {
-      id: 'protocol', label: 'Protocol',
-      children: [
-        { id: 'primitives', label: 'Primitives' },
-        { id: 'coordination', label: 'Coordination' },
-        { id: 'boundaries', label: 'Boundaries' },
-      ],
-    },
-    {
-      id: 'incentives', label: 'Incentives',
-      children: [
-        { id: 'mechanism', label: 'Mechanism' },
-        { id: 'alignment', label: 'Alignment' },
-        { id: 'behaviour', label: 'Behaviour' },
-      ],
-    },
-  ],
-};
-
-// ── Layout Node (computed from tree) ────────────────────────
-
-interface LayoutNode {
-  id: string;
-  label: string;
-  targetX: number;
-  targetY: number;
+interface Node {
   x: number;
   y: number;
   vx: number;
   vy: number;
   radius: number;
-  depth: number;
-  parentIndex: number | null;
-  revealOrder: number;
+  generation: number;  // when it was born (affects color)
+  connections: number; // edge count (hubs grow larger)
   opacity: number;
-  scale: number;
-  group: number;
+  age: number;
 }
 
-interface LayoutEdge {
-  source: number;
-  target: number;
-  progress: number; // 0 = invisible, 1 = fully drawn
+interface Edge {
+  a: number;
+  b: number;
+  age: number;
 }
 
-// ── Palette ─────────────────────────────────────────────────
+// ── Config ──────────────────────────────────────────────────
 
-const DEPTH_COLORS = [
-  [167, 139, 250],  // depth 0: violet (root)
-  [129, 140, 248],  // depth 1: indigo (branches)
-  [56, 189, 248],   // depth 2: sky blue (leaves)
-];
+const MAX_NODES = 120;
+const SPAWN_INTERVAL = 50;       // frames between spawns
+const CONNECT_RADIUS = 150;      // max px to form an edge
+const MAX_EDGES_PER_SPAWN = 3;
 
-// ── Configuration ───────────────────────────────────────────
+// Forces
+const REPULSION = 300;
+const LINK_STRENGTH = 0.025;
+const LINK_REST = 80;
+const GRAVITY_DOWN = 0.08;       // gentle downward pull on new nodes
+const SPREAD_X = 0.002;          // slight horizontal spread from center
+const DAMPING = 0.93;
+const COLLISION_PAD = 6;
 
-const CFG = {
-  // Layout
-  startX: 70,               // root X position (left-anchored)
-  levelSpacing: 180,         // horizontal space between depths
-  siblingSpacing: 58,        // vertical space between siblings
-  groupSpacing: 20,          // extra vertical gap between branch groups
+// Visuals
+const BASE_RADIUS = 3;
+const HUB_BONUS = 0.8;          // extra radius per connection
+const MAX_RADIUS = 12;
+const GLOW_MULT = 5;
+const EDGE_ALPHA = 0.2;
+const EDGE_WIDTH = 0.7;
+const PULSE_SPEED = 0.0015;
+const FADE_IN = 50;              // frames to fade in
 
-  // Reveal timing
-  revealInterval: 800,       // ms between node reveals
-  edgeDrawSpeed: 0.04,       // progress per frame (edge draw animation)
+// ── Palette: violet at top → blue at bottom ─────────────────
 
-  // Forces (gentle — for breathing, not layout)
-  breathAmplitude: 3,        // max px of micro-movement
-  breathSpeed: 0.0008,       // oscillation speed
-
-  // Visuals
-  rootRadius: 6,
-  branchRadius: 4.5,
-  leafRadius: 3,
-  edgeWidth: 0.8,
-  edgeCurve: 0.4,            // bezier curve strength
-  labelSize: 10,
-  labelOffset: 14,
-  glowSize: 18,
-  pulseSpeed: 0.002,
-};
-
-// ── Build flat layout from tree ─────────────────────────────
-
-function buildLayout(): { nodes: LayoutNode[]; edges: LayoutEdge[] } {
-  const nodes: LayoutNode[] = [];
-  const edges: LayoutEdge[] = [];
-  let revealCounter = 0;
-
-  function traverse(
-    tree: TreeNode,
-    depth: number,
-    parentIndex: number | null,
-    groupIndex: number,
-    yOffset: number,
-    ySlot: number,
-    totalSiblings: number,
-  ) {
-    const nodeIndex = nodes.length;
-
-    const radius = depth === 0 ? CFG.rootRadius
-      : depth === 1 ? CFG.branchRadius
-      : CFG.leafRadius;
-
-    const x = CFG.startX + depth * CFG.levelSpacing;
-    const y = yOffset + ySlot * CFG.siblingSpacing;
-
-    nodes.push({
-      id: tree.id,
-      label: tree.label,
-      targetX: x,
-      targetY: y,
-      x: x - 30, // start slightly left (for entrance animation)
-      y,
-      vx: 0,
-      vy: 0,
-      radius,
-      depth,
-      parentIndex,
-      revealOrder: revealCounter++,
-      opacity: 0,
-      scale: 0,
-      group: groupIndex,
-    });
-
-    if (parentIndex !== null) {
-      edges.push({
-        source: parentIndex,
-        target: nodeIndex,
-        progress: 0,
-      });
-    }
-
-    if (tree.children) {
-      const childCount = tree.children.length;
-      const childBlockHeight = (childCount - 1) * CFG.siblingSpacing;
-      const childYStart = y - childBlockHeight / 2;
-
-      tree.children.forEach((child, i) => {
-        traverse(child, depth + 1, nodeIndex, depth === 0 ? i : groupIndex, childYStart, i, childCount);
-      });
-    }
-  }
-
-  // Calculate total vertical extent for centering
-  const branchCount = KNOWLEDGE_TREE.children?.length || 0;
-  const leavesPerBranch = 3;
-  const branchBlockHeight = (leavesPerBranch - 1) * CFG.siblingSpacing;
-  const totalHeight = (branchCount - 1) * (branchBlockHeight + CFG.groupSpacing + CFG.siblingSpacing);
-
-  traverse(KNOWLEDGE_TREE, 0, null, 0, 0, 0, 1);
-
-  // Center everything vertically in viewport
-  const minY = Math.min(...nodes.map(n => n.targetY));
-  const maxY = Math.max(...nodes.map(n => n.targetY));
-  const centerOffset = (window.innerHeight / 2) - (minY + maxY) / 2;
-
-  for (const node of nodes) {
-    node.targetY += centerOffset;
-    node.y = node.targetY;
-  }
-
-  return { nodes, edges };
+function nodeColor(node: Node, h: number): [number, number, number] {
+  const t = Math.min(node.y / h, 1); // 0 at top, 1 at bottom
+  // Violet → indigo → sky blue
+  const r = Math.round(167 + (56 - 167) * t);
+  const g = Math.round(139 + (189 - 139) * t);
+  const b = Math.round(250 + (248 - 250) * t);
+  return [r, g, b];
 }
 
-// ── Main ────────────────────────────────────────────────────
+// ── Graph ───────────────────────────────────────────────────
 
 export function initForceGraph(canvas: HTMLCanvasElement): {
   getNodeCount: () => number;
   destroy: () => void;
 } {
   const ctx = canvas.getContext('2d')!;
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
+  let frame = 0;
   let animationId = 0;
-  let startTime = 0;
-  let frameCount = 0;
-
-  const { nodes, edges } = buildLayout();
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -231,167 +76,272 @@ export function initForceGraph(canvas: HTMLCanvasElement): {
     canvas.style.width = window.innerWidth + 'px';
     canvas.style.height = window.innerHeight + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
 
-    // Recenter vertically on resize
-    const minY = Math.min(...nodes.map(n => n.targetY));
-    const maxY = Math.max(...nodes.map(n => n.targetY));
-    const currentCenter = (minY + maxY) / 2;
-    const desiredCenter = window.innerHeight / 2;
-    const shift = desiredCenter - currentCenter;
-    for (const node of nodes) {
-      node.targetY += shift;
-      node.y += shift;
+  // ── Seed ────────────────────────────────────────────────
+
+  function seed() {
+    const cx = window.innerWidth * 0.5;
+    nodes.push({
+      x: cx, y: 60,
+      vx: 0, vy: 0,
+      radius: 8,
+      generation: 0,
+      connections: 0,
+      opacity: 0, age: 0,
+    });
+  }
+
+  // ── Spawn ───────────────────────────────────────────────
+
+  function spawn() {
+    if (nodes.length >= MAX_NODES) return;
+
+    // Pick a random existing node to branch from
+    const parentIdx = Math.floor(Math.random() * nodes.length);
+    const parent = nodes[parentIdx];
+
+    // New node spawns nearby, biased downward
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.4; // mostly downward arc
+    const dist = 50 + Math.random() * 60;
+    const nx = parent.x + Math.cos(angle) * dist;
+    const ny = parent.y + Math.sin(angle) * dist + 20; // bias down
+
+    const newIdx = nodes.length;
+    nodes.push({
+      x: nx,
+      y: Math.max(ny, 30), // don't go above viewport
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: Math.random() * 1.5,
+      radius: BASE_RADIUS,
+      generation: frame,
+      connections: 0,
+      opacity: 0,
+      age: 0,
+    });
+
+    // Connect to parent
+    edges.push({ a: parentIdx, b: newIdx, age: 0 });
+    parent.connections++;
+    nodes[newIdx].connections++;
+
+    // Connect to nearby nodes (not just parent)
+    const nearby: { idx: number; dist: number }[] = [];
+    for (let i = 0; i < nodes.length - 1; i++) {
+      if (i === parentIdx) continue;
+      const dx = nodes[i].x - nx;
+      const dy = nodes[i].y - ny;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < CONNECT_RADIUS) {
+        nearby.push({ idx: i, dist: d });
+      }
+    }
+    nearby.sort((a, b) => a.dist - b.dist);
+
+    const extraEdges = Math.min(nearby.length, MAX_EDGES_PER_SPAWN - 1);
+    for (let e = 0; e < extraEdges; e++) {
+      // Avoid duplicate edges
+      const exists = edges.some(
+        edge => (edge.a === newIdx && edge.b === nearby[e].idx) ||
+                (edge.b === newIdx && edge.a === nearby[e].idx)
+      );
+      if (!exists) {
+        edges.push({ a: newIdx, b: nearby[e].idx, age: 0 });
+        nodes[newIdx].connections++;
+        nodes[nearby[e].idx].connections++;
+      }
     }
   }
 
-  function render(now: number) {
-    if (startTime === 0) startTime = now;
-    const elapsed = now - startTime;
-    frameCount++;
+  // ── Physics ─────────────────────────────────────────────
 
+  function simulate() {
     const w = window.innerWidth;
-    const h = window.innerHeight;
-    ctx.clearRect(0, 0, w, h);
+    const cx = w * 0.5;
 
-    const time = now * CFG.pulseSpeed;
-
-    // ── Reveal nodes progressively ────────────────────────
-    for (const node of nodes) {
-      const revealTime = node.revealOrder * CFG.revealInterval;
-      if (elapsed < revealTime) continue;
-
-      const revealProgress = Math.min((elapsed - revealTime) / 600, 1); // 600ms fade-in
-      const ease = 1 - Math.pow(1 - revealProgress, 3); // cubic ease-out
-
-      node.opacity = ease;
-      node.scale = ease;
-
-      // Gentle breathing (micro-movement around target)
-      const breathX = Math.sin(now * CFG.breathSpeed + node.revealOrder * 1.3) * CFG.breathAmplitude;
-      const breathY = Math.cos(now * CFG.breathSpeed * 0.7 + node.revealOrder * 0.9) * CFG.breathAmplitude * 0.6;
-
-      // Ease toward target position (entrance slide)
-      node.x += (node.targetX + breathX - node.x) * 0.08;
-      node.y += (node.targetY + breathY - node.y) * 0.08;
+    // Many-body repulsion
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let distSq = dx * dx + dy * dy;
+        if (distSq < 1) distSq = 1;
+        const dist = Math.sqrt(distSq);
+        const f = -REPULSION / distSq;
+        const fx = (dx / dist) * f;
+        const fy = (dy / dist) * f;
+        a.vx -= fx; a.vy -= fy;
+        b.vx += fx; b.vy += fy;
+      }
     }
 
-    // ── Draw edges ────────────────────────────────────────
+    // Link springs
     for (const edge of edges) {
-      const source = nodes[edge.source];
-      const target = nodes[edge.target];
-      if (!source || !target) continue;
-      if (target.opacity < 0.01) continue;
+      const a = nodes[edge.a], b = nodes[edge.b];
+      if (!a || !b) continue;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const displacement = dist - LINK_REST;
+      const f = displacement * LINK_STRENGTH;
+      const fx = (dx / dist) * f;
+      const fy = (dy / dist) * f;
+      a.vx += fx; a.vy += fy;
+      b.vx -= fx; b.vy -= fy;
+    }
 
-      // Edge draws in after target node starts revealing
-      edge.progress = Math.min(edge.progress + CFG.edgeDrawSpeed, target.opacity);
-      if (edge.progress < 0.01) continue;
+    // Per-node forces + integration
+    for (const node of nodes) {
+      // Gentle downward gravity (pulls graph down over time)
+      node.vy += GRAVITY_DOWN;
 
-      const alpha = Math.min(source.opacity, target.opacity) * 0.3 * edge.progress;
-      const [cr, cg, cb] = DEPTH_COLORS[Math.min(target.depth, DEPTH_COLORS.length - 1)];
+      // Slight horizontal spread from center
+      const dxCenter = node.x - cx;
+      node.vx += dxCenter * SPREAD_X;
 
-      // Curved bezier edge (horizontal bias)
-      const midX = source.x + (target.x - source.x) * CFG.edgeCurve;
+      // Damping
+      node.vx *= DAMPING;
+      node.vy *= DAMPING;
+
+      // Integrate
+      node.x += node.vx;
+      node.y += node.vy;
+
+      // Soft boundaries (horizontal only — let it flow down freely)
+      const margin = 40;
+      if (node.x < margin) { node.x = margin; node.vx *= -0.5; }
+      if (node.x > w - margin) { node.x = w - margin; node.vx *= -0.5; }
+      if (node.y < 20) { node.y = 20; node.vy *= -0.3; }
+
+      // Age + fade-in
+      node.age++;
+      node.opacity = Math.min(node.age / FADE_IN, 1.0);
+
+      // Hub radius (grows with connections)
+      node.radius = Math.min(BASE_RADIUS + node.connections * HUB_BONUS, MAX_RADIUS);
+    }
+
+    // Collision
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const minDist = a.radius + b.radius + COLLISION_PAD;
+        if (dist < minDist) {
+          const push = (minDist - dist) * 0.5;
+          const nx = dx / dist, ny = dy / dist;
+          a.x -= nx * push; a.y -= ny * push;
+          b.x += nx * push; b.y += ny * push;
+        }
+      }
+    }
+
+    // Age edges
+    for (const edge of edges) edge.age++;
+  }
+
+  // ── Render ──────────────────────────────────────────────
+
+  function render(now: number) {
+    frame++;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const time = now * PULSE_SPEED;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Spawn
+    if (frame % SPAWN_INTERVAL === 0 && nodes.length > 0) {
+      spawn();
+    }
+
+    simulate();
+
+    // ── Edges ───────────────────────────────────────────
+    for (let i = 0; i < edges.length; i++) {
+      const edge = edges[i];
+      const a = nodes[edge.a], b = nodes[edge.b];
+      if (!a || !b) continue;
+
+      const alpha = Math.min(a.opacity, b.opacity) * EDGE_ALPHA;
+      if (alpha < 0.005) continue;
+
+      const [cr, cg, cb] = nodeColor(a, h);
+      const [cr2, cg2, cb2] = nodeColor(b, h);
+      const mr = (cr + cr2) >> 1;
+      const mg = (cg + cg2) >> 1;
+      const mb = (cb + cb2) >> 1;
 
       ctx.beginPath();
-      ctx.moveTo(source.x, source.y);
-      ctx.bezierCurveTo(midX, source.y, midX, target.y, target.x, target.y);
-      ctx.strokeStyle = `rgba(${cr}, ${cg}, ${cb}, ${alpha})`;
-      ctx.lineWidth = CFG.edgeWidth;
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = `rgba(${mr}, ${mg}, ${mb}, ${alpha})`;
+      ctx.lineWidth = EDGE_WIDTH;
       ctx.stroke();
 
-      // Signal pulse along edge (for fully revealed edges)
-      if (edge.progress > 0.9 && source.opacity > 0.9) {
-        const pulseT = ((now * 0.0003 + edge.source * 0.2) % 1);
-        // Approximate point along bezier
-        const t = pulseT;
-        const t2 = t * t;
-        const t3 = t2 * t;
-        const mt = 1 - t;
-        const mt2 = mt * mt;
-        const mt3 = mt2 * mt;
-        // Simplified cubic bezier with 4 control points
-        const px = mt3 * source.x + 3 * mt2 * t * midX + 3 * mt * t2 * midX + t3 * target.x;
-        const py = mt3 * source.y + 3 * mt2 * t * source.y + 3 * mt * t2 * target.y + t3 * target.y;
-
+      // Signal pulse
+      if (edge.age > 30) {
+        const pt = (time * 0.6 + i * 0.17) % 1;
+        const px = a.x + (b.x - a.x) * pt;
+        const py = a.y + (b.y - a.y) * pt;
         ctx.beginPath();
-        ctx.arc(px, py, 1.2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${alpha * 2.5})`;
+        ctx.arc(px, py, 1.3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(232, 232, 240, ${alpha * 2})`;
         ctx.fill();
       }
     }
 
-    // ── Draw nodes ────────────────────────────────────────
+    // ── Nodes ───────────────────────────────────────────
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       if (node.opacity < 0.01) continue;
 
-      const [cr, cg, cb] = DEPTH_COLORS[Math.min(node.depth, DEPTH_COLORS.length - 1)];
-      const r = node.radius * node.scale;
-      const pulse = Math.sin(time + i * 1.1) * 0.12 + 0.88;
-      const pr = r * pulse;
+      const [cr, cg, cb] = nodeColor(node, h);
+      const pulse = Math.sin(time * 1.5 + i * 0.8) * 0.12 + 0.88;
+      const r = node.radius * pulse;
 
       // Glow
-      const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, CFG.glowSize * node.scale);
+      const glowR = r * GLOW_MULT;
+      const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowR);
       grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.12})`);
+      grad.addColorStop(0.5, `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.03})`);
       grad.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(node.x, node.y, CFG.glowSize * node.scale, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
       ctx.fill();
 
-      // Outer ring
+      // Outer
       ctx.beginPath();
-      ctx.arc(node.x, node.y, pr, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.6})`;
+      ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${node.opacity * 0.55})`;
       ctx.fill();
 
-      // Bright core
+      // Core
       ctx.beginPath();
-      ctx.arc(node.x, node.y, pr * 0.4, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, r * 0.35, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(232, 232, 240, ${node.opacity * 0.8})`;
       ctx.fill();
-
-      // Label (only for depth 0 and 1)
-      if (node.depth <= 1 && node.opacity > 0.3) {
-        ctx.font = `${CFG.labelSize * (node.depth === 0 ? 1.2 : 1)}px 'Space Grotesk', system-ui, sans-serif`;
-        ctx.fillStyle = `rgba(232, 232, 240, ${node.opacity * (node.depth === 0 ? 0.6 : 0.35)})`;
-        ctx.textAlign = node.depth === 0 ? 'center' : 'left';
-        ctx.textBaseline = 'middle';
-
-        const labelX = node.depth === 0 ? node.x : node.x + node.radius + 8;
-        const labelY = node.depth === 0 ? node.y + node.radius + CFG.labelOffset : node.y;
-
-        ctx.fillText(node.label, labelX, labelY);
-      }
     }
 
     animationId = requestAnimationFrame(render);
   }
 
-  // ── Init ──────────────────────────────────────────────────
+  // ── Init ──────────────────────────────────────────────
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    // Show final state immediately
-    for (const node of nodes) {
-      node.opacity = 1;
-      node.scale = 1;
-      node.x = node.targetX;
-      node.y = node.targetY;
-    }
-    for (const edge of edges) {
-      edge.progress = 1;
-    }
-    resize();
-    render(20000); // fake elapsed time
-    return { getNodeCount: () => nodes.length, destroy: () => {} };
+    return { getNodeCount: () => 0, destroy: () => {} };
   }
 
   window.addEventListener('resize', resize);
   resize();
+  seed();
   animationId = requestAnimationFrame(render);
 
   return {
-    getNodeCount: () => nodes.filter(n => n.opacity > 0.01).length,
+    getNodeCount: () => nodes.length,
     destroy: () => cancelAnimationFrame(animationId),
   };
 }
