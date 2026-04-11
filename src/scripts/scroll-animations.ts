@@ -93,7 +93,7 @@ export function initScrollAnimations(): void {
 
   // ── 5. Subtle parallax on section headings ─────────────────────────────
   document.querySelectorAll<HTMLElement>('section:not(#hero)').forEach((section) => {
-    const firstReveal = section.querySelector<HTMLElement>(':scope > .reveal');
+    const firstReveal = section.querySelector<HTMLElement>('.reveal');
     if (!firstReveal) return;
 
     gsap.to(firstReveal, {

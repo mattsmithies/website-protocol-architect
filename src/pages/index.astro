@@ -1,12 +1,40 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Capabilities from '../components/Capabilities.astro';
+import Philosophy from '../components/Philosophy.astro';
+import CaseStudies from '../components/CaseStudies.astro';
+import Principles from '../components/Principles.astro';
+import Writing from '../components/Writing.astro';
+import About from '../components/About.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
 import '../styles/global.css';
 ---
 
 <Layout>
-  <main class="flex min-h-screen items-center justify-center">
-    <h1 class="text-gradient text-5xl font-bold tracking-tight md:text-7xl">
-      Systems Architect
-    </h1>
+  <Nav />
+  <main>
+    <Hero />
+    <Capabilities />
+    <Philosophy />
+    <CaseStudies />
+    <Principles />
+    <Writing />
+    <About />
+    <Contact />
   </main>
+  <Footer />
 </Layout>
+
+<script>
+  import { initScrollAnimations } from '../scripts/scroll-animations';
+
+  // Initialize scroll animations after DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>
