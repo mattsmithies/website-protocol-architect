@@ -1,0 +1,63 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import TokenFlowDiagram from '../../components/diagrams/TokenFlowDiagram.astro';
+import '../../styles/global.css';
+---
+
+<Layout title="Demand sinks, supply sinks, and why most tokens fail — Matt Smithies">
+  <Nav />
+  <main>
+    <article class="section-padding px-6">
+      <div class="max-w-3xl mx-auto">
+
+        <div class="reveal mb-12">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-6 inline-block">
+            &larr; Back
+          </a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+            Token Economy
+          </p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight">
+            Demand sinks, supply sinks, and why most tokens fail
+          </h1>
+        </div>
+
+        <div class="reveal space-y-6 text-text-secondary text-lg leading-relaxed">
+          <p>
+            A token without credible demand is a slow bleed. It does not matter how elegant the issuance schedule is, or how carefully the vesting is structured. If the system does not create genuine reasons for participants to acquire and hold the token, supply pressure will win eventually.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Full-width diagram -->
+      <div class="max-w-4xl mx-auto">
+        <TokenFlowDiagram />
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal space-y-6 text-text-secondary text-lg leading-relaxed">
+          <p>
+            Understanding where value enters a token economy, where it leaks, and what structural conditions allow a token to hold relevance over time &mdash; this is mechanism design, not marketing. It requires mapping demand sinks against supply sinks, modelling issuance pressure, and honestly assessing whether the token plays a durable role inside the network or is simply a speculative wrapper around utility that could exist without it.
+          </p>
+          <p>
+            The systems that sustain long-term token value are the ones where usage, coordination, and incentives reinforce each other. Where supply pressure is understood in advance. Where the economic structure strengthens the integrity of the network instead of quietly undermining it.
+          </p>
+        </div>
+      </div>
+
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { initScrollAnimations } from '../../scripts/scroll-animations';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>

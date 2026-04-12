@@ -1,0 +1,202 @@
+---
+// AuthorityTimeline.astro — Animated authority windows showing temporal permissions
+// Shows how authority grants overlap, expire, and create gaps
+---
+
+<div class="reveal my-12 md:my-16">
+  <canvas
+    id="authority-timeline"
+    class="w-full rounded-2xl border border-border"
+    style="height: 320px; background: rgba(11,11,17,0.6);"
+  ></canvas>
+  <p class="text-text-tertiary text-xs mt-3 text-center">
+    Authority windows &mdash; grants, delegations, expirations, and gaps over time
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('authority-timeline') as HTMLCanvasElement;
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+  let animId = 0;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const RED: [number, number, number] = [239, 68, 68];
+  const GREEN: [number, number, number] = [74, 222, 128];
+
+  interface AuthWindow {
+    role: string;
+    start: number;    // 0-1 normalized time
+    end: number;
+    color: [number, number, number];
+    row: number;
+    delegatedFrom?: number; // row index of delegator
+  }
+
+  const windows: AuthWindow[] = [
+    { role: 'Board Signatory', start: 0.0, end: 0.85, color: VIOLET, row: 0 },
+    { role: 'Program Director', start: 0.05, end: 0.65, color: BLUE, row: 1 },
+    { role: 'Delegated Approver', start: 0.15, end: 0.45, color: GREEN, row: 2, delegatedFrom: 1 },
+    { role: 'Delegated Approver', start: 0.50, end: 0.70, color: GREEN, row: 2, delegatedFrom: 1 },
+    { role: 'Auditor Access', start: 0.30, end: 0.90, color: BLUE, row: 3 },
+    { role: 'Emergency Override', start: 0.60, end: 0.68, color: RED, row: 4 },
+  ];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const time = now * 0.001;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const marginLeft = w < 500 ? 10 : 140;
+    const marginRight = 30;
+    const marginTop = 40;
+    const rowHeight = (h - marginTop - 40) / 5;
+    const timelineWidth = w - marginLeft - marginRight;
+
+    // Animated "now" cursor sweeping across
+    const cursor = ((time * 0.04) % 1.2) - 0.1; // loops with pause at edges
+
+    // Time axis
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(marginLeft, h - 30);
+    ctx.lineTo(w - marginRight, h - 30);
+    ctx.stroke();
+
+    // Time labels
+    ctx.font = `400 9px 'JetBrains Mono', monospace`;
+    ctx.fillStyle = 'rgba(232,232,240,0.2)';
+    ctx.textAlign = 'center';
+    for (let t = 0; t <= 1; t += 0.25) {
+      const x = marginLeft + t * timelineWidth;
+      ctx.fillText(`T+${Math.round(t * 12)}mo`, x, h - 16);
+      ctx.beginPath();
+      ctx.moveTo(x, marginTop);
+      ctx.lineTo(x, h - 30);
+      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+      ctx.stroke();
+    }
+
+    // "Now" cursor
+    if (cursor >= 0 && cursor <= 1) {
+      const cx = marginLeft + cursor * timelineWidth;
+      ctx.beginPath();
+      ctx.moveTo(cx, marginTop - 5);
+      ctx.lineTo(cx, h - 30);
+      ctx.strokeStyle = 'rgba(167,139,250,0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = `500 9px 'Syne', system-ui`;
+      ctx.fillStyle = 'rgba(167,139,250,0.6)';
+      ctx.textAlign = 'center';
+      ctx.fillText('NOW', cx, marginTop - 10);
+    }
+
+    // Draw windows
+    for (const win of windows) {
+      const [r, g, b] = win.color;
+      const y = marginTop + win.row * rowHeight;
+      const x1 = marginLeft + win.start * timelineWidth;
+      const x2 = marginLeft + win.end * timelineWidth;
+      const barH = rowHeight * 0.45;
+
+      // Is this window active at the cursor?
+      const active = cursor >= win.start && cursor <= win.end;
+      const expired = cursor > win.end && cursor <= 1;
+
+      // Background bar
+      const alpha = active ? 0.2 : expired ? 0.04 : 0.08;
+      ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+      ctx.beginPath();
+      ctx.roundRect(x1, y, x2 - x1, barH, 4);
+      ctx.fill();
+
+      // Border
+      ctx.strokeStyle = `rgba(${r},${g},${b},${active ? 0.5 : 0.15})`;
+      ctx.lineWidth = active ? 1.5 : 0.75;
+      ctx.stroke();
+
+      // Active glow
+      if (active) {
+        ctx.shadowColor = `rgba(${r},${g},${b},0.3)`;
+        ctx.shadowBlur = 12;
+        ctx.strokeStyle = `rgba(${r},${g},${b},0.4)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      // Expiry marker
+      if (expired) {
+        ctx.font = `400 8px 'JetBrains Mono', monospace`;
+        ctx.fillStyle = `rgba(239,68,68,0.5)`;
+        ctx.textAlign = 'left';
+        ctx.fillText('EXPIRED', x2 + 6, y + barH / 2 + 3);
+      }
+
+      // Role label (left of bar or inside)
+      if (w >= 500) {
+        ctx.font = `500 10px 'Syne', system-ui`;
+        ctx.fillStyle = `rgba(${r},${g},${b},${active ? 0.8 : 0.4})`;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(win.role, marginLeft - 12, y + barH / 2);
+      }
+
+      // Delegation arrow
+      if (win.delegatedFrom !== undefined) {
+        const fromY = marginTop + win.delegatedFrom * rowHeight + rowHeight * 0.45;
+        ctx.beginPath();
+        ctx.moveTo(x1, fromY);
+        ctx.lineTo(x1, y);
+        ctx.strokeStyle = `rgba(${r},${g},${b},0.15)`;
+        ctx.lineWidth = 0.75;
+        ctx.setLineDash([3, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // Gap warning: between delegated approver windows
+    const gap1End = windows[2].end;
+    const gap2Start = windows[3].start;
+    if (cursor >= gap1End && cursor <= gap2Start) {
+      const gx1 = marginLeft + gap1End * timelineWidth;
+      const gx2 = marginLeft + gap2Start * timelineWidth;
+      const gy = marginTop + 2 * rowHeight;
+      ctx.fillStyle = 'rgba(239,68,68,0.06)';
+      ctx.fillRect(gx1, gy, gx2 - gx1, rowHeight * 0.45);
+      ctx.font = `600 8px 'Syne', system-ui`;
+      ctx.fillStyle = 'rgba(239,68,68,0.6)';
+      ctx.textAlign = 'center';
+      ctx.fillText('AUTHORITY GAP', (gx1 + gx2) / 2, gy + rowHeight * 0.25);
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(8000);
+  }
+}
+</script>

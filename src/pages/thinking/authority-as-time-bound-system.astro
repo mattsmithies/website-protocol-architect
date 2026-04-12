@@ -1,0 +1,66 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import AuthorityTimeline from '../../components/diagrams/AuthorityTimeline.astro';
+import '../../styles/global.css';
+---
+
+<Layout title="Authority as a time-bound system — Matt Smithies">
+  <Nav />
+  <main>
+    <article class="section-padding px-6">
+      <div class="max-w-3xl mx-auto">
+
+        <div class="reveal mb-12">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-6 inline-block">
+            &larr; Back
+          </a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+            Authority
+          </p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight">
+            Authority as a time-bound system
+          </h1>
+        </div>
+
+        <div class="reveal space-y-6 text-text-secondary text-lg leading-relaxed">
+          <p>
+            Most permission models treat authority as a static property. A user has a role. The role has permissions. The permissions are checked. But this misses the dimension that causes most real-world failures: time.
+          </p>
+          <p>
+            Authority expires. Delegations have windows. Approvals are valid for a period. A signatory who was authorised last quarter may not be authorised today. If your system cannot express this, it will silently enforce stale authority &mdash; and you will not know until an audit finds it.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Full-width diagram -->
+      <div class="max-w-4xl mx-auto">
+        <AuthorityTimeline />
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal space-y-6 text-text-secondary text-lg leading-relaxed">
+          <p>
+            The diagram above shows a real pattern: authority grants that overlap, delegations with bounded windows, and the gap that forms when a delegation expires before a new one is issued. That gap is where systems fail silently. No error is thrown. The process continues. But the authority behind it has already lapsed.
+          </p>
+          <p>
+            Treating time as a first-class primitive in authority design means modelling expiration, delegation chains, validity windows, and temporal revocation as system objects, not afterthoughts. The systems that survive real-world pressure are the ones that got this right from the beginning.
+          </p>
+        </div>
+      </div>
+
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { initScrollAnimations } from '../../scripts/scroll-animations';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>

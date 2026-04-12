@@ -1,0 +1,211 @@
+---
+// TokenFlowDiagram.astro — Interactive token economy flow visualization
+// Shows issuance, demand sinks, supply pressure, and value leakage as animated flows
+---
+
+<div class="reveal my-12 md:my-16">
+  <canvas
+    id="token-flow-diagram"
+    class="w-full rounded-2xl border border-border"
+    style="height: 420px; background: rgba(11,11,17,0.6);"
+  ></canvas>
+  <p class="text-text-tertiary text-xs mt-3 text-center">
+    Token flow model &mdash; issuance, demand sinks, supply pressure, and value leakage
+  </p>
+</div>
+
+<script>
+interface FlowNode {
+  x: number;
+  y: number;
+  label: string;
+  sublabel: string;
+  type: 'source' | 'sink' | 'pool' | 'leak';
+  radius: number;
+  color: [number, number, number];
+  pulsePhase: number;
+}
+
+interface FlowEdge {
+  from: number;
+  to: number;
+  particles: { t: number; speed: number }[];
+  color: [number, number, number];
+  strength: number; // line thickness multiplier
+}
+
+const canvas = document.getElementById('token-flow-diagram') as HTMLCanvasElement;
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+  let animId = 0;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const INDIGO: [number, number, number] = [129, 140, 248];
+  const RED: [number, number, number] = [239, 68, 68];
+  const GREEN: [number, number, number] = [74, 222, 128];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function buildGraph(w: number, h: number): { nodes: FlowNode[]; edges: FlowEdge[] } {
+    const cx = w / 2;
+    const cy = h / 2;
+
+    const nodes: FlowNode[] = [
+      // 0: Issuance (top)
+      { x: cx, y: 55, label: 'Issuance', sublabel: 'Supply pressure', type: 'source', radius: 28, color: VIOLET, pulsePhase: 0 },
+      // 1: Token Pool (center)
+      { x: cx, y: cy, label: 'Token Pool', sublabel: 'Circulating supply', type: 'pool', radius: 36, color: INDIGO, pulsePhase: 1 },
+      // 2: Staking Sink (left)
+      { x: cx - 180, y: cy - 40, label: 'Staking', sublabel: 'Demand sink', type: 'sink', radius: 24, color: GREEN, pulsePhase: 2 },
+      // 3: Utility Sink (right)
+      { x: cx + 180, y: cy - 40, label: 'Utility', sublabel: 'Demand sink', type: 'sink', radius: 24, color: GREEN, pulsePhase: 3 },
+      // 4: Governance (bottom left)
+      { x: cx - 140, y: cy + 100, label: 'Governance', sublabel: 'Demand sink', type: 'sink', radius: 22, color: BLUE, pulsePhase: 4 },
+      // 5: Market (bottom right)
+      { x: cx + 140, y: cy + 100, label: 'Market', sublabel: 'Price discovery', type: 'pool', radius: 22, color: BLUE, pulsePhase: 5 },
+      // 6: Value Leakage (far right)
+      { x: w - 60, y: cy + 40, label: 'Leakage', sublabel: 'Value exit', type: 'leak', radius: 20, color: RED, pulsePhase: 6 },
+      // 7: Rewards (bottom)
+      { x: cx, y: h - 50, label: 'Rewards', sublabel: 'Re-circulation', type: 'source', radius: 22, color: VIOLET, pulsePhase: 7 },
+    ];
+
+    // Responsive: scale positions for narrow screens
+    if (w < 500) {
+      const scale = w / 600;
+      for (const n of nodes) {
+        n.x = cx + (n.x - cx) * scale;
+        n.radius *= 0.8;
+      }
+    }
+
+    const edges: FlowEdge[] = [
+      { from: 0, to: 1, particles: [], color: VIOLET, strength: 1.4 },   // Issuance → Pool
+      { from: 1, to: 2, particles: [], color: GREEN, strength: 1.0 },    // Pool → Staking
+      { from: 1, to: 3, particles: [], color: GREEN, strength: 1.0 },    // Pool → Utility
+      { from: 1, to: 4, particles: [], color: BLUE, strength: 0.7 },     // Pool → Governance
+      { from: 1, to: 5, particles: [], color: BLUE, strength: 0.8 },     // Pool → Market
+      { from: 5, to: 6, particles: [], color: RED, strength: 0.6 },      // Market → Leakage
+      { from: 2, to: 7, particles: [], color: VIOLET, strength: 0.6 },   // Staking → Rewards
+      { from: 7, to: 1, particles: [], color: VIOLET, strength: 0.8 },   // Rewards → Pool (recirculation)
+    ];
+
+    // Seed initial particles
+    for (const edge of edges) {
+      const count = 2 + Math.floor(edge.strength * 2);
+      for (let i = 0; i < count; i++) {
+        edge.particles.push({ t: Math.random(), speed: 0.002 + Math.random() * 0.003 });
+      }
+    }
+
+    return { nodes, edges };
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const time = now * 0.001;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const { nodes, edges } = graph;
+
+    // Draw edges
+    for (const edge of edges) {
+      const a = nodes[edge.from];
+      const b = nodes[edge.to];
+      const [r, g, bl] = edge.color;
+
+      // Line
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = `rgba(${r}, ${g}, ${bl}, 0.15)`;
+      ctx.lineWidth = edge.strength * 1.5;
+      ctx.stroke();
+
+      // Particles flowing along edge
+      for (const p of edge.particles) {
+        p.t += p.speed;
+        if (p.t > 1) p.t -= 1;
+
+        const px = a.x + (b.x - a.x) * p.t;
+        const py = a.y + (b.y - a.y) * p.t;
+
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r}, ${g}, ${bl}, 0.6)`;
+        ctx.fill();
+      }
+    }
+
+    // Draw nodes
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      const [r, g, bl] = node.color;
+      const pulse = Math.sin(time * 1.5 + node.pulsePhase) * 0.1 + 0.9;
+      const rad = node.radius * pulse;
+
+      // Glow
+      const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, rad * 2.5);
+      grad.addColorStop(0, `rgba(${r}, ${g}, ${bl}, 0.12)`);
+      grad.addColorStop(1, `rgba(${r}, ${g}, ${bl}, 0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, rad * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ring
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, rad, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${r}, ${g}, ${bl}, 0.4)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Fill
+      ctx.fillStyle = `rgba(${r}, ${g}, ${bl}, 0.08)`;
+      ctx.fill();
+
+      // Label
+      ctx.font = `600 ${w < 500 ? 10 : 11}px 'Syne', system-ui, sans-serif`;
+      ctx.fillStyle = `rgba(232, 232, 240, 0.85)`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.label, node.x, node.y - 6);
+
+      // Sublabel
+      ctx.font = `400 ${w < 500 ? 8 : 9}px 'Inter', system-ui, sans-serif`;
+      ctx.fillStyle = `rgba(${r}, ${g}, ${bl}, 0.5)`;
+      ctx.fillText(node.sublabel, node.x, node.y + 8);
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  resize();
+  const graph = buildGraph(canvas.clientWidth, canvas.clientHeight);
+  window.addEventListener('resize', () => {
+    resize();
+    const newGraph = buildGraph(canvas.clientWidth, canvas.clientHeight);
+    graph.nodes = newGraph.nodes;
+    graph.edges.forEach((e, i) => {
+      if (newGraph.edges[i]) {
+        e.from = newGraph.edges[i].from;
+        e.to = newGraph.edges[i].to;
+      }
+    });
+  });
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(5000);
+  }
+}
+</script>
