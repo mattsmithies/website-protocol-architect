@@ -3,6 +3,10 @@ import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
 import AuthorityTimeline from '../../components/diagrams/AuthorityTimeline.astro';
+import SilentFailurePlayback from '../../components/diagrams/SilentFailurePlayback.astro';
+import DelegationChain from '../../components/diagrams/DelegationChain.astro';
+import AuthorityReplay from '../../components/diagrams/AuthorityReplay.astro';
+import CurrentVsHistorical from '../../components/diagrams/CurrentVsHistorical.astro';
 import '../../styles/global.css';
 ---
 
@@ -24,30 +28,128 @@ import '../../styles/global.css';
           </h1>
         </div>
 
-        <div class="reveal space-y-6 text-text-secondary text-lg leading-relaxed">
-          <p>
-            Most permission models treat authority as a static property. A user has a role. The role has permissions. The permissions are checked. But this misses the dimension that causes most real-world failures: time.
+        <!-- Opening -->
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Most permission models treat authority as a static property.</p>
+          <p class="text-text-tertiary text-base font-mono leading-loose">
+            A user has a role.<br/>
+            The role has permissions.<br/>
+            The permissions are checked.<br/>
+            The action is allowed.
           </p>
-          <p>
-            Authority expires. Delegations have windows. Approvals are valid for a period. A signatory who was authorised last quarter may not be authorised today. If your system cannot express this, it will silently enforce stale authority &mdash; and you will not know until an audit finds it.
-          </p>
+          <p>It sounds tidy. It works in diagrams. It fails in the real world.</p>
+          <p>Because authority is rarely static.</p>
+          <p>Authority expires. Delegations have windows. Approvals are valid for a period. Temporary access becomes permanent through neglect. A signatory who was authorised three months ago may not be authorised today. A delegate who was valid at 09:00 may be invalid at 09:17. Most systems still behave as if none of this matters.</p>
+          <p>That is the mistake.</p>
+          <p>The question is not whether someone has a role. The question is whether they had the authority to perform this action <em class="text-signal not-italic font-medium">at this exact point in time</em>.</p>
+          <p>That is a different class of system.</p>
         </div>
 
       </div>
 
-      <!-- Full-width diagram -->
-      <div class="max-w-4xl mx-auto">
+      <!-- VISUAL 1: Authority timeline -->
+      <div class="max-w-5xl mx-auto">
         <AuthorityTimeline />
       </div>
 
       <div class="max-w-3xl mx-auto">
-        <div class="reveal space-y-6 text-text-secondary text-lg leading-relaxed">
-          <p>
-            The diagram above shows a real pattern: authority grants that overlap, delegations with bounded windows, and the gap that forms when a delegation expires before a new one is issued. That gap is where systems fail silently. No error is thrown. The process continues. But the authority behind it has already lapsed.
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Most systems are built around identity and permissions. Very few are built around validity.</p>
+          <p>That is why so many failures stay invisible until someone asks for evidence. The process keeps moving. The interface still loads. The person still looks legitimate. The action still gets recorded. Nothing appears broken.</p>
+          <p>But the authority behind it may already have lapsed.</p>
+        </div>
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed mt-12">
+          <h2 class="text-text-primary font-display font-bold text-2xl tracking-tight">Where real systems fail quietly</h2>
+          <p>Not through dramatic compromise. Through ordinary continuation.</p>
+          <p>A person keeps acting under an old delegation. A contractor retains access after the engagement ends. A regional approver signs off after the approval window has closed. The operation succeeds. The record exists. The authority does not.</p>
+          <p>That gap between recorded action and valid authority is where trust starts to rot.</p>
+        </div>
+      </div>
+
+      <!-- VISUAL 2: Silent failure playback -->
+      <div class="max-w-4xl mx-auto">
+        <SilentFailurePlayback />
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Treating authority as a time-bound system changes what the model has to represent.</p>
+          <p>You no longer store a role and call it done. You need to represent grant, scope, issuer, validity period, delegation chain, expiry, revocation, renewal, and current state. You need to answer whether an actor was <em class="text-signal not-italic font-medium">entitled</em> to act, not just whether they appear in the right group.</p>
+          <p>That means time stops being metadata. It becomes part of the authority itself.</p>
+          <p>A grant is not just a relationship between two parties. It is a claim with a beginning. Often with an end. Sometimes with conditions. Sometimes with dependency on another grant above it.</p>
+          <p>Once you model that honestly, the old permission model starts to look naive. Because it is naive. It assumes stability where the real world contains turnover, substitution, emergency access, temporary delegation, absence, expiry, and exception.</p>
+          <p>Static permission systems are clean because they ignore the thing that makes them hard.</p>
+          <p class="text-text-primary font-display font-semibold text-xl">Time.</p>
+        </div>
+      </div>
+
+      <!-- VISUAL 3: Delegation chain -->
+      <div class="max-w-4xl mx-auto">
+        <DelegationChain />
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <h2 class="text-text-primary font-display font-bold text-2xl tracking-tight">Authority is about accountability</h2>
+          <p>When someone acts in a serious system, you need to know four things.</p>
+          <p class="text-text-tertiary text-base font-mono leading-loose">
+            Who acted.<br/>
+            What they did.<br/>
+            When they did it.<br/>
+            Why they were entitled to do it then.
           </p>
-          <p>
-            Treating time as a first-class primitive in authority design means modelling expiration, delegation chains, validity windows, and temporal revocation as system objects, not afterthoughts. The systems that survive real-world pressure are the ones that got this right from the beginning.
+          <p>Most systems can answer the first three after some effort. The fourth is where they become evasive.</p>
+          <p>Sometimes because the answer is buried in emails. Sometimes because it sits in a spreadsheet. Sometimes because someone updated a group after the fact and the historical state is gone. Sometimes because the system was never designed to preserve the authority context of the action.</p>
+          <p>That is not a minor omission. That is the difference between enforceable process and theatre.</p>
+          <p>If the authority state at the time of action cannot be replayed, then what you have is not evidence. It is an after-the-fact reconstruction, with all the weakness that implies.</p>
+          <p>That may be enough for an internal dashboard. It is not enough for regulation. It is not enough for dispute. It is not enough for trust between parties who do not already know each other.</p>
+        </div>
+      </div>
+
+      <!-- VISUAL 4: Authority replay -->
+      <div class="max-w-4xl mx-auto">
+        <AuthorityReplay />
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <h2 class="text-text-primary font-display font-bold text-2xl tracking-tight">Design consequences</h2>
+          <p>Once you accept this, several consequences follow.</p>
+          <p class="text-text-tertiary text-base font-mono leading-loose">
+            Authority must be versioned over time.<br/>
+            Delegation must be explicit, not implied.<br/>
+            Expiry must be modelled as a native condition.<br/>
+            Revocation must be traceable.<br/>
+            Historical validity must be queryable.
           </p>
+          <p>And actions that depend on authority should carry a reference to the authority state that made them valid at the time they were taken.</p>
+          <p>Because without it, history becomes unstable. The same action can look valid today and invalid tomorrow depending on what has changed in the surrounding system. That means you have not built a trustworthy record. You have built a moving interpretation.</p>
+          <p>A serious system cannot do that. It has to distinguish between current authority and historical authority.</p>
+          <p><span class="text-text-primary">Current authority</span> answers: can this actor act now?</p>
+          <p><span class="text-text-primary">Historical authority</span> answers: was this actor entitled to act then?</p>
+          <p>Confuse those two and your audit trail becomes a story instead of a proof.</p>
+        </div>
+      </div>
+
+      <!-- VISUAL 5: Current vs Historical -->
+      <div class="max-w-4xl mx-auto">
+        <CurrentVsHistorical />
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The systems that survive real-world pressure are the ones that model this from the beginning. Not because it is elegant. Because anything involving money, compliance, approvals, risk, access, or external trust eventually collides with time.</p>
+          <p>The shortcut is always the same. Treat authority as static. Patch the exceptions later. Hope the process holds. It usually does not.</p>
+          <p>Sooner or later, someone acts under stale authority. A delegation lapses without replacement. A record survives without the right to support it. The system keeps moving, but the trust underneath it has already failed.</p>
+
+          <div class="border-t border-border pt-8 mt-8">
+            <p class="text-text-primary font-display font-bold text-xl leading-snug">
+              Authority is not a static property of identity. It is a time-bound claim that must remain replayable if it is to be trusted.
+            </p>
+          </div>
         </div>
       </div>
 

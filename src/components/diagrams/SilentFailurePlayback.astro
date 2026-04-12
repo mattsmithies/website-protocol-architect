@@ -1,0 +1,128 @@
+---
+// Visual 2: Silent failure playback
+// Event stream on left, authority validity on right. Scrub through time.
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+      <!-- Time scrubber -->
+      <div class="mb-6">
+        <input
+          id="sf-scrubber"
+          type="range" min="0" max="5" value="0" step="1"
+          class="w-full accent-signal h-1 bg-border rounded-full appearance-none cursor-pointer"
+        />
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+        <!-- Event stream -->
+        <div>
+          <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-4">Event Stream</p>
+          <div id="sf-events" class="space-y-0 font-mono text-sm">
+          </div>
+        </div>
+
+        <!-- Authority state -->
+        <div>
+          <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-4">Authority State</p>
+          <div id="sf-state" class="glass-card p-5">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    The event happened. That does not mean it was valid.
+  </p>
+</div>
+
+<script>
+interface TimeEvent {
+  time: string;
+  label: string;
+  type: 'grant' | 'action' | 'expiry' | 'record';
+}
+
+interface TimeState {
+  action: string;
+  actor: string;
+  chainValid: boolean;
+  reason: string;
+}
+
+const events: TimeEvent[] = [
+  { time: '09:02', label: 'Access granted', type: 'grant' },
+  { time: '09:11', label: 'Delegation issued', type: 'grant' },
+  { time: '09:17', label: 'Approval submitted', type: 'action' },
+  { time: '09:19', label: 'Delegation expired', type: 'expiry' },
+  { time: '09:23', label: 'Approval countersigned', type: 'action' },
+  { time: '09:31', label: 'Audit record created', type: 'record' },
+];
+
+const states: TimeState[] = [
+  { action: 'Access granted', actor: 'Sarah Malik', chainValid: true, reason: 'Board signatory authority active' },
+  { action: 'Delegation issued', actor: 'Programme Director', chainValid: true, reason: 'Delegation window opened' },
+  { action: 'Approval submitted', actor: 'Delegated Approver', chainValid: true, reason: 'Delegation chain valid' },
+  { action: 'Delegation expired', actor: '—', chainValid: false, reason: 'Delegation window closed at 09:19' },
+  { action: 'Approval countersigned', actor: 'Delegated Approver', chainValid: false, reason: 'Delegation expired four minutes earlier' },
+  { action: 'Audit record created', actor: 'System', chainValid: false, reason: 'Record created under invalid authority chain' },
+];
+
+const scrubber = document.getElementById('sf-scrubber') as HTMLInputElement;
+const eventsEl = document.getElementById('sf-events')!;
+const stateEl = document.getElementById('sf-state')!;
+
+function renderStep(step: number) {
+  // Events
+  eventsEl.innerHTML = events.map((ev, i) => {
+    const isCurrent = i === step;
+    const isPast = i < step;
+    const isFuture = i > step;
+    const colors: Record<string, string> = {
+      grant: 'rgba(74, 222, 128,',
+      action: 'rgba(167, 139, 250,',
+      expiry: 'rgba(239, 68, 68,',
+      record: 'rgba(56, 189, 248,',
+    };
+    const c = colors[ev.type] || 'rgba(167,139,250,';
+    const opacity = isCurrent ? '0.9)' : isPast ? '0.3)' : '0.12)';
+    const dotOpacity = isCurrent ? '0.9)' : isPast ? '0.4)' : '0.1)';
+
+    return `
+      <div class="flex items-center gap-3 py-3 ${i < events.length - 1 ? 'border-b border-border' : ''}" style="opacity: ${isFuture ? 0.3 : 1}">
+        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background: ${c}${dotOpacity}"></span>
+        <span class="text-text-tertiary" style="color: ${c}${opacity}; min-width: 42px;">${ev.time}</span>
+        <span style="color: ${c}${opacity}">${ev.label}</span>
+      </div>
+    `;
+  }).join('');
+
+  // State panel
+  const s = states[step];
+  const validColor = s.chainValid ? 'rgba(74,222,128,0.8)' : 'rgba(239,68,68,0.8)';
+  const validLabel = s.chainValid ? 'Authority chain valid' : 'Authority chain invalid';
+  const validIcon = s.chainValid ? '&#10003;' : '&#10007;';
+
+  stateEl.innerHTML = `
+    <p class="text-xs text-text-tertiary mb-1">At ${events[step].time}</p>
+    <p class="font-display font-bold text-text-primary text-base mb-4">${s.action}</p>
+    <div class="space-y-3 text-sm">
+      <div class="flex items-center gap-2">
+        <span class="text-text-tertiary">Actor:</span>
+        <span class="text-text-secondary">${s.actor}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span style="color: ${validColor}; font-size: 14px;">${validIcon}</span>
+        <span style="color: ${validColor}" class="font-semibold">${validLabel}</span>
+      </div>
+      <p class="text-text-tertiary text-xs leading-relaxed mt-2">${s.reason}</p>
+    </div>
+  `;
+}
+
+if (scrubber) {
+  scrubber.addEventListener('input', () => renderStep(parseInt(scrubber.value)));
+  renderStep(0);
+}
+</script>

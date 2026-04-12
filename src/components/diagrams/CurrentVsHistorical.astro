@@ -1,0 +1,92 @@
+---
+// Visual 5: Current state versus Historical state
+// Two side-by-side cards with a toggle that rebinds the view
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <!-- Toggle -->
+      <div class="flex items-center justify-center gap-4 mb-8">
+        <button id="cvh-now" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300" style="background: rgba(167,139,250,0.15); color: rgba(167,139,250,0.9); border: 1px solid rgba(167,139,250,0.3);">
+          Now
+        </button>
+        <button id="cvh-then" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          At event time
+        </button>
+      </div>
+
+      <!-- Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mx-auto">
+        <!-- Current -->
+        <div id="cvh-card-now" class="glass-card p-6 transition-all duration-500">
+          <p class="text-text-tertiary text-xs tracking-[0.15em] uppercase mb-3">Current authority</p>
+          <p class="font-display font-bold text-text-primary text-base mb-4">Temporary Approver</p>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full" id="cvh-now-dot" style="background: rgba(239,68,68,0.8);"></span>
+            <span class="text-sm font-semibold" id="cvh-now-status" style="color: rgba(239,68,68,0.8);">Invalid</span>
+          </div>
+          <p class="text-text-tertiary text-xs" id="cvh-now-reason">Delegation window closed. No active grant.</p>
+        </div>
+
+        <!-- Historical -->
+        <div id="cvh-card-then" class="glass-card p-6 transition-all duration-500" style="opacity: 0.4;">
+          <p class="text-text-tertiary text-xs tracking-[0.15em] uppercase mb-3" id="cvh-then-label">Historical authority at 21 May, 09:17</p>
+          <p class="font-display font-bold text-text-primary text-base mb-4">Temporary Approver</p>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-2 h-2 rounded-full" id="cvh-then-dot" style="background: rgba(74,222,128,0.8);"></span>
+            <span class="text-sm font-semibold" id="cvh-then-status" style="color: rgba(74,222,128,0.8);">Valid</span>
+          </div>
+          <p class="text-text-tertiary text-xs" id="cvh-then-reason">Delegation active. Full chain to board authority intact.</p>
+        </div>
+      </div>
+
+      <p class="text-center text-text-tertiary text-sm mt-6 font-display" id="cvh-insight">
+        The same actor. Two different truths. Both correct.
+      </p>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Current validity and historical validity are not the same question.
+  </p>
+</div>
+
+<script>
+const btnNow = document.getElementById('cvh-now') as HTMLButtonElement;
+const btnThen = document.getElementById('cvh-then') as HTMLButtonElement;
+const cardNow = document.getElementById('cvh-card-now') as HTMLElement;
+const cardThen = document.getElementById('cvh-card-then') as HTMLElement;
+
+function setView(view: 'now' | 'then') {
+  if (view === 'now') {
+    btnNow.style.background = 'rgba(167,139,250,0.15)';
+    btnNow.style.color = 'rgba(167,139,250,0.9)';
+    btnNow.style.borderColor = 'rgba(167,139,250,0.3)';
+    btnThen.style.background = 'transparent';
+    btnThen.style.color = 'rgba(232,232,240,0.3)';
+    btnThen.style.borderColor = 'rgba(255,255,255,0.06)';
+    cardNow.style.opacity = '1';
+    cardNow.style.transform = 'scale(1.02)';
+    cardThen.style.opacity = '0.4';
+    cardThen.style.transform = 'scale(0.98)';
+  } else {
+    btnThen.style.background = 'rgba(74,222,128,0.12)';
+    btnThen.style.color = 'rgba(74,222,128,0.9)';
+    btnThen.style.borderColor = 'rgba(74,222,128,0.3)';
+    btnNow.style.background = 'transparent';
+    btnNow.style.color = 'rgba(232,232,240,0.3)';
+    btnNow.style.borderColor = 'rgba(255,255,255,0.06)';
+    cardThen.style.opacity = '1';
+    cardThen.style.transform = 'scale(1.02)';
+    cardNow.style.opacity = '0.4';
+    cardNow.style.transform = 'scale(0.98)';
+  }
+}
+
+if (btnNow && btnThen) {
+  btnNow.addEventListener('click', () => setView('now'));
+  btnThen.addEventListener('click', () => setView('then'));
+}
+</script>
