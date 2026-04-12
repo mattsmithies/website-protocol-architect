@@ -32,8 +32,8 @@ import '../../styles/global.css';
       {/* ── Opening ─────────────────────────────────────── */}
       <div class="max-w-3xl mx-auto pb-8">
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>Most systems treat authority as static. A user has a role, the role has permissions, the action is allowed. But the question that actually matters is not whether someone has a role. It is whether they had the authority to perform this action <em class="text-signal not-italic font-medium">at this exact point in time</em>.</p>
-          <p>That is a question about temporal validity, not identity. And it introduces a distinction most architectures never make: between <span class="text-text-primary font-medium">current authority</span> &mdash; can this actor act now &mdash; and <span class="text-text-primary font-medium">historical authority</span> &mdash; was this actor entitled to act then. Those are different questions with different answers. Confuse them and the system keeps working after the authority behind it has already lapsed.</p>
+          <p>Most systems treat authority as static. A user has a role, the role has permissions, the action is allowed. The question that actually matters is different: did this actor have the authority to perform this action <em class="text-signal not-italic font-medium">at this exact point in time</em>?</p>
+          <p>That question introduces a distinction most architectures never make: between <span class="text-text-primary font-medium">current authority</span> and <span class="text-text-primary font-medium">historical authority</span>. Confuse them and the system keeps working after the authority behind it has already lapsed.</p>
         </div>
       </div>
 
@@ -148,12 +148,17 @@ import '../../styles/global.css';
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
           <p>The shortcut is always the same. Treat authority as static. Patch the exceptions later. Hope the process holds.</p>
           <p>It does not.</p>
-          <p>Carbon makes this failure easy to see because the actors, windows, and audit obligations are explicit. But the same structural problem appears wherever authority, money, risk, machine actions, compliance, or external trust depend on who was entitled to act at a specific moment. Financial approvals. Clinical sign-offs. Procurement delegations. Regulatory licensing. The domain changes. The failure does not.</p>
         </div>
 
         <div class="reveal border-t border-border pt-10 mt-12">
           <p class="text-text-primary font-display font-bold text-xl md:text-2xl leading-snug max-w-xl">
             If your system cannot answer whether someone was entitled to act at the exact moment they acted, then it does not model authority. It simulates it.
+          </p>
+        </div>
+
+        <div class="reveal mt-12">
+          <p class="text-text-secondary text-lg leading-relaxed">
+            Carbon makes this failure easy to see because the actors, windows, and audit obligations are explicit. But the same structural problem appears wherever authority, money, risk, approvals, compliance, or machine actions depend on who was entitled to act at a specific moment. The domain changes. The failure does not.
           </p>
         </div>
 
