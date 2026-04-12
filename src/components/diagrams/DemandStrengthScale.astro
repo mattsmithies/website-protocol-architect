@@ -1,0 +1,74 @@
+---
+// Visual 2: What counts as demand — horizontal scale from weak to strong
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden p-6 md:p-8" style="background: rgba(11,11,17,0.6);">
+
+    <div class="flex items-center justify-between mb-6">
+      <span class="text-red-400/60 text-xs font-semibold tracking-[0.15em] uppercase">Weak</span>
+      <span class="text-green-400/60 text-xs font-semibold tracking-[0.15em] uppercase">Strong</span>
+    </div>
+
+    <div id="dss-items" class="space-y-0">
+    </div>
+
+    <div id="dss-tooltip" class="mt-6 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
+      <p id="dss-tooltip-text" class="text-sm text-text-secondary"></p>
+    </div>
+
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Demand worth building around is demand the system can force honestly, not demand the market may grant temporarily.
+  </p>
+</div>
+
+<script>
+const items = [
+  { label: 'Marketing excitement', strength: 0.05, note: 'Weak — vanishes without harming the product. No structural dependency.' },
+  { label: 'Speculative buying', strength: 0.12, note: 'Weak — driven by narrative cycles, not network necessity. Reverses instantly.' },
+  { label: 'Exchange liquidity', strength: 0.18, note: 'Weak — creates the appearance of demand. Actually enables exit velocity.' },
+  { label: 'Community identity', strength: 0.25, note: 'Moderate — creates holding, but not spending. No demand loop.' },
+  { label: 'Optional discounts', strength: 0.35, note: 'Moderate — creates preference, but the action succeeds without the token.' },
+  { label: 'Access rights', strength: 0.50, note: 'Moderate to strong — depends on whether access can be obtained any other way.' },
+  { label: 'Required network action', strength: 0.65, note: 'Strong — the network cannot function without token spend. Structural pull.' },
+  { label: 'Capacity reservation', strength: 0.75, note: 'Strong — locks tokens in advance of usage. Removes supply before demand arrives.' },
+  { label: 'Licensing and metered usage', strength: 0.85, note: 'Strong — recurring spend tied to measurable consumption. Scales with usage.' },
+  { label: 'Collateral tied to network quality', strength: 0.95, note: 'Strongest — tokens locked to guarantee truthful behaviour. Loss for failure.' },
+];
+
+const container = document.getElementById('dss-items')!;
+const tooltip = document.getElementById('dss-tooltip')!;
+const tooltipText = document.getElementById('dss-tooltip-text')!;
+
+for (const item of items) {
+  const row = document.createElement('div');
+  row.className = 'flex items-center gap-4 py-3 border-b border-border last:border-0 cursor-pointer group';
+
+  const r = Math.round(239 + (74 - 239) * item.strength);
+  const g = Math.round(68 + (222 - 68) * item.strength);
+  const b = Math.round(68 + (128 - 68) * item.strength);
+
+  row.innerHTML = `
+    <div class="flex-1">
+      <span class="text-sm text-text-secondary group-hover:text-text-primary transition-colors" style="font-family:'Syne',system-ui; font-weight:600;">${item.label}</span>
+    </div>
+    <div class="w-32 md:w-48 h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.04);">
+      <div class="h-full rounded-full transition-all duration-500" style="width:${item.strength * 100}%; background: rgba(${r},${g},${b},0.6);"></div>
+    </div>
+  `;
+
+  row.addEventListener('mouseenter', () => {
+    tooltip.style.opacity = '1';
+    tooltip.style.borderColor = `rgba(${r},${g},${b},0.3)`;
+    tooltipText.textContent = item.note;
+    tooltipText.style.color = `rgba(${r},${g},${b},0.8)`;
+  });
+
+  row.addEventListener('mouseleave', () => {
+    tooltip.style.opacity = '0';
+  });
+
+  container.appendChild(row);
+}
+</script>

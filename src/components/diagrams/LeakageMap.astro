@@ -1,0 +1,171 @@
+---
+// Visual 4: Leakage map — Sankey-style flow showing where value goes
+// Toggle between weak and strong demand sink modes
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="flex items-center justify-center gap-4 mb-6">
+        <button id="lm-weak" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          Weak demand sink
+        </button>
+        <button id="lm-strong" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Strong demand sink
+        </button>
+      </div>
+
+      <canvas id="leakage-canvas" class="w-full" style="height: 300px;"></canvas>
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Percentages on a launch chart do not tell you whether value reinforces the network or drains out of it.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('leakage-canvas') as HTMLCanvasElement;
+const btnWeak = document.getElementById('lm-weak') as HTMLButtonElement;
+const btnStrong = document.getElementById('lm-strong') as HTMLButtonElement;
+
+if (canvas && btnWeak && btnStrong) {
+  const ctx = canvas.getContext('2d')!;
+  let mode: 'weak' | 'strong' = 'weak';
+  let animId = 0;
+
+  const RED = [239, 68, 68];
+  const GREEN = [74, 222, 128];
+  const BLUE = [56, 189, 248];
+  const VIOLET = [167, 139, 250];
+  const AMBER = [245, 158, 11];
+  const DIM = [100, 100, 120];
+
+  interface SankeyFlow {
+    from: string; fromY: number;
+    to: string; toY: number;
+    value: number; // 0-1 thickness
+    color: number[];
+    type: 'reinforce' | 'leak' | 'neutral';
+  }
+
+  const weakFlows: SankeyFlow[] = [
+    { from: 'Treasury', fromY: 0.1, to: 'Exchanges', toY: 0.15, value: 0.35, color: RED, type: 'leak' },
+    { from: 'Treasury', fromY: 0.18, to: 'Passive holders', toY: 0.35, value: 0.25, color: AMBER, type: 'leak' },
+    { from: 'Rewards', fromY: 0.35, to: 'Exchanges', toY: 0.28, value: 0.30, color: RED, type: 'leak' },
+    { from: 'Rewards', fromY: 0.42, to: 'Contributors', toY: 0.55, value: 0.10, color: DIM, type: 'neutral' },
+    { from: 'Unlocks', fromY: 0.58, to: 'Exchanges', toY: 0.42, value: 0.40, color: RED, type: 'leak' },
+    { from: 'Revenue', fromY: 0.75, to: 'Treasury', toY: 0.85, value: 0.15, color: DIM, type: 'neutral' },
+    { from: 'Revenue', fromY: 0.82, to: 'Network actions', toY: 0.72, value: 0.08, color: DIM, type: 'neutral' },
+  ];
+
+  const strongFlows: SankeyFlow[] = [
+    { from: 'Treasury', fromY: 0.1, to: 'Network actions', toY: 0.1, value: 0.15, color: BLUE, type: 'reinforce' },
+    { from: 'Treasury', fromY: 0.18, to: 'Contributors', toY: 0.25, value: 0.20, color: GREEN, type: 'reinforce' },
+    { from: 'Rewards', fromY: 0.35, to: 'Contributors', toY: 0.38, value: 0.25, color: GREEN, type: 'reinforce' },
+    { from: 'Rewards', fromY: 0.42, to: 'Operators', toY: 0.52, value: 0.20, color: BLUE, type: 'reinforce' },
+    { from: 'Unlocks', fromY: 0.58, to: 'Exchanges', toY: 0.65, value: 0.12, color: RED, type: 'leak' },
+    { from: 'Revenue', fromY: 0.75, to: 'Network actions', toY: 0.78, value: 0.25, color: GREEN, type: 'reinforce' },
+    { from: 'Revenue', fromY: 0.82, to: 'Contributors', toY: 0.88, value: 0.18, color: GREEN, type: 'reinforce' },
+  ];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const t = now * 0.001;
+    const flows = mode === 'weak' ? weakFlows : strongFlows;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const leftX = 80;
+    const rightX = w - 80;
+
+    // Draw flows
+    for (let i = 0; i < flows.length; i++) {
+      const f = flows[i];
+      const [r, g, b] = f.color;
+      const y1 = f.fromY * h;
+      const y2 = f.toY * h;
+      const thickness = f.value * 12;
+
+      // Curved flow
+      const midX = (leftX + rightX) / 2;
+      ctx.beginPath();
+      ctx.moveTo(leftX, y1);
+      ctx.bezierCurveTo(midX, y1, midX, y2, rightX, y2);
+      ctx.strokeStyle = `rgba(${r},${g},${b},0.15)`;
+      ctx.lineWidth = thickness;
+      ctx.stroke();
+
+      // Particles along curve
+      for (let p = 0; p < Math.ceil(f.value * 4); p++) {
+        const pt = ((t * 0.2 + i * 0.12 + p * 0.25) % 1);
+        const tt = pt;
+        const mt = 1 - tt;
+        const px = mt*mt*mt*leftX + 3*mt*mt*tt*midX + 3*mt*tt*tt*midX + tt*tt*tt*rightX;
+        const py = mt*mt*mt*y1 + 3*mt*mt*tt*y1 + 3*mt*tt*tt*y2 + tt*tt*tt*y2;
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},0.5)`;
+        ctx.fill();
+      }
+
+      // Source label
+      ctx.font = '500 9px "Syne", system-ui';
+      ctx.fillStyle = `rgba(232,232,240,0.4)`;
+      ctx.textAlign = 'right';
+      ctx.fillText(f.from, leftX - 8, y1 + 3);
+
+      // Dest label
+      ctx.textAlign = 'left';
+      ctx.fillStyle = `rgba(${r},${g},${b},0.6)`;
+      ctx.fillText(f.to, rightX + 8, y2 + 3);
+    }
+
+    // Column headers
+    ctx.font = '600 9px "Syne", system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(232,232,240,0.2)';
+    ctx.fillText('SOURCES', leftX, h - 8);
+    ctx.fillText('DESTINATIONS', rightX, h - 8);
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function setMode(m: 'weak' | 'strong') {
+    mode = m;
+    if (m === 'weak') {
+      btnWeak.style.background = 'rgba(239,68,68,0.12)';
+      btnWeak.style.color = 'rgba(239,68,68,0.9)';
+      btnWeak.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnStrong.style.background = 'transparent';
+      btnStrong.style.color = 'rgba(232,232,240,0.3)';
+      btnStrong.style.borderColor = 'rgba(255,255,255,0.06)';
+    } else {
+      btnStrong.style.background = 'rgba(74,222,128,0.12)';
+      btnStrong.style.color = 'rgba(74,222,128,0.9)';
+      btnStrong.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnWeak.style.background = 'transparent';
+      btnWeak.style.color = 'rgba(232,232,240,0.3)';
+      btnWeak.style.borderColor = 'rgba(255,255,255,0.06)';
+    }
+  }
+
+  btnWeak.addEventListener('click', () => setMode('weak'));
+  btnStrong.addEventListener('click', () => setMode('strong'));
+
+  resize();
+  window.addEventListener('resize', resize);
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else { render(5000); }
+}
+</script>

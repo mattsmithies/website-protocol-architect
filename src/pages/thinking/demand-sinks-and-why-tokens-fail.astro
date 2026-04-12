@@ -2,49 +2,245 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
-import TokenFlowDiagram from '../../components/diagrams/TokenFlowDiagram.astro';
+import TokenNarrativeVsFlow from '../../components/diagrams/TokenNarrativeVsFlow.astro';
+import DemandStrengthScale from '../../components/diagrams/DemandStrengthScale.astro';
+import FlywheelSimulator from '../../components/diagrams/FlywheelSimulator.astro';
+import LeakageMap from '../../components/diagrams/LeakageMap.astro';
+import AgentDemandLoop from '../../components/diagrams/AgentDemandLoop.astro';
 import '../../styles/global.css';
 ---
 
 <Layout title="Demand sinks, supply sinks, and why most tokens fail — Matt Smithies">
   <Nav />
   <main>
-    <article class="section-padding px-6">
-      <div class="max-w-3xl mx-auto">
+    <article class="px-6">
 
-        <div class="reveal mb-12">
-          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-6 inline-block">
-            &larr; Back
-          </a>
-          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
-            Token Economy
-          </p>
-          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight">
+      {/* ── Header ──────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
+        <div class="reveal">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Token Economy</p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
             Demand sinks, supply sinks, and why most tokens fail
           </h1>
-        </div>
-
-        <div class="reveal space-y-6 text-text-secondary text-lg leading-relaxed">
-          <p>
-            A token without credible demand is a slow bleed. It does not matter how elegant the issuance schedule is, or how carefully the vesting is structured. If the system does not create genuine reasons for participants to acquire and hold the token, supply pressure will win eventually.
+          <p class="text-text-tertiary text-base">
+            A token holds value when network usage creates recurring reasons to buy it and routes that spend back into the people and processes that make the network more useful.
           </p>
         </div>
-
       </div>
 
-      <!-- Full-width diagram -->
+      {/* ── Opening ─────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto pb-8">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Most tokens fail for a simple reason. They are launched into systems that produce supply before they produce demand.</p>
+          <p>The team obsesses over vesting. The community watches unlocks. The chart becomes a morality play about emissions, market makers, and timing. Everyone talks about supply pressure because supply pressure is visible.</p>
+          <p>Demand is where people lie to themselves.</p>
+          <p>A token does not survive because its issuance schedule looks disciplined. It survives because the system creates repeated, credible reasons to acquire it, spend it, lock it, or hold it in order to do something that matters. If that reason is weak, optional, or easily bypassed, the token is already dead. It just has not been priced honestly yet.</p>
+          <p>That is the part most teams avoid.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              They treat demand as sentiment.<br/>
+              They treat utility as a slogan.<br/>
+              They treat the token as a wrapper around activity<br/>
+              that could happen perfectly well without it.
+            </p>
+          </div>
+
+          <p>Then they wonder why supply wins.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 1: Narrative vs Flow ──────────────────── */}
+      <div class="max-w-5xl mx-auto">
+        <TokenNarrativeVsFlow />
+      </div>
+
+      {/* ── Token flow as architecture ──────────────────── */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The right mental model is not tokenomics as decoration. It is token flow as system architecture.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Where does demand come from.<br/>
+              What exactly requires the token.<br/>
+              Who receives it once spent.<br/>
+              What percentage leaks out immediately.<br/>
+              What percentage returns to the people<br/>
+              who strengthen the network.
+            </p>
+          </div>
+
+          <p>If you cannot map those flows precisely, you do not have token design. You have issuance plus hope.</p>
+          <p>Start from the network objective. Start from the thing the system must reliably produce. Start from the constrained behaviour you need from participants. Then ask whether a token improves coordination, contribution, and value capture enough to deserve existence at all.</p>
+        </div>
+      </div>
+
+      {/* ── Demand is not interest ──────────────────────── */}
+      <div class="max-w-3xl mx-auto pb-8">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Demand is not interest</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>This is where the language needs to become harder.</p>
+
+          <div class="border-l-2 border-red-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Interest is not demand.<br/>
+              Speculation is not demand.<br/>
+              Community excitement is not demand.<br/>
+              People saying they believe in the project is not demand.
+            </p>
+          </div>
+
+          <p>Demand means the system generates a recurring need to acquire the token because the token is a <em class="text-signal not-italic font-medium">required instrument</em> inside the network.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 2: Demand strength scale ──────────────── */}
       <div class="max-w-4xl mx-auto">
-        <TokenFlowDiagram />
+        <DemandStrengthScale />
       </div>
 
-      <div class="max-w-3xl mx-auto">
-        <div class="reveal space-y-6 text-text-secondary text-lg leading-relaxed">
-          <p>
-            Understanding where value enters a token economy, where it leaks, and what structural conditions allow a token to hold relevance over time &mdash; this is mechanism design, not marketing. It requires mapping demand sinks against supply sinks, modelling issuance pressure, and honestly assessing whether the token plays a durable role inside the network or is simply a speculative wrapper around utility that could exist without it.
+      {/* ── Structural pull ─────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>A proper demand sink is not just a place where tokens go. It is a mechanism that takes tokens out of loose circulation in exchange for something inside the network that users or agents actually need. Execution. Access. Throughput. Priority. Data. Verification. Storage. Settlement. Rights.</p>
+          <p>The sink matters because it creates structural pull. Not emotional pull. Not speculative pull. <em class="text-signal not-italic font-medium">Structural pull.</em></p>
+          <p>And that pull becomes far more powerful when the spent token does not simply disappear, but is redistributed to the people whose activity makes the network better.</p>
+          <p>That is the flywheel most teams fail to build. They understand incentives on the way out. They do not understand reinforcement on the way back.</p>
+        </div>
+      </div>
+
+      {/* ── The flywheel ────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto pb-8">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">The internal demand flywheel</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>A serious token system should be able to answer this clearly: <em class="text-text-primary not-italic font-medium">when someone spends the token, who gets stronger?</em></p>
+          <p>If the answer is "mostly nobody" or "mainly the treasury" then you probably do not have a living network. You have a payment gate.</p>
+          <p>The stronger design: users acquire the token because the network requires it. They spend it to run actions that matter. That spend is split. Some may be burned. Some may go to the treasury. Some should flow directly to the active members who improve supply quality, network coverage, curation, verification, or execution reliability.</p>
+          <p>That redistribution ties demand back to contribution. Now usage does not just consume the token. It rewards the people making the network worth using. Those people improve the network. The network becomes more useful. More usage appears. Demand deepens.</p>
+          <p>That is a flywheel. Not because a slide says so. Because the token is now routing value back into the behaviours that increase future demand.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 3: Flywheel simulator ─────────────────── */}
+      <div class="max-w-4xl mx-auto">
+        <FlywheelSimulator />
+      </div>
+
+      {/* ── Leakage ─────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Leakage is where token systems tell the truth</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Every token system leaks. That is normal. The question is whether leakage is subordinate to reinforcement, or whether leakage is the dominant behaviour and everything else is theatre around it.</p>
+          <p>If every meaningful path ends in exchange inventory, you do not have a network economy. You have a distribution schedule.</p>
+          <p>If usage does not recycle value toward the network's productive edge, then the token is not acting as infrastructure. It is acting as a speculative waypoint.</p>
+          <p>A supply sink is any structural route by which token flow turns into pressure rather than reinforcement. Immediate emissions to actors with no durable reason to hold. Treasury distributions disconnected from performance. Rewards paid to passive actors who do not improve network output. Unlock schedules arriving into shallow utility.</p>
+          <p>The danger is not supply on its own. The danger is supply entering a system with weak or optional sinks on the demand side.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 4: Leakage map ────────────────────────── */}
+      <div class="max-w-5xl mx-auto">
+        <LeakageMap />
+      </div>
+
+      {/* ── AI demand ───────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">AI does not fix bad token design</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>AI agents do not care about narrative. They care about access, execution, latency, quality, cost, and reliability. That makes them a much more honest source of demand.</p>
+          <p>An agent will not buy your token because the community is excited. It will buy because the token is the required route to something it needs: data, memory, execution, priority, verification, storage, routing, licensing, or external action. If the token path is inefficient, the agent will route around it the moment it can. If the token is necessary and the service is valuable, the agent becomes a recurring buyer.</p>
+          <p>But putting AI in the deck does not create demand. Saying agents will use the network does not create demand. The token only gets stronger from AI if agents are forced into a real metered relationship with the network, and if the resulting spend improves supply quality for the next round of usage.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              What exactly is the agent buying.<br/>
+              How is that priced.<br/>
+              Why must the token be used.<br/>
+              Where does the spent token go.<br/>
+              Which contributors are rewarded.<br/>
+              How does that improve future service quality.
+            </p>
+          </div>
+
+          <p>If you cannot answer that, then AI is just another narrative wrapper around weak internals.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 5: Agent demand loop ──────────────────── */}
+      <div class="max-w-5xl mx-auto">
+        <AgentDemandLoop />
+      </div>
+
+      {/* ── Closing ─────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The best token systems are not the ones that minimise every unlock. They are the ones that make supply matter less because demand is structurally embedded in the network's operation.</p>
+          <p>Not to pray for permanent scarcity. Not to rely on permanent hype. Not to subsidise forever. Not to hope that holders become believers.</p>
+          <p>The goal is to build a network where token acquisition is a recurring precondition for meaningful action, and where token spend strengthens the actors who make future action more valuable.</p>
+
+          <div class="border-l-2 border-red-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              They distribute ownership before they create necessity.<br/>
+              They produce supply before they earn demand.<br/>
+              They reward presence before they reward contribution.<br/>
+              They market the token before they hard-wire its role.
+            </p>
+          </div>
+
+          <p>Then, when the pressure arrives, they discover they built a chart before they built an economy.</p>
+          <p>If the token is not pulling real activity inward and routing value back toward the productive edge of the network, it will eventually be priced like what it is.</p>
+          <p class="text-text-primary font-display font-bold text-2xl pt-4">Optional.</p>
+        </div>
+
+        <div class="reveal border-t border-border pt-10 mt-12">
+          <p class="text-text-primary font-display font-bold text-xl md:text-2xl leading-snug max-w-xl">
+            A token holds value when network usage creates recurring reasons to buy it and routes that spend back into the people and processes that make the network more useful.
           </p>
-          <p>
-            The systems that sustain long-term token value are the ones where usage, coordination, and incentives reinforce each other. Where supply pressure is understood in advance. Where the economic structure strengthens the integrity of the network instead of quietly undermining it.
+        </div>
+
+        {/* ── Live link ──────────────────────────────────── */}
+        <div class="reveal glass-card p-8 md:p-10 mt-16">
+          <div class="flex flex-col md:flex-row md:items-center gap-6">
+            <div class="flex-1">
+              <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-2">In production</p>
+              <p class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight mb-2">
+                DOVU &mdash; Token economy designed as infrastructure
+              </p>
+              <p class="text-text-tertiary text-sm leading-relaxed">
+                These principles shaped the DOVU token economy: demand sinks tied to audit trail usage, contributor rewards linked to network quality, and incentive structures designed to strengthen the platform over time.
+              </p>
+            </div>
+            <a href="https://dovu.ai/" target="_blank" rel="noopener" class="ghost-button magnetic px-6 py-3 rounded-full text-sm whitespace-nowrap flex-shrink-0">
+              View DOVU &rarr;
+            </a>
+          </div>
+        </div>
+
+        {/* ── CTA ────────────────────────────────────────── */}
+        <div class="reveal glass-card p-8 md:p-10 mt-6 text-center">
+          <p class="text-text-secondary text-lg mb-6 font-display">
+            Designing a token economy that needs to survive real usage?
           </p>
+          <a href="/#contact" class="glow-button magnetic inline-flex items-center gap-3 px-10 py-4 rounded-full text-sm tracking-wide">
+            Book a conversation
+            <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 8h10M10 4l4 4-4 4" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="mt-8 pb-8">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors">&larr; Back to essays</a>
         </div>
       </div>
 

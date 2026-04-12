@@ -1,0 +1,186 @@
+---
+// Visual 1: Token story vs Token flow — side by side comparison
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+
+      {/* Left: Narrative token */}
+      <div class="p-6 md:p-8">
+        <p class="text-red-400/70 text-xs font-semibold tracking-[0.2em] uppercase mb-5">Narrative Token</p>
+        <canvas id="tnf-narrative" class="w-full" style="height: 260px;"></canvas>
+      </div>
+
+      {/* Right: Demand sink token */}
+      <div class="p-6 md:p-8">
+        <p class="text-green-400/70 text-xs font-semibold tracking-[0.2em] uppercase mb-5">Demand Sink Token</p>
+        <canvas id="tnf-demand" class="w-full" style="height: 260px;"></canvas>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    The question is not whether a token moves. The question is whether it returns with more reason to exist than before.
+  </p>
+</div>
+
+<script>
+function drawTokenFlow(canvasId: string, type: 'narrative' | 'demand') {
+  const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d')!;
+
+  const RED = [239, 68, 68];
+  const GREEN = [74, 222, 128];
+  const BLUE = [56, 189, 248];
+  const VIOLET = [167, 139, 250];
+  const AMBER = [245, 158, 11];
+  const DIM = [120, 120, 140];
+
+  interface FNode { x: number; y: number; label: string; color: number[]; }
+  interface FEdge { from: number; to: number; color: number[]; thick: number; label: string; type: 'leak' | 'sink' | 'reinforce' | 'neutral'; }
+
+  let nodes: FNode[] = [];
+  let edges: FEdge[] = [];
+  let animId = 0;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function build() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const cx = w / 2;
+
+    if (type === 'narrative') {
+      nodes = [
+        { x: cx, y: 30, label: 'Treasury', color: VIOLET },
+        { x: cx, y: 85, label: 'Rewards', color: AMBER },
+        { x: cx, y: 140, label: 'Users', color: DIM },
+        { x: cx, y: 195, label: 'Exchange', color: RED },
+        { x: cx, y: 245, label: 'Sell', color: RED },
+      ];
+      edges = [
+        { from: 0, to: 1, color: VIOLET, thick: 2.5, label: 'Emission', type: 'neutral' },
+        { from: 1, to: 2, color: AMBER, thick: 2.0, label: 'Distribute', type: 'neutral' },
+        { from: 2, to: 3, color: RED, thick: 3.0, label: 'Dump', type: 'leak' },
+        { from: 3, to: 4, color: RED, thick: 3.5, label: 'Exit', type: 'leak' },
+      ];
+    } else {
+      nodes = [
+        { x: cx, y: 25, label: 'Buyers', color: BLUE },
+        { x: cx, y: 75, label: 'Token', color: VIOLET },
+        { x: cx, y: 130, label: 'Network Action', color: GREEN },
+        { x: cx, y: 185, label: 'Contributors', color: GREEN },
+        { x: cx, y: 240, label: 'Better Network', color: BLUE },
+      ];
+      edges = [
+        { from: 0, to: 1, color: BLUE, thick: 2.0, label: 'Acquire', type: 'sink' },
+        { from: 1, to: 2, color: GREEN, thick: 2.5, label: 'Required spend', type: 'sink' },
+        { from: 2, to: 3, color: GREEN, thick: 2.0, label: 'Redistribute', type: 'reinforce' },
+        { from: 3, to: 4, color: BLUE, thick: 2.0, label: 'Improve', type: 'reinforce' },
+        { from: 4, to: 0, color: BLUE, thick: 1.5, label: 'Attract', type: 'reinforce' },
+      ];
+    }
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const t = now * 0.001;
+    ctx.clearRect(0, 0, w, h);
+
+    // Edges with particles
+    for (let i = 0; i < edges.length; i++) {
+      const e = edges[i];
+      const a = nodes[e.from];
+      const b = nodes[e.to];
+      const [r, g, bl] = e.color;
+
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = `rgba(${r},${g},${bl},0.2)`;
+      ctx.lineWidth = e.thick;
+      ctx.stroke();
+
+      // Particles
+      for (let p = 0; p < 3; p++) {
+        const pt = ((t * 0.3 + i * 0.15 + p * 0.33) % 1);
+        const px = a.x + (b.x - a.x) * pt;
+        const py = a.y + (b.y - a.y) * pt;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${bl},0.6)`;
+        ctx.fill();
+      }
+
+      // Edge label
+      const mx = (a.x + b.x) / 2 + 20;
+      const my = (a.y + b.y) / 2;
+      ctx.font = '400 8px "Inter", system-ui';
+      const typeColors = { leak: `rgba(239,68,68,0.5)`, sink: `rgba(74,222,128,0.5)`, reinforce: `rgba(56,189,248,0.5)`, neutral: `rgba(167,139,250,0.4)` };
+      ctx.fillStyle = typeColors[e.type];
+      ctx.textAlign = 'left';
+      ctx.fillText(e.label, mx, my + 3);
+    }
+
+    // Feedback arrow for demand model
+    if (type === 'demand') {
+      const a = nodes[4];
+      const b = nodes[0];
+      ctx.beginPath();
+      ctx.moveTo(a.x + 40, a.y);
+      ctx.quadraticCurveTo(w - 20, (a.y + b.y) / 2, b.x + 40, b.y);
+      ctx.strokeStyle = 'rgba(56,189,248,0.12)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Nodes
+    for (const node of nodes) {
+      const [r, g, bl] = node.color;
+      const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, 30);
+      grad.addColorStop(0, `rgba(${r},${g},${bl},0.1)`);
+      grad.addColorStop(1, `rgba(${r},${g},${bl},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, 30, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, 10, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${r},${g},${bl},0.4)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = `rgba(${r},${g},${bl},0.08)`;
+      ctx.fill();
+
+      ctx.font = '600 10px "Syne", system-ui';
+      ctx.fillStyle = `rgba(232,232,240,0.7)`;
+      ctx.textAlign = 'center';
+      ctx.fillText(node.label, node.x, node.y - 16);
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  resize();
+  build();
+  window.addEventListener('resize', () => { resize(); build(); });
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else { render(5000); }
+}
+
+drawTokenFlow('tnf-narrative', 'narrative');
+drawTokenFlow('tnf-demand', 'demand');
+</script>

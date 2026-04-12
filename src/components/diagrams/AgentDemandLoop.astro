@@ -1,0 +1,258 @@
+---
+// Visual 5: Agent demand loop — AI as structural buyer
+// Toggle between narrative mode and real agent demand mode
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="flex items-center justify-center gap-4 mb-6">
+        <button id="adl-narrative" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          AI narrative mode
+        </button>
+        <button id="adl-demand" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Agent demand mode
+        </button>
+      </div>
+
+      <canvas id="adl-canvas" class="w-full" style="height: 340px;"></canvas>
+
+      {/* Output metrics */}
+      <div class="grid grid-cols-4 gap-4 mt-4 border-t border-border pt-4">
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Quality</p>
+          <p class="text-sm font-display font-bold" id="adl-quality">—</p>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Freshness</p>
+          <p class="text-sm font-display font-bold" id="adl-freshness">—</p>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Coverage</p>
+          <p class="text-sm font-display font-bold" id="adl-coverage">—</p>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Reliability</p>
+          <p class="text-sm font-display font-bold" id="adl-reliability">—</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    AI demand is only useful when it buys something the network must keep earning.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('adl-canvas') as HTMLCanvasElement;
+const btnNarr = document.getElementById('adl-narrative') as HTMLButtonElement;
+const btnDemand = document.getElementById('adl-demand') as HTMLButtonElement;
+
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+  let mode: 'narrative' | 'demand' = 'narrative';
+  let animId = 0;
+
+  const BLUE = [56, 189, 248];
+  const GREEN = [74, 222, 128];
+  const VIOLET = [167, 139, 250];
+  const RED = [239, 68, 68];
+  const AMBER = [245, 158, 11];
+  const DIM = [80, 80, 100];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function updateMetrics() {
+    const el = (id: string) => document.getElementById(id)!;
+    if (mode === 'narrative') {
+      el('adl-quality').textContent = 'Flat';
+      el('adl-quality').style.color = 'rgba(239,68,68,0.7)';
+      el('adl-freshness').textContent = 'Flat';
+      el('adl-freshness').style.color = 'rgba(239,68,68,0.7)';
+      el('adl-coverage').textContent = 'Flat';
+      el('adl-coverage').style.color = 'rgba(245,158,11,0.7)';
+      el('adl-reliability').textContent = 'Flat';
+      el('adl-reliability').style.color = 'rgba(245,158,11,0.7)';
+    } else {
+      el('adl-quality').textContent = 'Rising';
+      el('adl-quality').style.color = 'rgba(74,222,128,0.8)';
+      el('adl-freshness').textContent = 'Rising';
+      el('adl-freshness').style.color = 'rgba(74,222,128,0.8)';
+      el('adl-coverage').textContent = 'Rising';
+      el('adl-coverage').style.color = 'rgba(74,222,128,0.8)';
+      el('adl-reliability').textContent = 'Rising';
+      el('adl-reliability').style.color = 'rgba(74,222,128,0.8)';
+    }
+  }
+
+  const requests = ['Fetch verified data', 'Run workflow', 'Access memory', 'License audit trail', 'Prioritise execution'];
+  const recipients = ['Operators', 'Data contributors', 'Curators', 'Verifiers', 'Treasury'];
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const t = now * 0.001;
+    ctx.clearRect(0, 0, w, h);
+
+    const isReal = mode === 'demand';
+    const mainColor = isReal ? GREEN : DIM;
+    const flowAlpha = isReal ? 0.2 : 0.06;
+    const particleAlpha = isReal ? 0.6 : 0.15;
+
+    // Agent (left)
+    const ax = 60;
+    const ay = h / 2;
+    const [mr, mg, mb] = BLUE;
+    ctx.beginPath();
+    ctx.arc(ax, ay, 20, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(${mr},${mg},${mb},${isReal ? 0.5 : 0.15})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.font = '600 10px "Syne", system-ui';
+    ctx.fillStyle = `rgba(${mr},${mg},${mb},${isReal ? 0.7 : 0.25})`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Agent', ax, ay - 28);
+
+    // Request list (left-center)
+    const reqX = w * 0.25;
+    for (let i = 0; i < requests.length; i++) {
+      const ry = 40 + i * ((h - 80) / (requests.length - 1));
+      ctx.font = '400 9px "Inter", system-ui';
+      ctx.fillStyle = `rgba(${mr},${mg},${mb},${isReal ? 0.5 : 0.15})`;
+      ctx.textAlign = 'left';
+      ctx.fillText(requests[i], reqX, ry + 3);
+
+      // Arrow from agent
+      ctx.beginPath();
+      ctx.moveTo(ax + 22, ay + (i - 2) * 15);
+      ctx.lineTo(reqX - 8, ry);
+      ctx.strokeStyle = `rgba(${mr},${mg},${mb},${flowAlpha})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Particle
+      if (isReal) {
+        const pt = ((t * 0.3 + i * 0.2) % 1);
+        const px = (ax + 22) + (reqX - 8 - ax - 22) * pt;
+        const py = (ay + (i - 2) * 15) + (ry - ay - (i - 2) * 15) * pt;
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${mr},${mg},${mb},${particleAlpha})`;
+        ctx.fill();
+      }
+    }
+
+    // Token routing (center)
+    const routeX = w * 0.52;
+    const routeY = h / 2;
+    const [gr, gg, gb] = mainColor;
+    ctx.beginPath();
+    ctx.roundRect(routeX - 35, routeY - 18, 70, 36, 6);
+    ctx.strokeStyle = `rgba(${gr},${gg},${gb},${isReal ? 0.3 : 0.1})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.font = '500 8px "Syne", system-ui';
+    ctx.fillStyle = `rgba(${gr},${gg},${gb},${isReal ? 0.6 : 0.2})`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Token', routeX, routeY - 4);
+    ctx.fillText('Routing', routeX, routeY + 8);
+
+    // Lines from requests to routing
+    for (let i = 0; i < requests.length; i++) {
+      const ry = 40 + i * ((h - 80) / (requests.length - 1));
+      ctx.beginPath();
+      ctx.moveTo(reqX + 100, ry);
+      ctx.lineTo(routeX - 36, routeY);
+      ctx.strokeStyle = `rgba(${gr},${gg},${gb},${flowAlpha * 0.7})`;
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    // Recipients (right)
+    const recX = w * 0.78;
+    for (let i = 0; i < recipients.length; i++) {
+      const ry = 40 + i * ((h - 80) / (recipients.length - 1));
+      ctx.font = '400 9px "Inter", system-ui';
+      ctx.fillStyle = `rgba(${gr},${gg},${gb},${isReal ? 0.5 : 0.15})`;
+      ctx.textAlign = 'left';
+      ctx.fillText(recipients[i], recX, ry + 3);
+
+      // Arrow from routing
+      ctx.beginPath();
+      ctx.moveTo(routeX + 36, routeY);
+      ctx.lineTo(recX - 8, ry);
+      ctx.strokeStyle = `rgba(${gr},${gg},${gb},${flowAlpha})`;
+      ctx.lineWidth = isReal ? 1.2 : 0.5;
+      ctx.stroke();
+
+      if (isReal) {
+        const pt = ((t * 0.25 + i * 0.18) % 1);
+        const px = (routeX + 36) + (recX - 8 - routeX - 36) * pt;
+        const py = routeY + (ry - routeY) * pt;
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${gr},${gg},${gb},${particleAlpha})`;
+        ctx.fill();
+      }
+    }
+
+    // Feedback loop (only in demand mode)
+    if (isReal) {
+      ctx.beginPath();
+      ctx.moveTo(recX + 60, h * 0.8);
+      ctx.quadraticCurveTo(w - 15, h / 2, recX + 60, h * 0.2);
+      ctx.quadraticCurveTo(w * 0.5, -10, ax, ay - 25);
+      ctx.strokeStyle = 'rgba(56,189,248,0.1)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = '400 8px "Inter", system-ui';
+      ctx.fillStyle = 'rgba(56,189,248,0.3)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Better outputs → more requests', w - 50, h / 2);
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function setMode(m: 'narrative' | 'demand') {
+    mode = m;
+    updateMetrics();
+    if (m === 'narrative') {
+      btnNarr.style.background = 'rgba(239,68,68,0.12)';
+      btnNarr.style.color = 'rgba(239,68,68,0.9)';
+      btnNarr.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnDemand.style.background = 'transparent';
+      btnDemand.style.color = 'rgba(232,232,240,0.3)';
+      btnDemand.style.borderColor = 'rgba(255,255,255,0.06)';
+    } else {
+      btnDemand.style.background = 'rgba(74,222,128,0.12)';
+      btnDemand.style.color = 'rgba(74,222,128,0.9)';
+      btnDemand.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnNarr.style.background = 'transparent';
+      btnNarr.style.color = 'rgba(232,232,240,0.3)';
+      btnNarr.style.borderColor = 'rgba(255,255,255,0.06)';
+    }
+  }
+
+  btnNarr.addEventListener('click', () => setMode('narrative'));
+  btnDemand.addEventListener('click', () => setMode('demand'));
+
+  resize();
+  updateMetrics();
+  window.addEventListener('resize', resize);
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else { render(5000); }
+}
+</script>
