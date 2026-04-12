@@ -8,6 +8,8 @@
     id="token-flow-diagram"
     class="w-full rounded-2xl border border-border"
     style="height: 420px; background: rgba(11,11,17,0.6);"
+    role="img"
+    aria-label="Token economy flow diagram showing issuance, demand sinks, supply pressure, and value leakage as animated flows"
   ></canvas>
   <p class="text-text-tertiary text-xs mt-3 text-center">
     Token flow model &mdash; issuance, demand sinks, supply pressure, and value leakage
@@ -57,33 +59,30 @@ if (canvas) {
     const cx = w / 2;
     const cy = h / 2;
 
+    // Responsive spread — scale offsets to screen width
+    const spread = Math.min(180, w * 0.28);
+    const spreadSm = Math.min(140, w * 0.22);
+    const isNarrow = w < 500;
+    const nodeScale = isNarrow ? 0.75 : 1;
+
     const nodes: FlowNode[] = [
       // 0: Issuance (top)
-      { x: cx, y: 55, label: 'Issuance', sublabel: 'Supply pressure', type: 'source', radius: 28, color: VIOLET, pulsePhase: 0 },
+      { x: cx, y: 55, label: 'Issuance', sublabel: 'Supply pressure', type: 'source', radius: 28 * nodeScale, color: VIOLET, pulsePhase: 0 },
       // 1: Token Pool (center)
-      { x: cx, y: cy, label: 'Token Pool', sublabel: 'Circulating supply', type: 'pool', radius: 36, color: INDIGO, pulsePhase: 1 },
+      { x: cx, y: cy, label: 'Token Pool', sublabel: 'Circulating supply', type: 'pool', radius: 36 * nodeScale, color: INDIGO, pulsePhase: 1 },
       // 2: Staking Sink (left)
-      { x: cx - 180, y: cy - 40, label: 'Staking', sublabel: 'Demand sink', type: 'sink', radius: 24, color: GREEN, pulsePhase: 2 },
+      { x: cx - spread, y: cy - 40, label: 'Staking', sublabel: 'Demand sink', type: 'sink', radius: 24 * nodeScale, color: GREEN, pulsePhase: 2 },
       // 3: Utility Sink (right)
-      { x: cx + 180, y: cy - 40, label: 'Utility', sublabel: 'Demand sink', type: 'sink', radius: 24, color: GREEN, pulsePhase: 3 },
+      { x: cx + spread, y: cy - 40, label: 'Utility', sublabel: 'Demand sink', type: 'sink', radius: 24 * nodeScale, color: GREEN, pulsePhase: 3 },
       // 4: Governance (bottom left)
-      { x: cx - 140, y: cy + 100, label: 'Governance', sublabel: 'Demand sink', type: 'sink', radius: 22, color: BLUE, pulsePhase: 4 },
+      { x: cx - spreadSm, y: cy + 100, label: 'Governance', sublabel: 'Demand sink', type: 'sink', radius: 22 * nodeScale, color: BLUE, pulsePhase: 4 },
       // 5: Market (bottom right)
-      { x: cx + 140, y: cy + 100, label: 'Market', sublabel: 'Price discovery', type: 'pool', radius: 22, color: BLUE, pulsePhase: 5 },
+      { x: cx + spreadSm, y: cy + 100, label: 'Market', sublabel: 'Price discovery', type: 'pool', radius: 22 * nodeScale, color: BLUE, pulsePhase: 5 },
       // 6: Value Leakage (far right)
-      { x: w - 60, y: cy + 40, label: 'Leakage', sublabel: 'Value exit', type: 'leak', radius: 20, color: RED, pulsePhase: 6 },
+      { x: w - (isNarrow ? 40 : 60), y: cy + 40, label: 'Leakage', sublabel: 'Value exit', type: 'leak', radius: 20 * nodeScale, color: RED, pulsePhase: 6 },
       // 7: Rewards (bottom)
-      { x: cx, y: h - 50, label: 'Rewards', sublabel: 'Re-circulation', type: 'source', radius: 22, color: VIOLET, pulsePhase: 7 },
+      { x: cx, y: h - 50, label: 'Rewards', sublabel: 'Re-circulation', type: 'source', radius: 22 * nodeScale, color: VIOLET, pulsePhase: 7 },
     ];
-
-    // Responsive: scale positions for narrow screens
-    if (w < 500) {
-      const scale = w / 600;
-      for (const n of nodes) {
-        n.x = cx + (n.x - cx) * scale;
-        n.radius *= 0.8;
-      }
-    }
 
     const edges: FlowEdge[] = [
       { from: 0, to: 1, particles: [], color: VIOLET, strength: 1.4 },   // Issuance → Pool

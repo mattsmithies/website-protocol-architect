@@ -41,9 +41,14 @@ const container = document.getElementById('dss-items')!;
 const tooltip = document.getElementById('dss-tooltip')!;
 const tooltipText = document.getElementById('dss-tooltip-text')!;
 
+let activeRow: HTMLElement | null = null;
+
 for (const item of items) {
   const row = document.createElement('div');
   row.className = 'flex items-center gap-4 py-3 border-b border-border last:border-0 cursor-pointer group';
+  row.setAttribute('tabindex', '0');
+  row.setAttribute('role', 'button');
+  row.setAttribute('aria-label', `${item.label} — tap or focus for details`);
 
   const r = Math.round(239 + (74 - 239) * item.strength);
   const g = Math.round(68 + (222 - 68) * item.strength);
@@ -58,17 +63,44 @@ for (const item of items) {
     </div>
   `;
 
-  row.addEventListener('mouseenter', () => {
+  function showTooltip() {
     tooltip.style.opacity = '1';
     tooltip.style.borderColor = `rgba(${r},${g},${b},0.3)`;
     tooltipText.textContent = item.note;
     tooltipText.style.color = `rgba(${r},${g},${b},0.8)`;
+    activeRow = row;
+  }
+
+  function hideTooltip() {
+    tooltip.style.opacity = '0';
+    activeRow = null;
+  }
+
+  row.addEventListener('mouseenter', showTooltip);
+  row.addEventListener('mouseleave', hideTooltip);
+
+  // Touch/click support — toggle tooltip on tap
+  row.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeRow === row) {
+      hideTooltip();
+    } else {
+      showTooltip();
+    }
   });
 
-  row.addEventListener('mouseleave', () => {
-    tooltip.style.opacity = '0';
-  });
+  // Keyboard support — show on focus, hide on blur
+  row.addEventListener('focus', showTooltip);
+  row.addEventListener('blur', hideTooltip);
 
   container.appendChild(row);
 }
+
+// Dismiss tooltip when tapping outside
+document.addEventListener('click', () => {
+  if (activeRow) {
+    tooltip.style.opacity = '0';
+    activeRow = null;
+  }
+});
 </script>

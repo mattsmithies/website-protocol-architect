@@ -8,9 +8,14 @@
     <div class="p-6 md:p-8">
       <!-- Time scrubber -->
       <div class="mb-6">
+        <label for="sf-scrubber" class="sr-only">Scrub through event timeline</label>
         <input
           id="sf-scrubber"
           type="range" min="0" max="5" value="0" step="1"
+          aria-label="Event timeline — scrub to replay authority state at each moment"
+          aria-valuemin="0"
+          aria-valuemax="5"
+          aria-valuenow="0"
           class="w-full accent-signal h-1 bg-border rounded-full appearance-none cursor-pointer"
         />
       </div>
@@ -122,7 +127,11 @@ function renderStep(step: number) {
 }
 
 if (scrubber) {
-  scrubber.addEventListener('input', () => renderStep(parseInt(scrubber.value)));
+  scrubber.addEventListener('input', () => {
+    const val = parseInt(scrubber.value);
+    scrubber.setAttribute('aria-valuenow', String(val));
+    renderStep(val);
+  });
   renderStep(0);
 }
 </script>

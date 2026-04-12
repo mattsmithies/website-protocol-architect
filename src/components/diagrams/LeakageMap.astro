@@ -7,16 +7,16 @@
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
     <div class="p-6 md:p-8">
 
-      <div class="flex items-center justify-center gap-4 mb-6">
-        <button id="lm-weak" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+      <div class="flex items-center justify-center gap-3 sm:gap-4 mb-6" role="group" aria-label="Toggle between weak and strong demand sink">
+        <button id="lm-weak" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
           Weak demand sink
         </button>
-        <button id="lm-strong" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+        <button id="lm-strong" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
           Strong demand sink
         </button>
       </div>
 
-      <canvas id="leakage-canvas" class="w-full" style="height: 300px;"></canvas>
+      <canvas id="leakage-canvas" class="w-full" style="height: 300px;" role="img" aria-label="Sankey flow diagram showing where token value goes — sources on the left, destinations on the right"></canvas>
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
@@ -85,8 +85,9 @@ if (canvas && btnWeak && btnStrong) {
 
     ctx.clearRect(0, 0, w, h);
 
-    const leftX = 80;
-    const rightX = w - 80;
+    const margin = w < 400 ? 50 : 80;
+    const leftX = margin;
+    const rightX = w - margin;
 
     // Draw flows
     for (let i = 0; i < flows.length; i++) {
@@ -142,6 +143,8 @@ if (canvas && btnWeak && btnStrong) {
 
   function setMode(m: 'weak' | 'strong') {
     mode = m;
+    btnWeak.setAttribute('aria-selected', String(m === 'weak'));
+    btnStrong.setAttribute('aria-selected', String(m === 'strong'));
     if (m === 'weak') {
       btnWeak.style.background = 'rgba(239,68,68,0.12)';
       btnWeak.style.color = 'rgba(239,68,68,0.9)';

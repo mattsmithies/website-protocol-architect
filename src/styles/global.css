@@ -33,6 +33,31 @@
 }
 
 /* ────────────────────────────────────────────────────────────
+   Skip to Content
+   ──────────────────────────────────────────────────────────── */
+
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-signal);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0 0 8px 8px;
+  transition: top 0.2s ease;
+}
+
+.skip-to-content:focus {
+  top: 0;
+  outline: none;
+}
+
+/* ────────────────────────────────────────────────────────────
    Base
    ──────────────────────────────────────────────────────────── */
 
@@ -334,4 +359,33 @@ body {
   .aurora-orb-1 { width: 400px; height: 400px; }
   .aurora-orb-2 { width: 350px; height: 350px; }
   .aurora-orb-3 { width: 300px; height: 300px; }
+}
+
+/* ────────────────────────────────────────────────────────────
+   Touch & Accessibility
+   ──────────────────────────────────────────────────────────── */
+
+/* Ensure minimum touch targets on mobile */
+@media (pointer: coarse) {
+  button, [role="button"], a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input[type="range"] {
+    min-height: 44px;
+  }
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

@@ -52,6 +52,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
   </head>
   <body class="min-h-screen bg-void text-text-primary font-sans">
 
+    <!-- Skip to content link for keyboard/screen reader users -->
+    <a
+      href="#main-content"
+      class="skip-to-content"
+    >
+      Skip to content
+    </a>
+
     <!-- WebGL aurora shader background (chaos) -->
     <canvas id="aurora-canvas" class="fixed inset-0 z-0 w-full h-full" aria-hidden="true"></canvas>
 
@@ -71,7 +79,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
     </svg>
 
     <!-- Page content -->
-    <div class="relative z-10">
+    <div id="main-content" class="relative z-10">
       <slot />
     </div>
 

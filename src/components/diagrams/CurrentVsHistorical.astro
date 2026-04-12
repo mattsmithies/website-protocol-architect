@@ -8,11 +8,11 @@
     <div class="p-6 md:p-8">
 
       <!-- Toggle -->
-      <div class="flex items-center justify-center gap-4 mb-8">
-        <button id="cvh-now" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300" style="background: rgba(167,139,250,0.15); color: rgba(167,139,250,0.9); border: 1px solid rgba(167,139,250,0.3);">
+      <div class="flex items-center justify-center gap-4 mb-8" role="group" aria-label="Toggle between current and historical authority view">
+        <button id="cvh-now" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300" role="tab" aria-selected="true" style="background: rgba(167,139,250,0.15); color: rgba(167,139,250,0.9); border: 1px solid rgba(167,139,250,0.3);">
           Now
         </button>
-        <button id="cvh-then" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+        <button id="cvh-then" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
           At event time
         </button>
       </div>
@@ -60,6 +60,8 @@ const cardNow = document.getElementById('cvh-card-now') as HTMLElement;
 const cardThen = document.getElementById('cvh-card-then') as HTMLElement;
 
 function setView(view: 'now' | 'then') {
+  btnNow.setAttribute('aria-selected', String(view === 'now'));
+  btnThen.setAttribute('aria-selected', String(view === 'then'));
   if (view === 'now') {
     btnNow.style.background = 'rgba(167,139,250,0.15)';
     btnNow.style.color = 'rgba(167,139,250,0.9)';

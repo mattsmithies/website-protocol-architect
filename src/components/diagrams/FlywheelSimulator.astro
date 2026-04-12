@@ -11,21 +11,21 @@
       <p class="text-text-tertiary text-[10px] uppercase tracking-wider font-semibold mb-4">
         Select a token design scenario
       </p>
-      <div class="flex flex-wrap gap-2" id="fw-scenarios">
-        <button data-scenario="productive" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Productive flywheel</button>
-        <button data-scenario="meme" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Average meme token</button>
-        <button data-scenario="narrative" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Narrative token</button>
-        <button data-scenario="extractive" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Extractive design</button>
-        <button data-scenario="agent" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Agent driven utility</button>
+      <div class="flex flex-wrap gap-2" id="fw-scenarios" role="group" aria-label="Select a token design scenario">
+        <button data-scenario="productive" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Productive flywheel</button>
+        <button data-scenario="meme" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Average meme token</button>
+        <button data-scenario="narrative" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Narrative token</button>
+        <button data-scenario="extractive" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Extractive design</button>
+        <button data-scenario="agent" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Agent driven utility</button>
       </div>
     </div>
 
     {/* Canvas */}
-    <canvas id="flywheel-canvas" class="w-full" style="height: 320px;"></canvas>
+    <canvas id="flywheel-canvas" class="w-full" style="height: 320px;" role="img" aria-label="Flywheel simulation visualization showing how token value flows through the economy based on the selected scenario"></canvas>
 
     {/* Diagnosis */}
-    <div class="px-6 py-4 border-t border-border">
-      <div class="flex flex-wrap items-start gap-6">
+    <div class="px-6 py-4 border-t border-border" aria-live="polite">
+      <div class="flex flex-wrap items-start gap-4 sm:gap-6">
         <div class="flex-1 min-w-[200px]">
           <p class="text-sm text-text-secondary leading-relaxed" id="fw-diagnosis">
             Choose a scenario above to see how value routing, recurring demand, and leakage shape long term outcomes.
@@ -62,23 +62,23 @@
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3 mb-5">
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Burn</label>
-            <input type="range" min="0" max="40" value="5" id="fw-burn" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-burn" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Burn</label>
+            <input type="range" min="0" max="40" value="5" id="fw-burn" aria-label="Burn percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-burn-val">5%</span>
           </div>
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury</label>
-            <input type="range" min="0" max="50" value="20" id="fw-treasury" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-treasury" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury</label>
+            <input type="range" min="0" max="50" value="20" id="fw-treasury" aria-label="Treasury percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-treasury-val">20%</span>
           </div>
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributors</label>
-            <input type="range" min="0" max="80" value="55" id="fw-contrib" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-contrib" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributors</label>
+            <input type="range" min="0" max="80" value="55" id="fw-contrib" aria-label="Contributors percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-contrib-val">55%</span>
           </div>
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Operators</label>
-            <input type="range" min="0" max="50" value="20" id="fw-ops" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-ops" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Operators</label>
+            <input type="range" min="0" max="50" value="20" id="fw-ops" aria-label="Operators percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-ops-val">20%</span>
           </div>
         </div>
@@ -87,33 +87,33 @@
 
         <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor sell-through</label>
-            <input type="range" min="5" max="90" value="30" id="fw-csell" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-csell" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor sell-through</label>
+            <input type="range" min="5" max="90" value="30" id="fw-csell" aria-label="Contributor sell-through percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-csell-val">30%</span>
           </div>
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury redeployment</label>
-            <input type="range" min="0" max="100" value="60" id="fw-tredeploy" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-tredeploy" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury redeployment</label>
+            <input type="range" min="0" max="100" value="60" id="fw-tredeploy" aria-label="Treasury redeployment percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-tredeploy-val">60%</span>
           </div>
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Required spend ratio</label>
-            <input type="range" min="10" max="100" value="70" id="fw-reqspend" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-reqspend" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Required spend ratio</label>
+            <input type="range" min="10" max="100" value="70" id="fw-reqspend" aria-label="Required spend ratio percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-reqspend-val">70%</span>
           </div>
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Recurrence rate</label>
-            <input type="range" min="10" max="100" value="60" id="fw-recurrence" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-recurrence" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Recurrence rate</label>
+            <input type="range" min="10" max="100" value="60" id="fw-recurrence" aria-label="Recurrence rate percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-recurrence-val">60%</span>
           </div>
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Bypassability</label>
-            <input type="range" min="0" max="80" value="15" id="fw-bypass" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-bypass" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Bypassability</label>
+            <input type="range" min="0" max="80" value="15" id="fw-bypass" aria-label="Bypassability percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-bypass-val">15%</span>
           </div>
           <div>
-            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor effectiveness</label>
-            <input type="range" min="10" max="100" value="65" id="fw-ceffect" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <label for="fw-ceffect" class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor effectiveness</label>
+            <input type="range" min="10" max="100" value="65" id="fw-ceffect" aria-label="Contributor effectiveness percentage" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
             <span class="text-xs text-text-tertiary font-mono" id="fw-ceffect-val">65%</span>
           </div>
         </div>

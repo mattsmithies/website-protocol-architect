@@ -7,19 +7,19 @@
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
     <div class="p-6 md:p-8">
 
-      <div class="flex items-center justify-center gap-4 mb-6">
-        <button id="adl-narrative" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+      <div class="flex items-center justify-center gap-3 sm:gap-4 mb-6" role="group" aria-label="Toggle between AI narrative mode and agent demand mode">
+        <button id="adl-narrative" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
           AI narrative mode
         </button>
-        <button id="adl-demand" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+        <button id="adl-demand" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
           Agent demand mode
         </button>
       </div>
 
-      <canvas id="adl-canvas" class="w-full" style="height: 340px;"></canvas>
+      <canvas id="adl-canvas" class="w-full" style="height: 340px;" role="img" aria-label="Agent demand loop visualization showing token flow between agents, routing, and recipients"></canvas>
 
       {/* Output metrics */}
-      <div class="grid grid-cols-4 gap-4 mt-4 border-t border-border pt-4">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 border-t border-border pt-4">
         <div class="text-center">
           <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Quality</p>
           <p class="text-sm font-display font-bold" id="adl-quality">—</p>
@@ -107,8 +107,9 @@ if (canvas) {
     const flowAlpha = isReal ? 0.2 : 0.06;
     const particleAlpha = isReal ? 0.6 : 0.15;
 
-    // Agent (left)
-    const ax = 60;
+    // Agent (left) — scale for narrow screens
+    const isNarrow = w < 400;
+    const ax = isNarrow ? 40 : 60;
     const ay = h / 2;
     const [mr, mg, mb] = BLUE;
     ctx.beginPath();
@@ -122,7 +123,7 @@ if (canvas) {
     ctx.fillText('Agent', ax, ay - 28);
 
     // Request list (left-center)
-    const reqX = w * 0.25;
+    const reqX = isNarrow ? w * 0.2 : w * 0.25;
     for (let i = 0; i < requests.length; i++) {
       const ry = 40 + i * ((h - 80) / (requests.length - 1));
       ctx.font = '400 9px "Inter", system-ui';
@@ -177,7 +178,7 @@ if (canvas) {
     }
 
     // Recipients (right)
-    const recX = w * 0.78;
+    const recX = isNarrow ? w * 0.72 : w * 0.78;
     for (let i = 0; i < recipients.length; i++) {
       const ry = 40 + i * ((h - 80) / (recipients.length - 1));
       ctx.font = '400 9px "Inter", system-ui';
@@ -228,6 +229,8 @@ if (canvas) {
   function setMode(m: 'narrative' | 'demand') {
     mode = m;
     updateMetrics();
+    btnNarr.setAttribute('aria-selected', String(m === 'narrative'));
+    btnDemand.setAttribute('aria-selected', String(m === 'demand'));
     if (m === 'narrative') {
       btnNarr.style.background = 'rgba(239,68,68,0.12)';
       btnNarr.style.color = 'rgba(239,68,68,0.9)';

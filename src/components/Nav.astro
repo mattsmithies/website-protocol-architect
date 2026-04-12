@@ -6,6 +6,7 @@
   id="main-nav"
   class="fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-300"
   style="background: transparent; border-bottom: 1px solid transparent;"
+  aria-label="Main navigation"
 >
   <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
 
@@ -43,15 +44,17 @@
   <!-- Mobile menu -->
   <div
     id="mobile-menu"
+    role="menu"
+    aria-label="Mobile navigation"
     class="md:hidden overflow-hidden transition-all duration-300 ease-in-out"
     style="max-height: 0; opacity: 0;"
   >
     <div class="max-w-6xl mx-auto px-6 pb-6 flex flex-col gap-5">
-      <a href="#capabilities" class="text-base text-text-tertiary hover:text-text-primary transition-colors">Capabilities</a>
-      <a href="#work"         class="text-base text-text-tertiary hover:text-text-primary transition-colors">Work</a>
-      <a href="#essays"     class="text-base text-text-tertiary hover:text-text-primary transition-colors">Essays</a>
-      <a href="#about"        class="text-base text-text-tertiary hover:text-text-primary transition-colors">About</a>
-      <a href="#contact" class="ghost-button text-base w-full justify-center">Book a conversation</a>
+      <a href="#capabilities" role="menuitem" class="text-base text-text-tertiary hover:text-text-primary transition-colors py-1">Capabilities</a>
+      <a href="#work"         role="menuitem" class="text-base text-text-tertiary hover:text-text-primary transition-colors py-1">Work</a>
+      <a href="#essays"       role="menuitem" class="text-base text-text-tertiary hover:text-text-primary transition-colors py-1">Essays</a>
+      <a href="#about"        role="menuitem" class="text-base text-text-tertiary hover:text-text-primary transition-colors py-1">About</a>
+      <a href="#contact" role="menuitem" class="ghost-button text-base w-full justify-center">Book a conversation</a>
     </div>
   </div>
 </nav>

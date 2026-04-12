@@ -5,16 +5,18 @@
 
 <div class="reveal my-12 md:my-16">
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
-    <div class="flex flex-col lg:flex-row" style="height: 380px;">
+    <div class="flex flex-col lg:flex-row">
       <canvas
         id="auth-timeline"
-        class="flex-1 h-full"
-        style="cursor: crosshair;"
+        class="flex-1 w-full"
+        style="cursor: crosshair; height: 280px;"
+        role="img"
+        aria-label="Interactive authority timeline visualization. Shows validity windows for different authority roles over time. On desktop, hover to explore different time points."
       ></canvas>
       <div
         id="auth-timeline-panel"
-        class="lg:w-64 p-6 border-t lg:border-t-0 lg:border-l border-border text-sm overflow-y-auto"
-        style="height: 380px;"
+        class="lg:w-64 p-4 sm:p-6 border-t lg:border-t-0 lg:border-l border-border text-sm overflow-y-auto"
+        aria-live="polite"
       >
         <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-4">At this moment</p>
         <div id="atp-valid" class="mb-2">
@@ -283,6 +285,25 @@ if (canvas) {
   });
 
   canvas.addEventListener('mouseleave', () => { cursorT = -1; });
+
+  // Touch support for mobile
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const { marginLeft, timelineWidth } = getLayout();
+    cursorT = Math.max(0, Math.min(1, (touch.clientX - rect.left - marginLeft) / timelineWidth));
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const { marginLeft, timelineWidth } = getLayout();
+    cursorT = Math.max(0, Math.min(1, (touch.clientX - rect.left - marginLeft) / timelineWidth));
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => { cursorT = -1; });
 
   resize();
   window.addEventListener('resize', resize);

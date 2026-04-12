@@ -9,11 +9,14 @@
       id="delegation-chain"
       class="w-full"
       style="height: 320px;"
+      role="img"
+      aria-label="Delegation chain visualization. Drag the time slider to see how authority chains expire and downstream nodes become invalid."
     ></canvas>
     <div class="px-6 pb-5 pt-2">
       <input
         id="dc-slider"
         type="range" min="0" max="100" value="30"
+        aria-label="Timeline position — scrub to change the current date"
         class="w-full accent-signal h-1 bg-border rounded-full appearance-none cursor-pointer"
       />
       <div class="flex justify-between text-[9px] text-text-tertiary font-mono mt-1">
@@ -176,10 +179,10 @@ if (canvas && slider) {
     }
   }
 
-  canvas.addEventListener('mousemove', (e) => {
+  function handlePointer(clientX: number, clientY: number) {
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
     hoverNode = -1;
     for (let i = 0; i < nodes.length; i++) {
       const dx = nodes[i].x - mx;
@@ -187,9 +190,25 @@ if (canvas && slider) {
       if (dx * dx + dy * dy < 600) { hoverNode = i; break; }
     }
     render();
-  });
+  }
 
+  canvas.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY));
   canvas.addEventListener('mouseleave', () => { hoverNode = -1; render(); });
+
+  // Touch support for mobile
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    handlePointer(t.clientX, t.clientY);
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    handlePointer(t.clientX, t.clientY);
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => { hoverNode = -1; render(); });
   slider.addEventListener('input', render);
 
   resize();
