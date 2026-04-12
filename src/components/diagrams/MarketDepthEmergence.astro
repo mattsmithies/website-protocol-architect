@@ -1,0 +1,256 @@
+---
+// Visual 5: Market depth emerging from standard containers
+// Transition from fragmented scattered assets to structured clusters
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <label for="mde-slider" class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold">Container quality</label>
+          <span class="text-xs font-mono" id="mde-quality-label" style="color: rgba(239,68,68,0.7);">Low</span>
+        </div>
+        <input
+          id="mde-slider"
+          type="range" min="0" max="100" value="10"
+          aria-label="Container quality — slide to increase standardisation"
+          class="w-full accent-signal h-1 bg-border rounded-full appearance-none cursor-pointer"
+        />
+      </div>
+
+      <canvas id="mde-canvas" class="w-full" style="height: 340px;" role="img" aria-label="Visualisation showing how assets cluster and market depth emerges as container quality increases"></canvas>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 border-t border-border pt-4" aria-live="polite">
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Searchability</p>
+          <p class="text-sm font-display font-bold" id="mde-search">—</p>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Comparability</p>
+          <p class="text-sm font-display font-bold" id="mde-compare">—</p>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Audit confidence</p>
+          <p class="text-sm font-display font-bold" id="mde-audit">—</p>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Market depth</p>
+          <p class="text-sm font-display font-bold" id="mde-depth">—</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Containers do not create demand on their own. They make demand easier to discover, compare, and trust.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('mde-canvas') as HTMLCanvasElement;
+const slider = document.getElementById('mde-slider') as HTMLInputElement;
+
+if (canvas && slider) {
+  const ctx = canvas.getContext('2d')!;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const RED: [number, number, number] = [239, 68, 68];
+
+  // Generate stable random particles
+  const SEED = 42;
+  function seededRandom(seed: number) {
+    let s = seed;
+    return () => {
+      s = (s * 16807) % 2147483647;
+      return (s - 1) / 2147483646;
+    };
+  }
+
+  const rng = seededRandom(SEED);
+  const numParticles = 60;
+  const classes = 5;
+  const classColors: [number, number, number][] = [VIOLET, BLUE, GREEN, AMBER, [129, 140, 248]];
+
+  interface Particle {
+    scatteredX: number;
+    scatteredY: number;
+    clusteredX: number;
+    clusteredY: number;
+    classId: number;
+    size: number;
+  }
+
+  let particles: Particle[] = [];
+
+  function buildParticles(w: number, h: number) {
+    const rng2 = seededRandom(SEED);
+    const margin = 40;
+    particles = [];
+
+    // Cluster centres
+    const centres = [
+      { x: w * 0.2, y: h * 0.3 },
+      { x: w * 0.5, y: h * 0.2 },
+      { x: w * 0.8, y: h * 0.35 },
+      { x: w * 0.35, y: h * 0.7 },
+      { x: w * 0.7, y: h * 0.7 },
+    ];
+
+    for (let i = 0; i < numParticles; i++) {
+      const classId = Math.floor(rng2() * classes);
+      const centre = centres[classId];
+      particles.push({
+        scatteredX: margin + rng2() * (w - margin * 2),
+        scatteredY: margin + rng2() * (h - margin * 2),
+        clusteredX: centre.x + (rng2() - 0.5) * 80,
+        clusteredY: centre.y + (rng2() - 0.5) * 60,
+        classId,
+        size: 3 + rng2() * 3,
+      });
+    }
+  }
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildParticles(canvas.clientWidth, canvas.clientHeight);
+  }
+
+  function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+
+  function render() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const quality = parseInt(slider.value) / 100; // 0 to 1
+    ctx.clearRect(0, 0, w, h);
+
+    // Draw connection lines between same-class particles (more visible at higher quality)
+    if (quality > 0.2) {
+      const lineAlpha = Math.min((quality - 0.2) * 0.12, 0.08);
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          if (particles[i].classId !== particles[j].classId) continue;
+          const pi = particles[i];
+          const pj = particles[j];
+          const ax = lerp(pi.scatteredX, pi.clusteredX, quality);
+          const ay = lerp(pi.scatteredY, pi.clusteredY, quality);
+          const bx = lerp(pj.scatteredX, pj.clusteredX, quality);
+          const by = lerp(pj.scatteredY, pj.clusteredY, quality);
+
+          const dist = Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2);
+          if (dist < 120) {
+            const [r, g, b] = classColors[pi.classId];
+            ctx.beginPath();
+            ctx.moveTo(ax, ay);
+            ctx.lineTo(bx, by);
+            ctx.strokeStyle = `rgba(${r},${g},${b},${lineAlpha * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // Draw particles
+    for (const p of particles) {
+      const x = lerp(p.scatteredX, p.clusteredX, quality);
+      const y = lerp(p.scatteredY, p.clusteredY, quality);
+      const [r, g, b] = classColors[p.classId];
+      const alpha = 0.3 + quality * 0.4;
+
+      // Glow
+      if (quality > 0.4) {
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, p.size * 4);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${(quality - 0.4) * 0.1})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, p.size * 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(x, y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+      ctx.fill();
+    }
+
+    // Cluster labels (appear at higher quality)
+    if (quality > 0.5) {
+      const labelAlpha = Math.min((quality - 0.5) * 2, 0.5);
+      const labels = ['Tokens', 'Credits', 'Licences', 'Data rights', 'Claims'];
+      const centres = [
+        { x: w * 0.2, y: h * 0.3 },
+        { x: w * 0.5, y: h * 0.2 },
+        { x: w * 0.8, y: h * 0.35 },
+        { x: w * 0.35, y: h * 0.7 },
+        { x: w * 0.7, y: h * 0.7 },
+      ];
+
+      ctx.font = `500 ${w < 500 ? 8 : 9}px "Syne", system-ui`;
+      ctx.textAlign = 'center';
+      for (let i = 0; i < labels.length; i++) {
+        const [r, g, b] = classColors[i];
+        ctx.fillStyle = `rgba(${r},${g},${b},${labelAlpha})`;
+        ctx.fillText(labels[i], centres[i].x, centres[i].y - 45);
+      }
+    }
+
+    // Update metrics
+    const qualityLabel = document.getElementById('mde-quality-label')!;
+    const searchEl = document.getElementById('mde-search')!;
+    const compareEl = document.getElementById('mde-compare')!;
+    const auditEl = document.getElementById('mde-audit')!;
+    const depthEl = document.getElementById('mde-depth')!;
+
+    function setMetric(el: HTMLElement, value: number) {
+      if (value < 0.3) {
+        el.textContent = 'Low';
+        el.style.color = 'rgba(239,68,68,0.7)';
+      } else if (value < 0.6) {
+        el.textContent = 'Moderate';
+        el.style.color = 'rgba(245,158,11,0.7)';
+      } else if (value < 0.85) {
+        el.textContent = 'High';
+        el.style.color = 'rgba(74,222,128,0.7)';
+      } else {
+        el.textContent = 'Strong';
+        el.style.color = 'rgba(74,222,128,0.9)';
+      }
+    }
+
+    if (quality < 0.2) {
+      qualityLabel.textContent = 'Low';
+      qualityLabel.style.color = 'rgba(239,68,68,0.7)';
+    } else if (quality < 0.5) {
+      qualityLabel.textContent = 'Moderate';
+      qualityLabel.style.color = 'rgba(245,158,11,0.7)';
+    } else if (quality < 0.8) {
+      qualityLabel.textContent = 'High';
+      qualityLabel.style.color = 'rgba(74,222,128,0.7)';
+    } else {
+      qualityLabel.textContent = 'Very high';
+      qualityLabel.style.color = 'rgba(74,222,128,0.9)';
+    }
+
+    setMetric(searchEl, quality * 1.1);
+    setMetric(compareEl, quality * 0.95);
+    setMetric(auditEl, quality * 0.85);
+    setMetric(depthEl, quality * 0.75);
+  }
+
+  slider.addEventListener('input', render);
+
+  resize();
+  window.addEventListener('resize', () => { resize(); render(); });
+  render();
+}
+</script>

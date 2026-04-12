@@ -1,0 +1,249 @@
+---
+// Visual 4: Provenance under movement
+// Two transfer chains with slider — top loses metadata, bottom preserves it
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="mb-6">
+        <label for="pum-slider" class="sr-only">Move the asset through three systems</label>
+        <input
+          id="pum-slider"
+          type="range" min="0" max="100" value="0"
+          aria-label="Transfer progress — slide to move the asset through three systems"
+          class="w-full accent-signal h-1 bg-border rounded-full appearance-none cursor-pointer"
+        />
+        <div class="flex justify-between text-[9px] text-text-tertiary font-mono mt-1">
+          <span>Origin</span><span>System A</span><span>System B</span><span>System C</span>
+        </div>
+      </div>
+
+      <canvas id="pum-canvas" class="w-full" style="height: 340px;" role="img" aria-label="Two transfer chains showing how assets with and without containers survive movement across systems"></canvas>
+
+      <div class="grid grid-cols-2 gap-4 mt-4 border-t border-border pt-4" aria-live="polite">
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Without container</p>
+          <p class="text-sm font-display font-bold" id="pum-status-top" style="color: rgba(239,68,68,0.8);">Intact</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">With container</p>
+          <p class="text-sm font-display font-bold" id="pum-status-bot" style="color: rgba(74,222,128,0.8);">Intact</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    The asset is not trustworthy because it exists. It is trustworthy because it can move without losing the chain that makes it interpretable.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('pum-canvas') as HTMLCanvasElement;
+const slider = document.getElementById('pum-slider') as HTMLInputElement;
+
+if (canvas && slider) {
+  const ctx = canvas.getContext('2d')!;
+
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  const metadataLayers = ['Identity', 'Class', 'Authority', 'State', 'Comparable', 'Provenance', 'Evidence', 'History'];
+  const systems = ['Origin', 'System A', 'System B', 'System C'];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function render() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const progress = parseInt(slider.value) / 100; // 0 to 1
+    const isNarrow = w < 500;
+    ctx.clearRect(0, 0, w, h);
+
+    const topY = h * 0.25;
+    const botY = h * 0.72;
+    const margin = isNarrow ? 30 : 60;
+    const lineW = w - margin * 2;
+
+    // System markers
+    for (let i = 0; i < 4; i++) {
+      const x = margin + (lineW / 3) * i;
+
+      ctx.beginPath();
+      ctx.moveTo(x, 15);
+      ctx.lineTo(x, h - 10);
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.fillStyle = 'rgba(232,232,240,0.2)';
+      ctx.textAlign = 'center';
+      ctx.fillText(systems[i], x, 12);
+    }
+
+    // Labels
+    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(239,68,68,0.4)';
+    ctx.fillText('WITHOUT CONTAINER', margin, topY - 30);
+    ctx.fillStyle = 'rgba(74,222,128,0.4)';
+    ctx.fillText('WITH CONTAINER', margin, botY - 30);
+
+    // Current position
+    const assetX = margin + progress * lineW;
+
+    // === TOP CHAIN: metadata peels away ===
+    // Base line
+    ctx.beginPath();
+    ctx.moveTo(margin, topY);
+    ctx.lineTo(margin + lineW, topY);
+    ctx.strokeStyle = 'rgba(239,68,68,0.1)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Calculate how many layers remain at current position
+    // Lose layers at each system boundary
+    const layersLost = Math.floor(progress * 3); // 0, 1, 2, 3 boundaries
+    const partialLoss = (progress * 3) % 1;
+    const topLayersVisible = Math.max(0, metadataLayers.length - layersLost * 2 - (partialLoss > 0.5 ? 1 : 0));
+
+    // Draw asset block (top)
+    const blockW = isNarrow ? 50 : 70;
+    const blockH = isNarrow ? 40 : 55;
+    const topBlockColor = topLayersVisible > 5 ? AMBER : topLayersVisible > 2 ? RED : DIM;
+    const [tr, tg, tb] = topBlockColor;
+
+    ctx.fillStyle = `rgba(${tr},${tg},${tb},0.06)`;
+    ctx.strokeStyle = `rgba(${tr},${tg},${tb},0.3)`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(assetX - blockW / 2, topY - blockH / 2, blockW, blockH, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    // Draw remaining metadata bars inside the block
+    const barH = 3;
+    const barSpacing = 5;
+    const startBarY = topY - ((metadataLayers.length * barSpacing) / 2) + 2;
+    for (let i = 0; i < metadataLayers.length; i++) {
+      const barY = startBarY + i * barSpacing;
+      const present = i < topLayersVisible;
+      const barW = blockW * 0.7;
+
+      ctx.fillStyle = present
+        ? `rgba(${tr},${tg},${tb},0.4)`
+        : 'rgba(255,255,255,0.03)';
+      ctx.beginPath();
+      ctx.roundRect(assetX - barW / 2, barY, barW, barH, 1);
+      ctx.fill();
+    }
+
+    // Lost metadata indicators (floating away)
+    if (layersLost > 0) {
+      const lostCount = metadataLayers.length - topLayersVisible;
+      for (let i = 0; i < Math.min(lostCount, 6); i++) {
+        const lostX = assetX - 30 - i * 15 - Math.sin(Date.now() * 0.002 + i) * 5;
+        const lostY = topY - 25 + i * 8;
+        ctx.fillStyle = 'rgba(239,68,68,0.15)';
+        ctx.beginPath();
+        ctx.roundRect(lostX, lostY, 8, 2, 1);
+        ctx.fill();
+      }
+    }
+
+    // Layer count label
+    ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = `rgba(${tr},${tg},${tb},0.6)`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`${topLayersVisible}/${metadataLayers.length} fields`, assetX, topY + blockH / 2 + 14);
+
+    // === BOTTOM CHAIN: container preserves everything ===
+    ctx.beginPath();
+    ctx.moveTo(margin, botY);
+    ctx.lineTo(margin + lineW, botY);
+    ctx.strokeStyle = 'rgba(74,222,128,0.1)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Container block (always full)
+    const [br, bg, bb] = BLUE;
+    // Outer container
+    ctx.fillStyle = `rgba(${br},${bg},${bb},0.04)`;
+    ctx.strokeStyle = `rgba(${br},${bg},${bb},0.3)`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(assetX - blockW / 2 - 4, botY - blockH / 2 - 4, blockW + 8, blockH + 8, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    // Inner asset
+    ctx.fillStyle = 'rgba(74,222,128,0.06)';
+    ctx.strokeStyle = 'rgba(74,222,128,0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(assetX - blockW / 2, botY - blockH / 2, blockW, blockH, 3);
+    ctx.fill();
+    ctx.stroke();
+
+    // All metadata bars present
+    for (let i = 0; i < metadataLayers.length; i++) {
+      const barY = (botY - ((metadataLayers.length * barSpacing) / 2) + 2) + i * barSpacing;
+      const barW = blockW * 0.7;
+      ctx.fillStyle = 'rgba(74,222,128,0.4)';
+      ctx.beginPath();
+      ctx.roundRect(assetX - barW / 2, barY, barW, barH, 1);
+      ctx.fill();
+    }
+
+    ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = 'rgba(74,222,128,0.6)';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${metadataLayers.length}/${metadataLayers.length} fields`, assetX, botY + blockH / 2 + 18);
+
+    // Container label
+    ctx.font = `400 ${isNarrow ? 6 : 7}px "Syne", system-ui`;
+    ctx.fillStyle = `rgba(${br},${bg},${bb},0.4)`;
+    ctx.fillText('Container', assetX, botY - blockH / 2 - 10);
+
+    // Update status text
+    const statusTop = document.getElementById('pum-status-top')!;
+    const statusBot = document.getElementById('pum-status-bot')!;
+
+    if (topLayersVisible === metadataLayers.length) {
+      statusTop.textContent = 'Intact';
+      statusTop.style.color = 'rgba(245,158,11,0.8)';
+    } else if (topLayersVisible > 4) {
+      statusTop.textContent = `Degrading — ${metadataLayers.length - topLayersVisible} fields lost`;
+      statusTop.style.color = 'rgba(245,158,11,0.8)';
+    } else if (topLayersVisible > 0) {
+      statusTop.textContent = `Under-specified — ${metadataLayers.length - topLayersVisible} fields lost`;
+      statusTop.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      statusTop.textContent = 'Meaning lost in transit';
+      statusTop.style.color = 'rgba(239,68,68,0.9)';
+    }
+
+    statusBot.textContent = 'Container intact — all fields preserved';
+    statusBot.style.color = 'rgba(74,222,128,0.8)';
+  }
+
+  slider.addEventListener('input', render);
+
+  resize();
+  window.addEventListener('resize', () => { resize(); render(); });
+  render();
+}
+</script>

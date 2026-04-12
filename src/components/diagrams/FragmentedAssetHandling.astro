@@ -1,0 +1,299 @@
+---
+// Visual 1: Fragmented asset handling before containers
+// Split screen — left shows incompatible registries, right shows containerised portability
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="flex items-center justify-center gap-3 sm:gap-4 mb-6" role="group" aria-label="Toggle between fragmented and containerised view">
+        <button id="fah-fragmented" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          Without containers
+        </button>
+        <button id="fah-contained" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          With containers
+        </button>
+      </div>
+
+      <canvas id="fah-canvas" class="w-full" style="height: 380px;" role="img" aria-label="Visualisation comparing fragmented asset handling across registries versus portable containerised assets"></canvas>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Assets can exist long before they become portable, comparable, or easy to trust across systems.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('fah-canvas') as HTMLCanvasElement;
+const btnFrag = document.getElementById('fah-fragmented') as HTMLButtonElement;
+const btnCont = document.getElementById('fah-contained') as HTMLButtonElement;
+
+if (canvas && btnFrag && btnCont) {
+  const ctx = canvas.getContext('2d')!;
+  let mode: 'fragmented' | 'contained' = 'fragmented';
+  let animId = 0;
+  let hoverSystem = -1;
+  let hoverAsset = -1;
+
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  const systemNames = ['Token Registry', 'Carbon Platform', 'Licence DB', 'Data Rights', 'Provenance Log'];
+  const assetTypes = ['Token', 'Credit', 'Licence', 'Data Right', 'Claim'];
+  const shapes = ['circle', 'diamond', 'triangle', 'square', 'hexagon'] as const;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function drawShape(x: number, y: number, shape: typeof shapes[number], size: number, color: [number, number, number], alpha: number) {
+    const [r, g, b] = color;
+    ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.15})`;
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+    ctx.lineWidth = 1.5;
+
+    ctx.beginPath();
+    if (shape === 'circle') {
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+    } else if (shape === 'diamond') {
+      ctx.moveTo(x, y - size); ctx.lineTo(x + size, y);
+      ctx.lineTo(x, y + size); ctx.lineTo(x - size, y); ctx.closePath();
+    } else if (shape === 'triangle') {
+      ctx.moveTo(x, y - size); ctx.lineTo(x + size, y + size * 0.7);
+      ctx.lineTo(x - size, y + size * 0.7); ctx.closePath();
+    } else if (shape === 'square') {
+      ctx.rect(x - size * 0.8, y - size * 0.8, size * 1.6, size * 1.6);
+    } else {
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i - Math.PI / 6;
+        const px = x + Math.cos(a) * size;
+        const py = y + Math.sin(a) * size;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  function drawContainer(x: number, y: number, size: number, color: [number, number, number], alpha: number) {
+    const [r, g, b] = color;
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+    ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.06})`;
+    ctx.lineWidth = 1.5;
+    const w = size * 2.4;
+    const h = size * 1.6;
+    ctx.beginPath();
+    ctx.roundRect(x - w / 2, y - h / 2, w, h, 4);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const t = now * 0.001;
+    const isCont = mode === 'contained';
+    ctx.clearRect(0, 0, w, h);
+
+    const isNarrow = w < 500;
+    const systemSpacing = h / 6;
+    const leftX = isNarrow ? w * 0.25 : w * 0.22;
+    const rightX = isNarrow ? w * 0.75 : w * 0.78;
+    const midX = w / 2;
+
+    // Column labels
+    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.textAlign = 'center';
+
+    if (!isCont) {
+      // FRAGMENTED MODE
+      ctx.fillStyle = 'rgba(239,68,68,0.4)';
+      ctx.fillText('REGISTRY A', leftX, 20);
+      ctx.fillText('REGISTRY B', rightX, 20);
+
+      // Draw two registry columns with incompatible assets
+      const colorsA = [RED, AMBER, VIOLET, BLUE, GREEN];
+      const colorsB = [AMBER, RED, GREEN, VIOLET, BLUE];
+
+      for (let i = 0; i < 5; i++) {
+        const y = 50 + i * systemSpacing;
+
+        // Left registry — different shapes
+        drawShape(leftX, y, shapes[i], isNarrow ? 10 : 13, colorsA[i], 0.6);
+        ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+        ctx.fillStyle = `rgba(${colorsA[i][0]},${colorsA[i][1]},${colorsA[i][2]},0.5)`;
+        ctx.textAlign = 'center';
+        ctx.fillText(assetTypes[i], leftX, y + (isNarrow ? 20 : 24));
+
+        // Right registry — different shapes for same type
+        const altShape = shapes[(i + 2) % 5];
+        drawShape(rightX, y, altShape, isNarrow ? 10 : 13, colorsB[i], 0.6);
+        ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+        ctx.fillStyle = `rgba(${colorsB[i][0]},${colorsB[i][1]},${colorsB[i][2]},0.5)`;
+        ctx.textAlign = 'center';
+        ctx.fillText(assetTypes[i], rightX, y + (isNarrow ? 20 : 24));
+
+        // Broken connection lines between them
+        const breakX = midX + Math.sin(t * 0.5 + i) * 8;
+        ctx.beginPath();
+        ctx.moveTo(leftX + 20, y);
+        ctx.lineTo(breakX - 12, y);
+        ctx.strokeStyle = 'rgba(239,68,68,0.15)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.moveTo(breakX + 12, y);
+        ctx.lineTo(rightX - 20, y);
+        ctx.strokeStyle = 'rgba(239,68,68,0.15)';
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Translation node in the middle
+        ctx.beginPath();
+        ctx.arc(breakX, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(239,68,68,0.08)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(239,68,68,0.3)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.font = '400 5px "JetBrains Mono", monospace';
+        ctx.fillStyle = 'rgba(239,68,68,0.5)';
+        ctx.textAlign = 'center';
+        ctx.fillText('?', breakX, y + 2);
+      }
+
+      // Status labels
+      ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.fillStyle = 'rgba(239,68,68,0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Bespoke translation required', midX, h - 20);
+
+      // Diagnostic labels down the right side
+      if (!isNarrow) {
+        const labels = ['Different schemas', 'Different identity', 'Different metadata', 'Different history', 'Different proof'];
+        ctx.font = '400 8px "Inter", system-ui';
+        ctx.textAlign = 'left';
+        for (let i = 0; i < 5; i++) {
+          ctx.fillStyle = 'rgba(239,68,68,0.35)';
+          ctx.fillText(labels[i], midX - 30, 50 + i * systemSpacing - 12);
+        }
+      }
+
+    } else {
+      // CONTAINED MODE
+      ctx.fillStyle = 'rgba(74,222,128,0.4)';
+      ctx.fillText('SYSTEM A', leftX, 20);
+      ctx.fillText('SYSTEM B', rightX, 20);
+
+      const color = BLUE;
+
+      for (let i = 0; i < 5; i++) {
+        const y = 50 + i * systemSpacing;
+
+        // Left — containerised assets (uniform rectangles)
+        drawContainer(leftX, y, isNarrow ? 10 : 13, color, 0.5);
+        // Small shape inside to show asset identity preserved
+        drawShape(leftX, y, shapes[i], isNarrow ? 5 : 6, VIOLET, 0.4);
+
+        ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+        ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},0.5)`;
+        ctx.textAlign = 'center';
+        ctx.fillText(assetTypes[i], leftX, y + (isNarrow ? 22 : 26));
+
+        // Right — same containers
+        drawContainer(rightX, y, isNarrow ? 10 : 13, color, 0.5);
+        drawShape(rightX, y, shapes[i], isNarrow ? 5 : 6, VIOLET, 0.4);
+
+        ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+        ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},0.5)`;
+        ctx.textAlign = 'center';
+        ctx.fillText(assetTypes[i], rightX, y + (isNarrow ? 22 : 26));
+
+        // Clean connection line
+        ctx.beginPath();
+        ctx.moveTo(leftX + (isNarrow ? 18 : 22), y);
+        ctx.lineTo(rightX - (isNarrow ? 18 : 22), y);
+        ctx.strokeStyle = `rgba(74,222,128,0.2)`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // Flowing particles
+        for (let p = 0; p < 2; p++) {
+          const pt = ((t * 0.15 + i * 0.2 + p * 0.5) % 1);
+          const startX = leftX + 22;
+          const endX = rightX - 22;
+          const px = startX + (endX - startX) * pt;
+          ctx.beginPath();
+          ctx.arc(px, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(74,222,128,0.5)`;
+          ctx.fill();
+        }
+      }
+
+      // Status labels
+      ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.fillStyle = 'rgba(74,222,128,0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Portable without ambiguity', midX, h - 20);
+
+      if (!isNarrow) {
+        const labels = ['Searchable', 'Comparable', 'Verifiable', 'Auditable', 'Transferable'];
+        ctx.font = '400 8px "Inter", system-ui';
+        ctx.textAlign = 'left';
+        for (let i = 0; i < 5; i++) {
+          ctx.fillStyle = 'rgba(74,222,128,0.4)';
+          ctx.fillText(labels[i], midX - 20, 50 + i * systemSpacing - 12);
+        }
+      }
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function setMode(m: 'fragmented' | 'contained') {
+    mode = m;
+    btnFrag.setAttribute('aria-selected', String(m === 'fragmented'));
+    btnCont.setAttribute('aria-selected', String(m === 'contained'));
+    if (m === 'fragmented') {
+      btnFrag.style.background = 'rgba(239,68,68,0.12)';
+      btnFrag.style.color = 'rgba(239,68,68,0.9)';
+      btnFrag.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnCont.style.background = 'transparent';
+      btnCont.style.color = 'rgba(232,232,240,0.3)';
+      btnCont.style.borderColor = 'rgba(255,255,255,0.06)';
+    } else {
+      btnCont.style.background = 'rgba(74,222,128,0.12)';
+      btnCont.style.color = 'rgba(74,222,128,0.9)';
+      btnCont.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnFrag.style.background = 'transparent';
+      btnFrag.style.color = 'rgba(232,232,240,0.3)';
+      btnFrag.style.borderColor = 'rgba(255,255,255,0.06)';
+    }
+  }
+
+  btnFrag.addEventListener('click', () => setMode('fragmented'));
+  btnCont.addEventListener('click', () => setMode('contained'));
+
+  resize();
+  window.addEventListener('resize', resize);
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else { render(5000); }
+}
+</script>

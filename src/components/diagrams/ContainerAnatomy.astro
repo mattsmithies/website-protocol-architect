@@ -1,0 +1,189 @@
+---
+// Visual 3: Anatomy of a real asset container
+// Exploded diagram — hover each layer to see what breaks without it
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="max-w-2xl mx-auto">
+        <div id="ca-layers" class="space-y-0">
+        </div>
+      </div>
+
+      <div id="ca-detail" class="mt-6 p-4 rounded-lg border border-border transition-all duration-300 max-w-2xl mx-auto" style="opacity: 0; background: rgba(11,11,17,0.8);">
+        <div class="flex items-start gap-3">
+          <span id="ca-detail-icon" class="text-signal text-sm mt-0.5">&#10007;</span>
+          <div>
+            <p id="ca-detail-label" class="text-sm text-signal font-display font-semibold mb-1"></p>
+            <p id="ca-detail-text" class="text-sm text-text-secondary leading-relaxed"></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    A container is the minimum structure that lets an asset travel without losing its meaning.
+  </p>
+</div>
+
+<script>
+interface ContainerLayer {
+  label: string;
+  description: string;
+  breakage: string;
+  color: string;
+  colorDim: string;
+}
+
+const layers: ContainerLayer[] = [
+  {
+    label: 'Asset identity',
+    description: 'A stable, unique identifier that persists across systems and over time.',
+    breakage: 'Without stable identity, deduplication fails. The same asset appears multiple times across registries. Reconciliation becomes manual.',
+    color: 'rgba(167,139,250,0.8)',
+    colorDim: 'rgba(167,139,250,0.15)',
+  },
+  {
+    label: 'Asset class',
+    description: 'The category and type of asset — what it is, not just what it is called.',
+    breakage: 'Without a standard class, search returns mixed results. Carbon credits, data rights, and licences cannot be filtered reliably.',
+    color: 'rgba(129,140,248,0.8)',
+    colorDim: 'rgba(129,140,248,0.15)',
+  },
+  {
+    label: 'Issuer or authority context',
+    description: 'Who issued the asset, under what authority, and whether that authority was valid at issuance.',
+    breakage: 'Without authority context, validity becomes ambiguous. Any system can claim to have issued a legitimate asset.',
+    color: 'rgba(56,189,248,0.8)',
+    colorDim: 'rgba(56,189,248,0.15)',
+  },
+  {
+    label: 'State and lifecycle status',
+    description: 'Whether the asset is active, retired, suspended, transferred, or expired.',
+    breakage: 'Without state, the asset cannot be interpreted correctly. A retired credit looks identical to an active one.',
+    color: 'rgba(56,189,248,0.8)',
+    colorDim: 'rgba(56,189,248,0.15)',
+  },
+  {
+    label: 'Comparable fields',
+    description: 'The minimum set of fields required for meaningful comparison across assets of the same class.',
+    breakage: 'Without comparable fields, search and market filtering fail. Buyers cannot evaluate like with like.',
+    color: 'rgba(74,222,128,0.8)',
+    colorDim: 'rgba(74,222,128,0.15)',
+  },
+  {
+    label: 'Provenance chain',
+    description: 'The history of where the asset came from, who created it, and through what process.',
+    breakage: 'Without provenance, transfer destroys trust. The asset arrives at a new system with no verifiable history.',
+    color: 'rgba(74,222,128,0.8)',
+    colorDim: 'rgba(74,222,128,0.15)',
+  },
+  {
+    label: 'Evidence or proof references',
+    description: 'Links to the supporting evidence, attestations, or documents that back the asset claim.',
+    breakage: 'Without evidence references, the asset is a bare assertion. Audit requires manual reconstruction from external systems.',
+    color: 'rgba(245,158,11,0.8)',
+    colorDim: 'rgba(245,158,11,0.15)',
+  },
+  {
+    label: 'Transfer and update history',
+    description: 'A record of every transfer, update, and state change the asset has undergone.',
+    breakage: 'Without transfer history, the chain of custody is invisible. Disputes have no structural record to resolve against.',
+    color: 'rgba(245,158,11,0.8)',
+    colorDim: 'rgba(245,158,11,0.15)',
+  },
+];
+
+const container = document.getElementById('ca-layers')!;
+const detail = document.getElementById('ca-detail')!;
+const detailIcon = document.getElementById('ca-detail-icon')!;
+const detailLabel = document.getElementById('ca-detail-label')!;
+const detailText = document.getElementById('ca-detail-text')!;
+
+let activeLayer: HTMLElement | null = null;
+
+for (let i = 0; i < layers.length; i++) {
+  const layer = layers[i];
+  const row = document.createElement('div');
+  row.className = 'group cursor-pointer transition-all duration-300';
+  row.setAttribute('tabindex', '0');
+  row.setAttribute('role', 'button');
+  row.setAttribute('aria-label', `${layer.label} — select to see what breaks without it`);
+
+  const isFirst = i === 0;
+  const isLast = i === layers.length - 1;
+  const borderRadius = isFirst ? 'border-radius: 8px 8px 0 0;' : isLast ? 'border-radius: 0 0 8px 8px;' : '';
+
+  row.innerHTML = `
+    <div class="flex items-center gap-4 px-5 py-4 border border-border transition-all duration-300" style="${borderRadius} border-bottom: ${isLast ? '1px' : '0'} solid rgba(255,255,255,0.06); background: ${layer.colorDim};">
+      <span class="w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300" style="background: ${layer.color}; opacity: 0.5;"></span>
+      <div class="flex-1">
+        <span class="text-sm font-display font-semibold text-text-primary transition-colors duration-300">${layer.label}</span>
+        <span class="text-xs text-text-tertiary ml-2 hidden sm:inline">${layer.description}</span>
+      </div>
+      <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0">Remove?</span>
+    </div>
+  `;
+
+  function showDetail() {
+    detail.style.opacity = '1';
+    detail.style.borderColor = layer.color.replace('0.8', '0.3');
+    detailIcon.textContent = '\u2717';
+    detailIcon.style.color = 'rgba(239,68,68,0.8)';
+    detailLabel.textContent = `Without: ${layer.label}`;
+    detailLabel.style.color = layer.color;
+    detailText.textContent = layer.breakage;
+    activeLayer = row;
+
+    // Dim the layer visually
+    const inner = row.querySelector('div') as HTMLElement;
+    if (inner) {
+      inner.style.background = 'rgba(239,68,68,0.06)';
+      inner.style.borderColor = 'rgba(239,68,68,0.2)';
+    }
+  }
+
+  function hideDetail() {
+    detail.style.opacity = '0';
+    activeLayer = null;
+    const inner = row.querySelector('div') as HTMLElement;
+    if (inner) {
+      inner.style.background = layer.colorDim;
+      inner.style.borderColor = '';
+    }
+  }
+
+  row.addEventListener('mouseenter', showDetail);
+  row.addEventListener('mouseleave', hideDetail);
+  row.addEventListener('focus', showDetail);
+  row.addEventListener('blur', hideDetail);
+
+  row.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeLayer === row) {
+      hideDetail();
+    } else {
+      // Reset any previous active
+      if (activeLayer) {
+        const prev = activeLayer.querySelector('div') as HTMLElement;
+        if (prev) { prev.style.background = ''; prev.style.borderColor = ''; }
+      }
+      showDetail();
+    }
+  });
+
+  container.appendChild(row);
+}
+
+document.addEventListener('click', () => {
+  if (activeLayer) {
+    detail.style.opacity = '0';
+    const inner = activeLayer.querySelector('div') as HTMLElement;
+    if (inner) { inner.style.background = ''; inner.style.borderColor = ''; }
+    activeLayer = null;
+  }
+});
+</script>

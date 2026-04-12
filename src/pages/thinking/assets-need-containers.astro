@@ -1,0 +1,309 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import FragmentedAssetHandling from '../../components/diagrams/FragmentedAssetHandling.astro';
+import IssuanceVsContainment from '../../components/diagrams/IssuanceVsContainment.astro';
+import ContainerAnatomy from '../../components/diagrams/ContainerAnatomy.astro';
+import ProvenanceUnderMovement from '../../components/diagrams/ProvenanceUnderMovement.astro';
+import MarketDepthEmergence from '../../components/diagrams/MarketDepthEmergence.astro';
+import '../../styles/global.css';
+---
+
+<Layout title="Assets need containers before they need markets — Matt Smithies">
+  <Nav />
+  <main>
+    <article class="px-6">
+
+      {/* ── Header ──────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
+        <div class="reveal">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Meta Structures</p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
+            Assets need containers before they need markets
+          </h1>
+          <p class="text-text-tertiary text-base">
+            The asset is not enough. The structure around the asset determines whether it can scale beyond its home system.
+          </p>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 1: Opening — the shipping container analogy
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto pb-8">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Before the shipping container, global trade existed, but it was slow, fragile, and expensive. Every port had its own loading process, its own dimensions, its own handling assumptions. Goods moved, but the system around them did not. Coordination stayed expensive because every transfer required translation.</p>
+
+          <p>The shipping container did not change what was being shipped. It changed the structure around it. It created a standard envelope that ports, ships, cranes, schedules, and operators could all agree on. That one move unlocked comparability, portability, lower friction, and a different scale of trade.</p>
+
+          <p class="text-text-primary font-display font-bold text-2xl pt-4">Digital assets have the same problem.</p>
+
+          <p>Tokens, credits, credentials, licences, data rights, provenance records, and issued claims already exist. What is missing is the shared container around them. Each registry defines them differently. Each platform indexes them differently. Each system carries its own assumptions about identity, metadata, transfer, history, and proof.</p>
+
+          <p>So the asset may exist, but it does not travel well.</p>
+
+          <p>That is why so much so-called asset infrastructure still feels brittle. The asset is there, but the envelope around it is inconsistent. Without a common container, every integration is bespoke, every marketplace is narrower than it should be, and every audit begins with translation.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 1: Fragmented asset handling ────────── */}
+      <div class="max-w-5xl mx-auto">
+        <FragmentedAssetHandling />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 2: The real problem is not issuance
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">The real problem is not issuance</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Most digital asset discussions start at the wrong layer.</p>
+
+          <div class="border-l-2 border-red-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              How do we mint the thing.<br/>
+              How do we tokenise it.<br/>
+              How do we create supply.<br/>
+              How do we put it on chain.<br/>
+              How do we list it.<br/>
+              How do we trade it.
+            </p>
+          </div>
+
+          <p>That is too early.</p>
+
+          <p>Before an asset can become liquid, it has to become <em class="text-signal not-italic font-medium">legible</em>. Before it can become legible, it has to be <em class="text-signal not-italic font-medium">contained</em>. That means a standard structure around the asset that preserves identity, provenance, category, state, issuer context, and the fields required for comparison.</p>
+
+          <p>Without that, markets stay shallow because buyers are not really comparing like with like. Search stays weak because each system names and stores the asset differently. Audit stays expensive because provenance and validity have to be reconstructed case by case.</p>
+
+          <p>The market does not fail because demand is absent. It often fails because the assets do not arrive in a form the market can reliably consume.</p>
+
+          <p class="text-text-primary font-display font-bold text-xl pt-4">That is the missing primitive.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 2: Issuance versus containment ─────── */}
+      <div class="max-w-5xl mx-auto">
+        <IssuanceVsContainment />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 3: What a container actually is
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">What a container actually is</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>A container is not just metadata.</p>
+
+          <p>It is not a decorative wrapper. It is not a front-end schema. It is not a vague standard with optional fields that no one respects.</p>
+
+          <p>A real container does four things.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              It gives the asset a stable identity.<br/>
+              It defines the minimum structure required for comparison.<br/>
+              It preserves provenance and historical state.<br/>
+              It makes the asset portable across systems without losing meaning.
+            </p>
+          </div>
+
+          <p>That is what matters.</p>
+
+          <p>If two systems both claim to support the same class of asset but cannot preserve identity, category, provenance, and comparable fields across transfer, then they do not share a container. They share a label.</p>
+
+          <p>That distinction matters more than most teams realise.</p>
+
+          <p>Because labels create marketing alignment. <em class="text-signal not-italic font-medium">Containers create operational alignment.</em></p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 3: Anatomy of a container ──────────── */}
+      <div class="max-w-4xl mx-auto">
+        <ContainerAnatomy />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 4: Provenance matters more after movement
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Why provenance matters more after movement, not before it</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The hardest part is not creating an asset. It is preserving trust once that asset starts moving.</p>
+
+          <p>An asset can look clean inside its home registry and still become ambiguous the moment it is exported, mirrored, wrapped, fractionalised, transferred, or indexed elsewhere. That is where most systems quietly break.</p>
+
+          <p>The issue is not movement itself. The issue is movement without a durable envelope.</p>
+
+          <div class="border-l-2 border-amber-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              If provenance is attached loosely, transfer strips it.<br/>
+              If category fields are inconsistent, comparison degrades.<br/>
+              If authority is local to one platform, external validity weakens.<br/>
+              If state transitions are not preserved, the market sees a<br/>
+              current asset but loses the path that made it credible.
+            </p>
+          </div>
+
+          <p>That is why containers matter more <em class="text-signal not-italic font-medium">after</em> issuance than at issuance.</p>
+
+          <p>They preserve coherence across change.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 4: Provenance under movement ──────── */}
+      <div class="max-w-5xl mx-auto">
+        <ProvenanceUnderMovement />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 5: Markets reward boring correctness
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Markets reward boring correctness</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The shipping container did not win because it was exciting.</p>
+
+          <p>It won because it was boring, standard, and correct.</p>
+
+          <p>That is the lesson digital asset infrastructure keeps avoiding.</p>
+
+          <div class="border-l-2 border-red-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Teams want the asset.<br/>
+              They want the marketplace.<br/>
+              They want the narrative.<br/>
+              They want the issuance event.<br/>
+              They want the graph.
+            </p>
+          </div>
+
+          <p>Very few want to spend enough time on the envelope.</p>
+
+          <p>But markets reward boring correctness.</p>
+
+          <p>They reward assets that can be found, compared, verified, moved, and understood without bespoke handling at every step. They reward infrastructure that reduces interpretation cost. They reward systems that let different actors arrive at the same understanding of what the asset is, what state it is in, where it came from, and what can be done with it.</p>
+
+          <p>That is what containers do.</p>
+
+          <p>They do not make the asset interesting. <em class="text-signal not-italic font-medium">They make the asset usable at scale.</em></p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 5: Market depth emergence ──────────── */}
+      <div class="max-w-5xl mx-auto">
+        <MarketDepthEmergence />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 6: This is a meta structure problem
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">This is a meta structure problem</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The systems that will define the next era of digital assets are not the ones that issue the most things.</p>
+
+          <p>They are the ones that solve the meta structure problem.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              The envelope.<br/>
+              The shared structure.<br/>
+              The boring layer that sits around identity, provenance,<br/>
+              category, state, and transfer.<br/>
+              The thing that lets assets move between registries, indexers,<br/>
+              applications, and markets without collapsing<br/>
+              back into bespoke interpretation.
+            </p>
+          </div>
+
+          <p>This is true for carbon credits. It is true for licences and credentials. It is true for supply chain records. It is true for data rights. It is true for any asset whose value depends on being found, compared, trusted, and moved across system boundaries.</p>
+
+          <p>The asset matters. But the container decides whether the asset can become part of a larger market.</p>
+        </div>
+      </div>
+
+      {/* ── Closing ─────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16 pb-24">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The shipping container did not change trade by changing cargo. It changed trade by standardising the structure around cargo.</p>
+
+          <p>Digital asset infrastructure needs the same discipline.</p>
+
+          <p>Before markets scale, assets need containers. Before liquidity deepens, assets need envelopes that preserve identity, provenance, state, and comparability. Before interoperability becomes real, systems need to agree on what an asset must carry with it as it moves.</p>
+
+          <div class="border-l-2 border-red-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Without that, every registry stays narrower than it should be.<br/>
+              Every marketplace stays more bespoke than it should be.<br/>
+              Every audit stays more expensive than it should be.
+            </p>
+          </div>
+
+          <p>The next generation of asset infrastructure will not be defined by who issued the most. It will be defined by who built the most correct container.</p>
+        </div>
+
+        <div class="reveal border-t border-border pt-10 mt-12">
+          <p class="text-text-primary font-display font-bold text-xl md:text-2xl leading-snug max-w-xl">
+            The asset is not enough. The structure around the asset determines whether it can scale beyond its home system.
+          </p>
+        </div>
+
+        {/* ── Production bridge ──────────────────────────── */}
+        <div class="reveal glass-card p-8 md:p-10 mt-16">
+          <div class="flex flex-col md:flex-row md:items-center gap-6">
+            <div class="flex-1">
+              <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-2">In practice</p>
+              <p class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight mb-2">
+                A repeated systems problem
+              </p>
+              <p class="text-text-tertiary text-sm leading-relaxed">
+                In my own work, this shows up as a repeated systems problem: how to make issued items searchable, comparable, and replayable across workflows without losing the evidence and structure that made them trustworthy in the first place. The answer is rarely another marketplace. It is usually a better container.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── CTA ────────────────────────────────────────── */}
+        <div class="reveal glass-card p-8 md:p-10 mt-6 text-center">
+          <p class="text-text-secondary text-lg mb-6 font-display">
+            Designing asset infrastructure that needs to work across systems?
+          </p>
+          <a href="/#contact" class="glow-button magnetic inline-flex items-center gap-3 px-10 py-4 rounded-full text-sm tracking-wide">
+            Book a conversation
+            <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 8h10M10 4l4 4-4 4" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="mt-8 pb-8">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors">&larr; Back to essays</a>
+        </div>
+      </div>
+
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { initScrollAnimations } from '../../scripts/scroll-animations';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>

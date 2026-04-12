@@ -1,0 +1,297 @@
+---
+// Visual 2: Issuance versus containment pipeline
+// Two horizontal pipelines — top weakens, bottom strengthens
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+      <canvas id="ivc-canvas" class="w-full" style="height: 400px;" role="img" aria-label="Two pipelines comparing issuance-first versus container-first approaches to asset infrastructure"></canvas>
+
+      <div id="ivc-tooltip" class="mt-4 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
+        <p id="ivc-tooltip-label" class="text-xs text-text-tertiary uppercase tracking-wider mb-1"></p>
+        <p id="ivc-tooltip-text" class="text-sm text-text-secondary leading-relaxed"></p>
+      </div>
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Issuance creates supply. Containers create market readiness.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('ivc-canvas') as HTMLCanvasElement;
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+  let animId = 0;
+  let hoverStage = -1;
+  let hoverPipeline = -1;
+
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  interface PipelineStage {
+    label: string;
+    sublabel: string;
+    tooltip: string;
+  }
+
+  const topStages: PipelineStage[] = [
+    { label: 'Issue asset', sublabel: 'Supply created', tooltip: 'The asset is minted or registered. But without a standard structure, it carries only the schema of its home system.' },
+    { label: 'List asset', sublabel: 'Visibility attempted', tooltip: 'The asset is listed, but each marketplace expects different fields. Metadata is manually mapped or silently dropped.' },
+    { label: 'Market', sublabel: 'Liquidity weak', tooltip: 'Buyers cannot reliably search, compare, or verify. Trust depends on the platform, not the asset. The market stays shallow.' },
+  ];
+
+  const bottomStages: PipelineStage[] = [
+    { label: 'Define container', sublabel: 'Structure first', tooltip: 'A shared envelope is defined: identity, category, provenance, comparable fields, state, authority context.' },
+    { label: 'Issue into container', sublabel: 'Born portable', tooltip: 'The asset is issued inside a standard container. It carries everything it needs to be understood across systems.' },
+    { label: 'Index', sublabel: 'Discoverable', tooltip: 'Standard structure means indexers can crawl, categorise, and surface assets without per-registry integration.' },
+    { label: 'Compare', sublabel: 'Like with like', tooltip: 'Comparable fields enable real filtering and matching. Buyers can evaluate assets across registries.' },
+    { label: 'Verify', sublabel: 'Provenance intact', tooltip: 'Authority context and provenance chain travel with the asset. Verification does not require the home system.' },
+    { label: 'Market', sublabel: 'Depth emerges', tooltip: 'Searchability, comparability, and auditability compound. The market becomes legible. Liquidity follows structure.' },
+  ];
+
+  const topMetrics = ['Searchability: low', 'Comparability: low', 'Auditability: low', 'Liquidity: weak'];
+  const bottomMetrics = ['Searchability: high', 'Comparability: high', 'Auditability: high', 'Market readiness: strong'];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getStagePositions(stages: PipelineStage[], w: number, y: number) {
+    const margin = w < 500 ? 30 : 60;
+    const lineW = w - margin * 2;
+    return stages.map((s, i) => ({
+      x: margin + (lineW / (stages.length - 1)) * i,
+      y,
+      ...s,
+    }));
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const t = now * 0.001;
+    const isNarrow = w < 500;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const topY = h * 0.22;
+    const bottomY = h * 0.68;
+    const margin = isNarrow ? 30 : 60;
+    const lineW = w - margin * 2;
+
+    // Pipeline labels
+    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(239,68,68,0.5)';
+    ctx.fillText('ISSUANCE FIRST', margin, topY - (isNarrow ? 40 : 50));
+    ctx.fillStyle = 'rgba(74,222,128,0.5)';
+    ctx.fillText('CONTAINER FIRST', margin, bottomY - (isNarrow ? 40 : 50));
+
+    // === TOP PIPELINE ===
+    const topPos = getStagePositions(topStages, w, topY);
+
+    // Weakening flow line
+    for (let i = 0; i < topPos.length - 1; i++) {
+      const a = topPos[i];
+      const b = topPos[i + 1];
+      const fade = 1 - (i / (topPos.length - 1)) * 0.6;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = `rgba(239,68,68,${0.15 * fade})`;
+      ctx.lineWidth = (3 - i * 0.8);
+      ctx.stroke();
+
+      // Slowing particles
+      const speed = 0.12 - i * 0.03;
+      for (let p = 0; p < 2; p++) {
+        const pt = ((t * speed + p * 0.5) % 1);
+        const px = a.x + (b.x - a.x) * pt;
+        ctx.beginPath();
+        ctx.arc(px, a.y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(239,68,68,${0.4 * fade})`;
+        ctx.fill();
+      }
+    }
+
+    // Top nodes
+    for (let i = 0; i < topPos.length; i++) {
+      const s = topPos[i];
+      const isHover = hoverPipeline === 0 && hoverStage === i;
+      const alpha = isHover ? 0.9 : 0.5;
+      const nodeR = isNarrow ? 14 : 18;
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, nodeR, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(239,68,68,${isHover ? 0.1 : 0.04})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(239,68,68,${alpha * 0.6})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${alpha})`;
+      ctx.textAlign = 'center';
+      ctx.fillText(s.label, s.x, s.y - nodeR - 8);
+
+      ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+      ctx.fillStyle = `rgba(239,68,68,${alpha * 0.6})`;
+      ctx.fillText(s.sublabel, s.x, s.y + nodeR + 12);
+    }
+
+    // Top metrics (right side, if space)
+    if (!isNarrow) {
+      ctx.font = '400 8px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      for (let i = 0; i < topMetrics.length; i++) {
+        ctx.fillStyle = 'rgba(239,68,68,0.35)';
+        ctx.fillText(topMetrics[i], w - 20, topY - 20 + i * 14);
+      }
+    }
+
+    // === BOTTOM PIPELINE ===
+    const botPos = getStagePositions(bottomStages, w, bottomY);
+
+    // Strengthening flow line
+    for (let i = 0; i < botPos.length - 1; i++) {
+      const a = botPos[i];
+      const b = botPos[i + 1];
+      const strength = 0.5 + (i / (botPos.length - 1)) * 0.5;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = `rgba(74,222,128,${0.12 + strength * 0.15})`;
+      ctx.lineWidth = 1 + i * 0.4;
+      ctx.stroke();
+
+      // Accelerating particles
+      const speed = 0.08 + i * 0.02;
+      for (let p = 0; p < 2 + Math.floor(i / 2); p++) {
+        const pt = ((t * speed + i * 0.15 + p * 0.35) % 1);
+        const px = a.x + (b.x - a.x) * pt;
+        ctx.beginPath();
+        ctx.arc(px, a.y, 1.5 + i * 0.15, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(74,222,128,${0.3 + strength * 0.3})`;
+        ctx.fill();
+      }
+    }
+
+    // Bottom nodes
+    for (let i = 0; i < botPos.length; i++) {
+      const s = botPos[i];
+      const isHover = hoverPipeline === 1 && hoverStage === i;
+      const alpha = isHover ? 0.9 : 0.5;
+      const nodeR = isNarrow ? 10 : 14;
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, nodeR, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(74,222,128,${isHover ? 0.1 : 0.04})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(74,222,128,${alpha * 0.6})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.font = `600 ${isNarrow ? 7 : 9}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${alpha})`;
+      ctx.textAlign = 'center';
+      ctx.fillText(s.label, s.x, s.y - nodeR - 8);
+
+      ctx.font = `400 ${isNarrow ? 6 : 8}px "Inter", system-ui`;
+      ctx.fillStyle = `rgba(74,222,128,${alpha * 0.6})`;
+      ctx.fillText(s.sublabel, s.x, s.y + nodeR + 12);
+    }
+
+    // Bottom metrics
+    if (!isNarrow) {
+      ctx.font = '400 8px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      for (let i = 0; i < bottomMetrics.length; i++) {
+        ctx.fillStyle = 'rgba(74,222,128,0.4)';
+        ctx.fillText(bottomMetrics[i], w - 20, bottomY - 20 + i * 14);
+      }
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function handlePointer(clientX: number, clientY: number) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+
+    const topY = h * 0.22;
+    const bottomY = h * 0.68;
+    const hitR = isNarrow ? 25 : 35;
+
+    let found = false;
+
+    const topPos = getStagePositions(topStages, w, topY);
+    for (let i = 0; i < topPos.length; i++) {
+      const dx = topPos[i].x - mx;
+      const dy = topPos[i].y - my;
+      if (dx * dx + dy * dy < hitR * hitR) {
+        hoverPipeline = 0; hoverStage = i; found = true;
+        showTooltip(topStages[i].label, topStages[i].tooltip, RED);
+        break;
+      }
+    }
+
+    if (!found) {
+      const botPos = getStagePositions(bottomStages, w, bottomY);
+      for (let i = 0; i < botPos.length; i++) {
+        const dx = botPos[i].x - mx;
+        const dy = botPos[i].y - my;
+        if (dx * dx + dy * dy < hitR * hitR) {
+          hoverPipeline = 1; hoverStage = i; found = true;
+          showTooltip(bottomStages[i].label, bottomStages[i].tooltip, GREEN);
+          break;
+        }
+      }
+    }
+
+    if (!found) {
+      hoverPipeline = -1; hoverStage = -1;
+      hideTooltip();
+    }
+  }
+
+  const tooltip = document.getElementById('ivc-tooltip')!;
+  const tooltipLabel = document.getElementById('ivc-tooltip-label')!;
+  const tooltipText = document.getElementById('ivc-tooltip-text')!;
+
+  function showTooltip(label: string, text: string, color: [number, number, number]) {
+    tooltip.style.opacity = '1';
+    tooltip.style.borderColor = `rgba(${color[0]},${color[1]},${color[2]},0.3)`;
+    tooltipLabel.textContent = label;
+    tooltipLabel.style.color = `rgba(${color[0]},${color[1]},${color[2]},0.7)`;
+    tooltipText.textContent = text;
+  }
+
+  function hideTooltip() { tooltip.style.opacity = '0'; }
+
+  canvas.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY));
+  canvas.addEventListener('mouseleave', () => { hoverPipeline = -1; hoverStage = -1; hideTooltip(); });
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handlePointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+  canvas.addEventListener('touchend', () => { hoverPipeline = -1; hoverStage = -1; hideTooltip(); });
+
+  resize();
+  window.addEventListener('resize', resize);
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else { render(5000); }
+}
+</script>
