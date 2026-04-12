@@ -5,34 +5,35 @@
 
 <div class="reveal my-12 md:my-16">
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
-    <div class="flex flex-col lg:flex-row">
+    <div class="flex flex-col lg:flex-row" style="height: 380px;">
       <canvas
         id="auth-timeline"
-        class="flex-1"
-        style="height: 380px; cursor: crosshair;"
+        class="flex-1 h-full"
+        style="cursor: crosshair;"
       ></canvas>
       <div
         id="auth-timeline-panel"
-        class="lg:w-64 p-6 border-t lg:border-t-0 lg:border-l border-border text-sm lg:min-h-[380px]"
+        class="lg:w-64 p-6 border-t lg:border-t-0 lg:border-l border-border text-sm overflow-y-auto"
+        style="height: 380px;"
       >
         <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-4">At this moment</p>
-        <div id="atp-valid" class="mb-3">
+        <div id="atp-valid" class="mb-2">
           <span class="text-text-tertiary text-xs">Valid authority</span>
-          <span class="text-text-primary font-display font-bold text-lg block" id="atp-valid-count">—</span>
+          <span class="text-text-primary font-display font-bold text-base block" id="atp-valid-count">—</span>
         </div>
-        <div id="atp-expired" class="mb-3">
+        <div id="atp-expired" class="mb-2">
           <span class="text-text-tertiary text-xs">Expired authority</span>
-          <span class="text-text-primary font-display font-bold text-lg block" id="atp-expired-count">—</span>
+          <span class="text-text-primary font-display font-bold text-base block" id="atp-expired-count">—</span>
         </div>
-        <div id="atp-broken" class="mb-4">
-          <span class="text-text-tertiary text-xs">Broken delegation chains</span>
-          <span class="text-text-primary font-display font-bold text-lg block" id="atp-broken-count">—</span>
+        <div id="atp-broken" class="mb-3">
+          <span class="text-text-tertiary text-xs">Broken chains</span>
+          <span class="text-text-primary font-display font-bold text-base block" id="atp-broken-count">—</span>
         </div>
-        <div class="border-t border-border pt-4">
-          <p class="text-xs text-text-tertiary mb-2">Permitted</p>
-          <p class="text-xs text-green-400/70 font-mono leading-relaxed min-h-[60px]" id="atp-permitted">—</p>
-          <p class="text-xs text-text-tertiary mt-3 mb-2">Denied</p>
-          <p class="text-xs text-red-400/70 font-mono leading-relaxed min-h-[40px]" id="atp-denied">—</p>
+        <div class="border-t border-border pt-3">
+          <p class="text-[10px] text-text-tertiary mb-1">Permitted</p>
+          <p class="text-[10px] text-green-400/70 font-mono leading-relaxed" id="atp-permitted">—</p>
+          <p class="text-[10px] text-text-tertiary mt-2 mb-1">Denied</p>
+          <p class="text-[10px] text-red-400/70 font-mono leading-relaxed" id="atp-denied">—</p>
         </div>
       </div>
     </div>
