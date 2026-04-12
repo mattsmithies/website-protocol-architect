@@ -32,9 +32,8 @@ import '../../styles/global.css';
       {/* ── Opening ─────────────────────────────────────── */}
       <div class="max-w-3xl mx-auto pb-8">
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>Most permission models treat authority as static. A user has a role, the role has permissions, the action is allowed. It sounds tidy. It fails in the real world.</p>
-          <p>Authority expires. Delegations have windows. A signatory who was authorised three months ago may not be authorised today. A delegate who was valid at 09:00 may be invalid at 09:17. The question is not whether someone has a role. The question is whether they had the authority to perform this action <em class="text-signal not-italic font-medium">at this exact point in time</em>.</p>
-          <p>That distinction &mdash; between identity and temporal validity &mdash; is the one most systems fail to make. And it is where the real damage happens, because the system keeps working. No error is thrown. The process continues. The authority behind it has already lapsed. This is the gap between <span class="text-text-primary font-medium">current authority</span> and <span class="text-text-primary font-medium">historical authority</span>, and most architectures do not even acknowledge it exists.</p>
+          <p>Most systems treat authority as static. A user has a role, the role has permissions, the action is allowed. But the question that actually matters is not whether someone has a role. It is whether they had the authority to perform this action <em class="text-signal not-italic font-medium">at this exact point in time</em>.</p>
+          <p>That is a question about temporal validity, not identity. And it introduces a distinction most architectures never make: between <span class="text-text-primary font-medium">current authority</span> &mdash; can this actor act now &mdash; and <span class="text-text-primary font-medium">historical authority</span> &mdash; was this actor entitled to act then. Those are different questions with different answers. Confuse them and the system keeps working after the authority behind it has already lapsed.</p>
         </div>
       </div>
 
@@ -58,8 +57,9 @@ import '../../styles/global.css';
         </div>
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
           <p>Not through dramatic compromise. Through ordinary continuation.</p>
-          <p>Consider a carbon programme with a delegated regional approver. The programme director delegates signing authority on 11 May with a window that closes on the 18th. On the 17th, the approver submits an approval. Valid. On the 19th, a countersignature is submitted against that same approval. The delegation expired sixteen hours earlier. No replacement grant was issued. The countersignature is recorded. The process moves forward. The authority behind it no longer exists.</p>
-          <p>Nobody sees the failure. The interface behaved normally. The event was timestamped. The record looks clean. But the delegation chain was already broken. The gap between recorded action and valid authority is where trust starts to rot &mdash; not through breach, but through continuation under stale legitimacy.</p>
+          <p>Here is one way it happens. A programme director delegates signing authority to a regional approver on 11 May. The delegation window closes on the 18th. On the 17th, the approver submits a budget approval. Valid. Two days later, a countersignature is submitted against that same approval. The delegation expired sixteen hours earlier. No replacement grant was issued.</p>
+          <p>The countersignature is recorded. The process moves forward. The funds are released. Three months later, an external audit asks for the authority chain behind the release. It does not exist. The delegation had lapsed. The countersignature was recorded under authority that had already expired. Nobody noticed because the system never checked.</p>
+          <p>That is not an edge case. That is the default failure mode of every system that treats authority as static. The gap between recorded action and valid authority is where trust rots &mdash; not through breach, but through continuation under stale legitimacy.</p>
         </div>
       </div>
 
@@ -118,7 +118,7 @@ import '../../styles/global.css';
           <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">What this demands from the architecture</h2>
         </div>
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>Without the following properties, the system does not model authority. It reconstructs it after the fact, and reconstruction is not proof.</p>
+          <p>Without the following properties, the system is not preserving authority. It is reconstructing it after the fact. And reconstruction is not evidence. It is a retrospective guess that changes depending on when you ask.</p>
 
           <div class="border-l-2 border-signal/20 pl-6 my-8">
             <p class="text-text-tertiary text-base font-mono leading-loose">
@@ -130,9 +130,8 @@ import '../../styles/global.css';
             </p>
           </div>
 
-          <p>And actions that depend on authority must carry a reference to the authority state that made them valid at the time they were taken. Without that binding, history becomes unstable. The same action can look valid today and invalid tomorrow depending on what has changed in the surrounding system.</p>
-          <p>That is not a trustworthy record. That is a moving interpretation.</p>
-          <p>A serious system must distinguish between two questions.</p>
+          <p>Actions that depend on authority must carry a reference to the authority state that made them valid at the time they were taken. Without that binding, the same action can look valid today and invalid tomorrow. That is not a trustworthy record. That is a moving interpretation.</p>
+          <p>Which brings the earlier distinction into sharp focus. A serious system must answer two separate questions.</p>
           <p><span class="text-text-primary font-medium">Current authority</span>: can this actor act now?</p>
           <p><span class="text-text-primary font-medium">Historical authority</span>: was this actor entitled to act then?</p>
           <p>Confuse those two and your audit trail is not a proof. It is a story that changes depending on when you read it.</p>
@@ -147,9 +146,9 @@ import '../../styles/global.css';
       {/* ── Closing ─────────────────────────────────────── */}
       <div class="max-w-3xl mx-auto py-16 pb-24">
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>This is not a carbon edge case. It is a systems problem that appears anywhere authority, money, risk, machine actions, compliance, or external trust intersect. Wherever a decision carries consequence and a record must survive scrutiny, the question of temporal validity becomes structural. Ignore it and the system works until it is tested. Then it fails in exactly the way described above: silently, historically, and without the evidence needed to understand what went wrong.</p>
           <p>The shortcut is always the same. Treat authority as static. Patch the exceptions later. Hope the process holds.</p>
           <p>It does not.</p>
+          <p>Carbon makes this failure easy to see because the actors, windows, and audit obligations are explicit. But the same structural problem appears wherever authority, money, risk, machine actions, compliance, or external trust depend on who was entitled to act at a specific moment. Financial approvals. Clinical sign-offs. Procurement delegations. Regulatory licensing. The domain changes. The failure does not.</p>
         </div>
 
         <div class="reveal border-t border-border pt-10 mt-12">
