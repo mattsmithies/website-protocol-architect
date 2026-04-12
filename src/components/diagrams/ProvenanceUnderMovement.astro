@@ -151,16 +151,21 @@ if (canvas && slider) {
       ctx.fill();
     }
 
-    // Lost metadata indicators (floating away)
-    if (layersLost > 0) {
-      const lostCount = metadataLayers.length - topLayersVisible;
-      for (let i = 0; i < Math.min(lostCount, 6); i++) {
-        const lostX = assetX - 30 - i * 15 - Math.sin(Date.now() * 0.002 + i) * 5;
-        const lostY = topY - 25 + i * 8;
-        ctx.fillStyle = 'rgba(239,68,68,0.15)';
-        ctx.beginPath();
-        ctx.roundRect(lostX, lostY, 8, 2, 1);
-        ctx.fill();
+    // Named field labels to the right of the top block
+    if (!isNarrow && assetX < w - 130) {
+      const labelX = assetX + blockW / 2 + 12;
+      ctx.font = '400 7px "JetBrains Mono", monospace';
+      ctx.textAlign = 'left';
+      for (let i = 0; i < metadataLayers.length; i++) {
+        const barY = startBarY + i * barSpacing;
+        const present = i < topLayersVisible;
+        if (present) {
+          ctx.fillStyle = `rgba(${tr},${tg},${tb},0.4)`;
+          ctx.fillText(metadataLayers[i], labelX, barY + 3);
+        } else {
+          ctx.fillStyle = 'rgba(239,68,68,0.35)';
+          ctx.fillText(metadataLayers[i] + ' \u2717', labelX, barY + 3);
+        }
       }
     }
 
@@ -199,13 +204,26 @@ if (canvas && slider) {
     ctx.stroke();
 
     // All metadata bars present
+    const botStartBarY = (botY - ((metadataLayers.length * barSpacing) / 2) + 2);
     for (let i = 0; i < metadataLayers.length; i++) {
-      const barY = (botY - ((metadataLayers.length * barSpacing) / 2) + 2) + i * barSpacing;
+      const barY = botStartBarY + i * barSpacing;
       const barW = blockW * 0.7;
       ctx.fillStyle = 'rgba(74,222,128,0.4)';
       ctx.beginPath();
       ctx.roundRect(assetX - barW / 2, barY, barW, barH, 1);
       ctx.fill();
+    }
+
+    // Named field labels for bottom chain
+    if (!isNarrow && assetX < w - 130) {
+      const labelX = assetX + blockW / 2 + 16;
+      ctx.font = '400 7px "JetBrains Mono", monospace';
+      ctx.textAlign = 'left';
+      for (let i = 0; i < metadataLayers.length; i++) {
+        const barY = botStartBarY + i * barSpacing;
+        ctx.fillStyle = 'rgba(74,222,128,0.4)';
+        ctx.fillText(metadataLayers[i] + ' \u2713', labelX, barY + 3);
+      }
     }
 
     ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;

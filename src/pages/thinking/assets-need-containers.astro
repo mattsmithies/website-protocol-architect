@@ -99,9 +99,11 @@ import '../../styles/global.css';
           <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">What a container actually is</h2>
         </div>
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>A container is not just metadata.</p>
+          <p>A container is not a single schema that every asset must conform to. That reading is too narrow and slightly wrong.</p>
 
-          <p>It is not a decorative wrapper. It is not a front-end schema. It is not a vague standard with optional fields that no one respects.</p>
+          <p>The container does not standardise the asset itself. <em class="text-signal not-italic font-medium">It standardises the structure around the asset.</em> That is the difference. Many standards, methodologies, and asset types can live inside the same container model, as long as identity, category, provenance, state, and comparable fields remain legible across systems.</p>
+
+          <p>The goal is not forced sameness. The goal is structured comparability.</p>
 
           <p>A real container does four things.</p>
 
@@ -114,13 +116,25 @@ import '../../styles/global.css';
             </p>
           </div>
 
-          <p>That is what matters.</p>
+          <p>None of that requires flattening the asset into a single format. Different asset types keep their own rules, fields, and internal logic. The container is the meta structure that holds them while making them searchable, comparable, and portable.</p>
 
           <p>If two systems both claim to support the same class of asset but cannot preserve identity, category, provenance, and comparable fields across transfer, then they do not share a container. They share a label.</p>
 
-          <p>That distinction matters more than most teams realise.</p>
+          <p>Labels create marketing alignment. <em class="text-signal not-italic font-medium">Containers create operational alignment.</em></p>
+        </div>
+      </div>
 
-          <p>Because labels create marketing alignment. <em class="text-signal not-italic font-medium">Containers create operational alignment.</em></p>
+      {/* ── Concrete example: carbon credits ──────────── */}
+      <div class="max-w-3xl mx-auto pb-12">
+        <div class="reveal glass-card p-8 md:p-10">
+          <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-4">Example: carbon credits</p>
+          <div class="space-y-4 text-text-secondary text-base leading-relaxed">
+            <p>Carbon markets contain dozens of methodologies. A mangrove restoration project in Vietnam and a cookstove programme in Kenya follow different rules, collect different evidence, and apply different project logic. That specificity is correct. It should not be erased.</p>
+            <p>The container does not override that. It provides the meta structure that allows those projects to be digitised in their own terms while still becoming searchable and comparable once issued.</p>
+            <p>Without a container, each credit exists inside its home registry with a proprietary schema. Export it to a marketplace, a broker platform, or a government compliance system and the fields do not map cleanly. The methodology might be a free-text field in one system and a structured enum in another. The vintage year might sit in metadata in one and in the asset name in another. The retirement status might not transfer at all.</p>
+            <p>With a container, any methodology can be expressed. But every credit carries the same structural envelope: stable identity, asset class, issuing authority, current state, the comparable fields a buyer needs (methodology, vintage, volume, project location), and the provenance chain from issuance through every transfer. Different projects keep their own rules. The container makes them legible across systems without flattening the difference that makes each one credible.</p>
+            <p class="text-text-tertiary text-sm">The same pattern applies to any asset class where comparison, transfer, and audit matter across system boundaries. Not one standard for every asset. One meta structure that can hold many standards.</p>
+          </div>
         </div>
       </div>
 
@@ -205,75 +219,30 @@ import '../../styles/global.css';
         <MarketDepthEmergence />
       </div>
 
-      {/* ══════════════════════════════════════════════════
-          SECTION 6: This is a meta structure problem
-          ══════════════════════════════════════════════════ */}
-      <div class="max-w-3xl mx-auto py-16">
-        <div class="reveal">
-          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">This is a meta structure problem</h2>
-        </div>
-        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>The systems that will define the next era of digital assets are not the ones that issue the most things.</p>
-
-          <p>They are the ones that solve the meta structure problem.</p>
-
-          <div class="border-l-2 border-signal/20 pl-6 my-8">
-            <p class="text-text-tertiary text-base font-mono leading-loose">
-              The envelope.<br/>
-              The shared structure.<br/>
-              The boring layer that sits around identity, provenance,<br/>
-              category, state, and transfer.<br/>
-              The thing that lets assets move between registries, indexers,<br/>
-              applications, and markets without collapsing<br/>
-              back into bespoke interpretation.
-            </p>
-          </div>
-
-          <p>This is true for carbon credits. It is true for licences and credentials. It is true for supply chain records. It is true for data rights. It is true for any asset whose value depends on being found, compared, trusted, and moved across system boundaries.</p>
-
-          <p>The asset matters. But the container decides whether the asset can become part of a larger market.</p>
-        </div>
-      </div>
-
       {/* ── Closing ─────────────────────────────────────── */}
       <div class="max-w-3xl mx-auto py-16 pb-24">
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
           <p>The shipping container did not change trade by changing cargo. It changed trade by standardising the structure around cargo.</p>
 
-          <p>Digital asset infrastructure needs the same discipline.</p>
+          <p>Digital asset infrastructure needs the same discipline. Before markets scale, systems need to agree on what an asset must carry with it as it moves: identity, provenance, state, comparable fields, authority context. That agreement is the container. Everything that follows — search, comparison, audit, liquidity — depends on it.</p>
 
-          <p>Before markets scale, assets need containers. Before liquidity deepens, assets need envelopes that preserve identity, provenance, state, and comparability. Before interoperability becomes real, systems need to agree on what an asset must carry with it as it moves.</p>
-
-          <div class="border-l-2 border-red-400/20 pl-6 my-8">
-            <p class="text-text-tertiary text-base font-mono leading-loose">
-              Without that, every registry stays narrower than it should be.<br/>
-              Every marketplace stays more bespoke than it should be.<br/>
-              Every audit stays more expensive than it should be.
-            </p>
-          </div>
+          <p>This is true for carbon credits. It is true for licences and credentials. It is true for supply chain records and data rights. It is true for any asset whose value depends on being found, compared, trusted, and moved across system boundaries.</p>
 
           <p>The next generation of asset infrastructure will not be defined by who issued the most. It will be defined by who built the most correct container.</p>
         </div>
 
-        <div class="reveal border-t border-border pt-10 mt-12">
-          <p class="text-text-primary font-display font-bold text-xl md:text-2xl leading-snug max-w-xl">
-            The asset is not enough. The structure around the asset determines whether it can scale beyond its home system.
-          </p>
-        </div>
-
         {/* ── Production bridge ──────────────────────────── */}
         <div class="reveal glass-card p-8 md:p-10 mt-16">
-          <div class="flex flex-col md:flex-row md:items-center gap-6">
-            <div class="flex-1">
-              <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-2">In practice</p>
-              <p class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight mb-2">
-                A repeated systems problem
-              </p>
-              <p class="text-text-tertiary text-sm leading-relaxed">
-                In my own work, this shows up as a repeated systems problem: how to make issued items searchable, comparable, and replayable across workflows without losing the evidence and structure that made them trustworthy in the first place. The answer is rarely another marketplace. It is usually a better container.
-              </p>
-            </div>
-          </div>
+          <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-2">In practice</p>
+          <p class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight mb-4">
+            A repeated systems problem
+          </p>
+          <p class="text-text-tertiary text-sm leading-relaxed mb-6">
+            In my own work, this shows up as a repeated systems problem: how to make issued items searchable, comparable, and replayable across workflows without losing the evidence and structure that made them trustworthy in the first place. The answer is rarely another marketplace. It is usually a better container.
+          </p>
+          <a href="https://dovu.ai/how-it-works/" target="_blank" rel="noopener" class="ghost-button magnetic px-6 py-3 rounded-full text-sm">
+            See how DOVU OS models the structure around issued assets &rarr;
+          </a>
         </div>
 
         {/* ── CTA ────────────────────────────────────────── */}

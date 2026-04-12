@@ -6,7 +6,29 @@
 <div class="reveal my-12 md:my-16">
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
     <div class="p-6 md:p-8">
-      <canvas id="ivc-canvas" class="w-full" style="height: 400px;" role="img" aria-label="Two pipelines comparing issuance-first versus container-first approaches to asset infrastructure"></canvas>
+      <canvas id="ivc-canvas" class="w-full" style="height: 380px;" role="img" aria-label="Two pipelines comparing issuance-first versus container-first approaches to asset infrastructure"></canvas>
+
+      {/* Outcome metrics — below canvas, not overlapping */}
+      <div class="grid grid-cols-2 gap-4 mt-4 border-t border-border pt-4">
+        <div>
+          <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(239,68,68,0.5);">Issuance first</p>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
+            <span class="text-text-tertiary">Searchability</span><span style="color: rgba(239,68,68,0.6);">Low</span>
+            <span class="text-text-tertiary">Comparability</span><span style="color: rgba(239,68,68,0.6);">Low</span>
+            <span class="text-text-tertiary">Auditability</span><span style="color: rgba(239,68,68,0.6);">Low</span>
+            <span class="text-text-tertiary">Liquidity</span><span style="color: rgba(239,68,68,0.6);">Weak</span>
+          </div>
+        </div>
+        <div>
+          <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(74,222,128,0.5);">Container first</p>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
+            <span class="text-text-tertiary">Searchability</span><span style="color: rgba(74,222,128,0.7);">High</span>
+            <span class="text-text-tertiary">Comparability</span><span style="color: rgba(74,222,128,0.7);">High</span>
+            <span class="text-text-tertiary">Auditability</span><span style="color: rgba(74,222,128,0.7);">High</span>
+            <span class="text-text-tertiary">Market depth</span><span style="color: rgba(74,222,128,0.7);">Strong</span>
+          </div>
+        </div>
+      </div>
 
       <div id="ivc-tooltip" class="mt-4 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
         <p id="ivc-tooltip-label" class="text-xs text-text-tertiary uppercase tracking-wider mb-1"></p>
@@ -46,7 +68,7 @@ if (canvas) {
     { label: 'Market', sublabel: 'Liquidity weak', tooltip: 'Buyers cannot reliably search, compare, or verify. Trust depends on the platform, not the asset. The market stays shallow.' },
   ];
 
-  const bottomStages: PipelineStage[] = [
+  const bottomStagesFull: PipelineStage[] = [
     { label: 'Define container', sublabel: 'Structure first', tooltip: 'A shared envelope is defined: identity, category, provenance, comparable fields, state, authority context.' },
     { label: 'Issue into container', sublabel: 'Born portable', tooltip: 'The asset is issued inside a standard container. It carries everything it needs to be understood across systems.' },
     { label: 'Index', sublabel: 'Discoverable', tooltip: 'Standard structure means indexers can crawl, categorise, and surface assets without per-registry integration.' },
@@ -55,8 +77,14 @@ if (canvas) {
     { label: 'Market', sublabel: 'Depth emerges', tooltip: 'Searchability, comparability, and auditability compound. The market becomes legible. Liquidity follows structure.' },
   ];
 
-  const topMetrics = ['Searchability: low', 'Comparability: low', 'Auditability: low', 'Liquidity: weak'];
-  const bottomMetrics = ['Searchability: high', 'Comparability: high', 'Auditability: high', 'Market readiness: strong'];
+  const bottomStagesNarrow: PipelineStage[] = [
+    { label: 'Define', sublabel: 'Structure', tooltip: bottomStagesFull[0].tooltip },
+    { label: 'Issue', sublabel: 'Portable', tooltip: bottomStagesFull[1].tooltip },
+    { label: 'Index', sublabel: 'Findable', tooltip: bottomStagesFull[2].tooltip },
+    { label: 'Compare', sublabel: 'Like for like', tooltip: bottomStagesFull[3].tooltip },
+    { label: 'Verify', sublabel: 'Provenance', tooltip: bottomStagesFull[4].tooltip },
+    { label: 'Market', sublabel: 'Depth', tooltip: bottomStagesFull[5].tooltip },
+  ];
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -149,17 +177,8 @@ if (canvas) {
       ctx.fillText(s.sublabel, s.x, s.y + nodeR + 12);
     }
 
-    // Top metrics (right side, if space)
-    if (!isNarrow) {
-      ctx.font = '400 8px "JetBrains Mono", monospace';
-      ctx.textAlign = 'right';
-      for (let i = 0; i < topMetrics.length; i++) {
-        ctx.fillStyle = 'rgba(239,68,68,0.35)';
-        ctx.fillText(topMetrics[i], w - 20, topY - 20 + i * 14);
-      }
-    }
-
     // === BOTTOM PIPELINE ===
+    const bottomStages = isNarrow ? bottomStagesNarrow : bottomStagesFull;
     const botPos = getStagePositions(bottomStages, w, bottomY);
 
     // Strengthening flow line
@@ -211,16 +230,6 @@ if (canvas) {
       ctx.fillText(s.sublabel, s.x, s.y + nodeR + 12);
     }
 
-    // Bottom metrics
-    if (!isNarrow) {
-      ctx.font = '400 8px "JetBrains Mono", monospace';
-      ctx.textAlign = 'right';
-      for (let i = 0; i < bottomMetrics.length; i++) {
-        ctx.fillStyle = 'rgba(74,222,128,0.4)';
-        ctx.fillText(bottomMetrics[i], w - 20, bottomY - 20 + i * 14);
-      }
-    }
-
     animId = requestAnimationFrame(render);
   }
 
@@ -250,13 +259,14 @@ if (canvas) {
     }
 
     if (!found) {
-      const botPos = getStagePositions(bottomStages, w, bottomY);
+      const bStages = isNarrow ? bottomStagesNarrow : bottomStagesFull;
+      const botPos = getStagePositions(bStages, w, bottomY);
       for (let i = 0; i < botPos.length; i++) {
         const dx = botPos[i].x - mx;
         const dy = botPos[i].y - my;
         if (dx * dx + dy * dy < hitR * hitR) {
           hoverPipeline = 1; hoverStage = i; found = true;
-          showTooltip(bottomStages[i].label, bottomStages[i].tooltip, GREEN);
+          showTooltip(bottomStagesFull[i].label, bottomStagesFull[i].tooltip, GREEN);
           break;
         }
       }
