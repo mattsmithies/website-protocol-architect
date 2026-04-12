@@ -1,0 +1,227 @@
+---
+// Visual: Chronology versus replayability
+// Two columns — flat event log vs rich replayable record with hover tooltips
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+
+        <!-- Left column: Chronology -->
+        <div>
+          <p class="text-xs font-semibold tracking-[0.2em] uppercase mb-4" style="color: rgba(100,100,120,0.85);">Chronology</p>
+          <div id="chr-log" class="space-y-0"></div>
+        </div>
+
+        <!-- Right column: Replayable Record -->
+        <div>
+          <p class="text-xs font-semibold tracking-[0.2em] uppercase mb-4" style="color: rgba(74,222,128,0.85);">Replayable Record</p>
+          <div id="chr-replay" class="space-y-0"></div>
+        </div>
+
+      </div>
+
+      <!-- Comparison metrics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-6 border-t border-border pt-4">
+        <div>
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono">
+            <span><span class="text-text-tertiary">Ordering:</span> <span style="color: rgba(232,232,240,0.55);">yes</span></span>
+            <span><span class="text-text-tertiary">Authority context:</span> <span style="color: rgba(239,68,68,0.7);">no</span></span>
+            <span><span class="text-text-tertiary">Evidence binding:</span> <span style="color: rgba(239,68,68,0.7);">no</span></span>
+            <span><span class="text-text-tertiary">Replayable:</span> <span style="color: rgba(239,68,68,0.7);">no</span></span>
+          </div>
+        </div>
+        <div>
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono">
+            <span><span class="text-text-tertiary">Ordering:</span> <span style="color: rgba(74,222,128,0.7);">yes</span></span>
+            <span><span class="text-text-tertiary">Authority context:</span> <span style="color: rgba(74,222,128,0.7);">yes</span></span>
+            <span><span class="text-text-tertiary">Evidence binding:</span> <span style="color: rgba(74,222,128,0.7);">yes</span></span>
+            <span><span class="text-text-tertiary">Replayable:</span> <span style="color: rgba(74,222,128,0.7);">yes</span></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    A list of events tells you that something happened. Replayability tells you whether the state transition can still be reconstructed and checked.
+  </p>
+</div>
+
+<!-- Tooltip element -->
+<div id="chr-tooltip" class="fixed z-50 pointer-events-none px-3 py-2 rounded-lg text-xs font-mono max-w-xs" style="opacity: 0; background: rgba(11,11,17,0.95); border: 1px solid rgba(255,255,255,0.1); color: rgba(232,232,240,0.75); transition: opacity 0.2s;" aria-hidden="true"></div>
+
+<script>
+interface LogRow {
+  time: string;
+  event: string;
+  actor: string;
+}
+
+interface ReplayRow {
+  time: string;
+  eventType: string;
+  priorState: string;
+  resultState: string;
+  actor: string;
+  authority: string;
+  evidence: string;
+  signed: boolean;
+  anchor: string;
+}
+
+const logRows: LogRow[] = [
+  { time: '09:02', event: 'Application submitted', actor: 'Actor A' },
+  { time: '09:11', event: 'Evidence uploaded', actor: 'Actor A' },
+  { time: '09:17', event: 'Review started', actor: 'Actor B' },
+  { time: '09:23', event: 'Returned for correction', actor: 'Actor B' },
+  { time: '09:38', event: 'Resubmitted', actor: 'Actor A' },
+  { time: '09:45', event: 'Approved', actor: 'Actor C' },
+];
+
+const replayRows: ReplayRow[] = [
+  { time: '09:02', eventType: 'Submission', priorState: 'Draft', resultState: 'Submitted', actor: 'Actor A', authority: 'Originator role', evidence: 'form-data-001', signed: true, anchor: 'tx-0xa1...' },
+  { time: '09:11', eventType: 'Evidence attach', priorState: 'Submitted', resultState: 'Evidence pending', actor: 'Actor A', authority: 'Originator role', evidence: 'doc-hash-4f2', signed: true, anchor: 'tx-0xa2...' },
+  { time: '09:17', eventType: 'Review begin', priorState: 'Evidence pending', resultState: 'Under review', actor: 'Actor B', authority: 'Delegated reviewer', evidence: 'review-ref-01', signed: true, anchor: 'tx-0xa3...' },
+  { time: '09:23', eventType: 'Return', priorState: 'Under review', resultState: 'Correction required', actor: 'Actor B', authority: 'Delegated reviewer', evidence: 'note-hash-7b1', signed: true, anchor: 'tx-0xa4...' },
+  { time: '09:38', eventType: 'Resubmission', priorState: 'Correction required', resultState: 'Resubmitted', actor: 'Actor A', authority: 'Originator role', evidence: 'doc-hash-9c3', signed: true, anchor: 'tx-0xa5...' },
+  { time: '09:45', eventType: 'Approval', priorState: 'Resubmitted', resultState: 'Approved', actor: 'Actor C', authority: 'Senior approver', evidence: 'approval-ref-01', signed: true, anchor: 'tx-0xa6...' },
+];
+
+const logContainer = document.getElementById('chr-log')!;
+const replayContainer = document.getElementById('chr-replay')!;
+const tooltip = document.getElementById('chr-tooltip')!;
+
+function positionTooltip(el: HTMLElement, text: string) {
+  const rect = el.getBoundingClientRect();
+  tooltip.textContent = text;
+  tooltip.style.opacity = '1';
+  tooltip.style.left = `${rect.left + rect.width / 2}px`;
+  tooltip.style.top = `${rect.top - 40}px`;
+  tooltip.style.transform = 'translateX(-50%)';
+}
+
+function hideTooltip() {
+  tooltip.style.opacity = '0';
+}
+
+// Build left column (chronology)
+for (let i = 0; i < logRows.length; i++) {
+  const row = logRows[i];
+  const el = document.createElement('div');
+  el.className = 'py-3 px-4 cursor-default transition-all duration-200';
+  el.style.borderBottom = i < logRows.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none';
+  el.setAttribute('tabindex', '0');
+  el.setAttribute('role', 'listitem');
+
+  el.innerHTML = `
+    <div class="flex items-center gap-3">
+      <span class="font-mono text-xs text-text-tertiary" style="min-width: 38px;">${row.time}</span>
+      <div class="flex-1">
+        <span class="text-sm text-text-secondary">${row.event}</span>
+        <span class="text-xs text-text-tertiary ml-2">${row.actor}</span>
+      </div>
+    </div>
+  `;
+
+  const tipText = 'Insufficient to reconstruct validity';
+  el.addEventListener('mouseenter', () => {
+    el.style.background = 'rgba(239,68,68,0.04)';
+    positionTooltip(el, tipText);
+  });
+  el.addEventListener('mouseleave', () => {
+    el.style.background = 'transparent';
+    hideTooltip();
+  });
+  el.addEventListener('focus', () => {
+    el.style.background = 'rgba(239,68,68,0.04)';
+    positionTooltip(el, tipText);
+  });
+  el.addEventListener('blur', () => {
+    el.style.background = 'transparent';
+    hideTooltip();
+  });
+  // Touch support
+  el.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    el.style.background = 'rgba(239,68,68,0.04)';
+    positionTooltip(el, tipText);
+  }, { passive: false });
+  el.addEventListener('touchend', () => {
+    el.style.background = 'transparent';
+    hideTooltip();
+  });
+
+  logContainer.appendChild(el);
+}
+
+// Build right column (replayable record)
+for (let i = 0; i < replayRows.length; i++) {
+  const row = replayRows[i];
+  const el = document.createElement('div');
+  el.className = 'py-3 px-4 cursor-default transition-all duration-200';
+  el.style.borderBottom = i < replayRows.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none';
+  el.style.borderLeft = '3px solid rgba(74,222,128,0.25)';
+  el.setAttribute('tabindex', '0');
+  el.setAttribute('role', 'listitem');
+
+  el.innerHTML = `
+    <div class="space-y-1">
+      <div class="flex items-center gap-3">
+        <span class="font-mono text-xs text-text-tertiary" style="min-width: 38px;">${row.time}</span>
+        <span class="text-sm font-display font-semibold" style="color: rgba(56,189,248,0.85);">${row.eventType}</span>
+      </div>
+      <div class="ml-[50px] space-y-0.5">
+        <p class="text-xs font-mono" style="color: rgba(232,232,240,0.4);">
+          <span style="color: rgba(100,100,120,0.7);">${row.priorState}</span>
+          <span style="color: rgba(232,232,240,0.25);"> &rarr; </span>
+          <span style="color: rgba(74,222,128,0.7);">${row.resultState}</span>
+        </p>
+        <p class="text-[10px] text-text-tertiary">${row.actor} &middot; ${row.authority}</p>
+        <div class="flex items-center gap-3 text-[10px]">
+          <span class="text-text-tertiary">Evidence: <span style="color: rgba(56,189,248,0.5);">${row.evidence}</span></span>
+          <span style="color: rgba(74,222,128,0.6);">&#10003; Signed</span>
+          <span class="text-text-tertiary" style="color: rgba(167,139,250,0.5);">${row.anchor}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const tipText = 'Sufficient to replay state transition';
+  el.addEventListener('mouseenter', () => {
+    el.style.background = 'rgba(74,222,128,0.04)';
+    el.style.borderLeftColor = 'rgba(74,222,128,0.5)';
+    positionTooltip(el, tipText);
+  });
+  el.addEventListener('mouseleave', () => {
+    el.style.background = 'transparent';
+    el.style.borderLeftColor = 'rgba(74,222,128,0.25)';
+    hideTooltip();
+  });
+  el.addEventListener('focus', () => {
+    el.style.background = 'rgba(74,222,128,0.04)';
+    el.style.borderLeftColor = 'rgba(74,222,128,0.5)';
+    positionTooltip(el, tipText);
+  });
+  el.addEventListener('blur', () => {
+    el.style.background = 'transparent';
+    el.style.borderLeftColor = 'rgba(74,222,128,0.25)';
+    hideTooltip();
+  });
+  el.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    el.style.background = 'rgba(74,222,128,0.04)';
+    el.style.borderLeftColor = 'rgba(74,222,128,0.5)';
+    positionTooltip(el, tipText);
+  }, { passive: false });
+  el.addEventListener('touchend', () => {
+    el.style.background = 'transparent';
+    el.style.borderLeftColor = 'rgba(74,222,128,0.25)';
+    hideTooltip();
+  });
+
+  replayContainer.appendChild(el);
+}
+</script>

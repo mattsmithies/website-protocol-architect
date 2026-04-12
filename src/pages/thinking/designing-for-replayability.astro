@@ -1,0 +1,313 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import CurrentVsReplayedState from '../../components/diagrams/CurrentVsReplayedState.astro';
+import ChronologyVsReplayability from '../../components/diagrams/ChronologyVsReplayability.astro';
+import ProofOfOriginLayers from '../../components/diagrams/ProofOfOriginLayers.astro';
+import MultiActorSignatureChain from '../../components/diagrams/MultiActorSignatureChain.astro';
+import AlgorithmAgilityTimeline from '../../components/diagrams/AlgorithmAgilityTimeline.astro';
+import ReplayAcrossBoundaries from '../../components/diagrams/ReplayAcrossBoundaries.astro';
+import StableRecordChangingViews from '../../components/diagrams/StableRecordChangingViews.astro';
+import '../../styles/global.css';
+---
+
+<Layout title="Designing for replayability — Matt Smithies">
+  <Nav />
+  <main>
+    <article class="px-6">
+
+      {/* ── Header ──────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
+        <div class="reveal">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Architecture</p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
+            Designing for replayability
+          </h1>
+          <p class="text-text-tertiary text-base">
+            A system is only trustworthy when its current state remains the latest expression of a reconstructable, attributable, and verifiable history.
+          </p>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 1: Opening
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto pb-8">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>If you cannot reconstruct how a system reached its current state, you cannot properly audit it, debug it, dispute it, or trust it.</p>
+
+          <p class="text-text-primary font-display font-bold text-2xl pt-4">Current state is only a claim.</p>
+
+          <p>It tells you what the system says is true now. It does not tell you how that truth was formed. It does not tell you who caused it. It does not tell you what evidence existed at the time. It does not tell you whether the path to that state was valid.</p>
+
+          <p>Many systems are optimised to answer one question: <em class="text-signal not-italic font-medium">what exists now</em>. Far fewer are designed to answer the harder one: how did this come to exist, and can that path be reconstructed from first principles.</p>
+
+          <p>That is replayability.</p>
+
+          <p>Replayability is not a feature you add once the product is mature. It is an architectural property that decides whether the system can survive pressure.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 1: Current state vs replayed state ──── */}
+      <div class="max-w-5xl mx-auto">
+        <CurrentVsReplayedState />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 2: Event history is not enough
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Event history is not enough</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>This is where teams often stop too early. They keep a log. They keep timestamps. They keep a table of events. They tell themselves they can reconstruct what happened later.</p>
+
+          <p>Often they cannot.</p>
+
+          <p>Because replayability is not just about storing events. It is about storing enough structure for those events to be <em class="text-signal not-italic font-medium">interpreted correctly later</em>.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              What was the state before the event.<br/>
+              Who acted.<br/>
+              Under what authority.<br/>
+              What evidence existed.<br/>
+              What was signed.<br/>
+              What algorithm was used.<br/>
+              What changed as a result.<br/>
+              What other actors had already signed or approved.<br/>
+              What was anchored publicly and what remained local.
+            </p>
+          </div>
+
+          <p>Without that, you do not have replayability. You have chronology.</p>
+
+          <p>Chronology is useful. Replayability is stronger.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 2: Chronology vs replayability ─────── */}
+      <div class="max-w-5xl mx-auto">
+        <ChronologyVsReplayability />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 3: Replayability needs proof of origin
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Replayability needs proof of origin</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>A replayable system does not just preserve change. It preserves origin.</p>
+
+          <p>That means each meaningful action must remain attributable to an actor, tied to a proof, and verifiable later without relying on institutional memory or private assurances.</p>
+
+          <p>Not because every system must expose everything publicly. But because serious systems need a way to preserve who asserted what, when, under which key, and with what cryptographic evidence.</p>
+
+          <p>A database row saying "approved by Alice" is not proof of origin. It is a label.</p>
+
+          <p>Proof of origin begins when the system can preserve the actor, the signing context, the content that was signed, and the signature evidence in a form that <em class="text-signal not-italic font-medium">survives beyond the current application</em>.</p>
+
+          <p>That is what makes replay meaningful rather than narrative.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 3: Proof of origin layers ──────────── */}
+      <div class="max-w-4xl mx-auto">
+        <ProofOfOriginLayers />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 4: Multi-actor reality
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Many systems fail because they flatten multi-actor reality</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Real systems are rarely shaped by one actor signing one thing once.</p>
+
+          <p>They involve multiple actors contributing over time. A reviewer signs. A verifier adds evidence. An approver countersigns. An external authority attests. A system anchor confirms ordering. A later actor revokes or supersedes a prior state.</p>
+
+          <p>If replayability only preserves the final event, most of the truth has already been lost.</p>
+
+          <p>A replayable system should preserve not only the final output, but the <em class="text-signal not-italic font-medium">chain of attestations that formed it</em>. Not one signature replacing another. A structured history of who asserted what at each stage.</p>
+
+          <p>That matters for workflow. It matters for authority. It matters for provenance. It matters for dispute.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 4: Multi-actor signature chain ─────── */}
+      <div class="max-w-5xl mx-auto">
+        <MultiActorSignatureChain />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 5: Algorithm agility
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Algorithm agility is part of replayability</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>This is often missed.</p>
+
+          <p>A signature is not enough on its own. The system must preserve <em class="text-signal not-italic font-medium">how that signature should be interpreted</em>. Which algorithm was used. Which key was used. Which challenge or verification context applied. Whether the proof can still be verified later as cryptographic expectations change.</p>
+
+          <p>That means replayability depends on algorithm agility.</p>
+
+          <p>A system built only for today's verification assumptions is not really designed for long-lived trust. A record may need to be checked years later. The system may move across stacks. Cryptographic preferences may evolve. Post-quantum migration may become relevant. Verification may need to occur in contexts the original system never anticipated.</p>
+
+          <p>If the proof format is brittle, replayability decays with time. If the proof format preserves enough context, verification can adapt without losing origin.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 5: Algorithm agility timeline ──────── */}
+      <div class="max-w-5xl mx-auto">
+        <AlgorithmAgilityTimeline />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 6: Replayability has to survive boundaries
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Replayability has to survive boundaries</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Most real systems do not live in one place. They touch application databases, object storage, APIs, external registries, public ledgers, message systems, and downstream indexers. They may also cross chains, move between trust domains, or carry proofs from one environment into another.</p>
+
+          <p>That means replayability cannot be local only.</p>
+
+          <p>If the system can only be replayed inside the original application, then the replay is weaker than it looks. It depends on one runtime, one vendor, one storage model, or one institution still being present and trusted.</p>
+
+          <p>A stronger design separates the system of record from the views built on top of it, and preserves <em class="text-signal not-italic font-medium">proof packages that can travel across boundaries</em>.</p>
+
+          <p>Not because every component is on one chain. Not because every proof is public. But because state transitions, signatures, evidence references, and anchor points remain interpretable across system boundaries.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 6: Replay across boundaries ────────── */}
+      <div class="max-w-5xl mx-auto">
+        <ReplayAcrossBoundaries />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 7: Record versus view
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Replayability belongs to the record, not the view</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Views can change. Dashboards can change. Queries can change. Applications can be replaced. Interfaces can be rebuilt.</p>
+
+          <p>If the system of record is sound, the replay survives those changes. If the system of record is weak, every new view simply hides the same old ambiguity under a better interface.</p>
+
+          <p>Derived views should remain derived. The record should preserve enough structure that current state can always be rebuilt rather than merely inherited.</p>
+
+          <p>Replayability is what makes the difference between a system that <em class="text-signal not-italic font-medium">looks</em> complete and a system that can still prove itself when challenged.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 7: Stable record, changing views ───── */}
+      <div class="max-w-4xl mx-auto">
+        <StableRecordChangingViews />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 8: Where serious replayability starts
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Where serious replayability starts</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>It does not start with a log table. It does not start with a dashboard. It does not start with a chain transaction alone. It does not start with a current state document.</p>
+
+          <p>It starts with a harder question.</p>
+
+          <p class="text-text-primary font-display font-bold text-xl pt-4">What must remain reconstructable years from now if this system is challenged.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Who acted.<br/>
+              What they acted on.<br/>
+              What state existed before and after.<br/>
+              What authority they had at the time.<br/>
+              What evidence was bound to the transition.<br/>
+              What proof of origin was preserved.<br/>
+              What signature context must remain verifiable.<br/>
+              What ordering or anchoring mattered.<br/>
+              What has to survive system change, chain change,<br/>
+              or cryptographic change.
+            </p>
+          </div>
+
+          <p>That is the starting point. Everything else is implementation detail around that requirement.</p>
+        </div>
+      </div>
+
+      {/* ── Production bridge ──────────────────────────── */}
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal glass-card p-8 md:p-10">
+          <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-2">In practice</p>
+          <p class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight mb-4">
+            Replayability as operating requirement
+          </p>
+          <p class="text-text-tertiary text-sm leading-relaxed mb-6">
+            In my own work, replayability is not a theoretical preference. It is the condition that lets workflow, authority, provenance, and asset issuance remain meaningful under audit and dispute. That means preserving signed proof of origin, handling multiple actors over time, keeping verification context rather than only a success result, and designing proof packages that can survive boundaries between applications, storage layers, and public anchors.
+          </p>
+          <a href="https://dovu.ai/how-it-works/" target="_blank" rel="noopener" class="ghost-button magnetic px-6 py-3 rounded-full text-sm">
+            See how DOVU OS models the workflow and evidence layer &rarr;
+          </a>
+        </div>
+      </div>
+
+      {/* ── Closing ─────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16 pb-24">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Replayability is not about storing more data. It is about preserving enough structure that the system can still explain itself later.</p>
+
+          <p>Who acted. What changed. Why it was valid. What proof existed. How the state was formed. Whether that path can still be checked when the system is challenged.</p>
+
+          <p>Without that, current state is only a claim. With it, current state becomes the latest expression of a reconstructable history.</p>
+
+          <p class="text-text-primary font-display font-bold text-xl md:text-2xl leading-snug pt-4">That is the difference between software that functions and software that can still prove what happened when it matters.</p>
+        </div>
+
+        {/* ── CTA ────────────────────────────────────────── */}
+        <div class="reveal glass-card p-8 md:p-10 mt-12 text-center">
+          <p class="text-text-secondary text-lg mb-6 font-display">
+            Designing systems that need to remain provable under pressure?
+          </p>
+          <a href="/#contact" class="glow-button magnetic inline-flex items-center gap-3 px-10 py-4 rounded-full text-sm tracking-wide">
+            Book a conversation
+            <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 8h10M10 4l4 4-4 4" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="mt-8 pb-8">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors">&larr; Back to essays</a>
+        </div>
+      </div>
+
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { initScrollAnimations } from '../../scripts/scroll-animations';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>

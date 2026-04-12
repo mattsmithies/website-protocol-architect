@@ -1,0 +1,516 @@
+---
+// Visual 6: Replay across boundaries
+// Toggle between local-only and portable proof to see how proof survives system removal
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <!-- Toggle -->
+      <div class="flex items-center justify-center gap-3 mb-6" role="tablist" aria-label="Toggle between local-only and portable proof package modes">
+        <button id="rab-local" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.15); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          Local only
+        </button>
+        <button id="rab-portable" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Portable proof package
+        </button>
+      </div>
+
+      <canvas
+        id="rab-canvas"
+        class="w-full"
+        style="height: 360px;"
+        role="img"
+        aria-label="Four system boxes arranged around a central proof package. In local-only mode, proof exists only in the Application DB and is lost when that system fails. In portable mode, proof is distributed across all four systems and survives removal of any one."
+      ></canvas>
+
+      <!-- Status line -->
+      <div class="text-center mt-2 mb-4" aria-live="polite">
+        <p class="text-sm font-display font-semibold" id="rab-status" style="color: rgba(239,68,68,0.8);">Single point of failure — replay depends on one system</p>
+      </div>
+
+      <!-- Metrics -->
+      <div class="grid grid-cols-3 gap-4 border-t border-border pt-4" aria-live="polite">
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Single point of failure</p>
+          <p class="text-sm font-display font-bold" id="rab-metric-spof" style="color: rgba(239,68,68,0.8);">Yes</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Survives system removal</p>
+          <p class="text-sm font-display font-bold" id="rab-metric-survive" style="color: rgba(239,68,68,0.8);">No</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Cross-boundary replay</p>
+          <p class="text-sm font-display font-bold" id="rab-metric-cross" style="color: rgba(239,68,68,0.8);">Not possible</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Replayability becomes durable when the proof can survive movement across systems, not just survive inside one of them.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('rab-canvas') as HTMLCanvasElement;
+const btnLocal = document.getElementById('rab-local') as HTMLButtonElement;
+const btnPortable = document.getElementById('rab-portable') as HTMLButtonElement;
+const statusEl = document.getElementById('rab-status') as HTMLElement;
+const metricSpof = document.getElementById('rab-metric-spof') as HTMLElement;
+const metricSurvive = document.getElementById('rab-metric-survive') as HTMLElement;
+const metricCross = document.getElementById('rab-metric-cross') as HTMLElement;
+
+if (canvas && btnLocal && btnPortable) {
+  const ctx = canvas.getContext('2d')!;
+
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  let mode: 'local' | 'portable' = 'local';
+  let removedSystem: number = -1;
+  let removedFlash = 0;
+  let animId = 0;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  interface SystemBox {
+    label: string;
+    preserves: string;
+    color: [number, number, number];
+  }
+
+  const systems: SystemBox[] = [
+    { label: 'Application DB', preserves: 'state', color: VIOLET },
+    { label: 'Object storage', preserves: 'evidence', color: BLUE },
+    { label: 'Public anchor', preserves: 'ordering proof', color: GREEN },
+    { label: 'External indexer', preserves: 'derived view', color: AMBER },
+  ];
+
+  const proofFields = ['state', 'authority', 'evidence', 'signature', 'anchor'];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getSystemPositions(w: number, h: number, isNarrow: boolean) {
+    const cx = w / 2;
+    const cy = h / 2;
+    const rx = isNarrow ? w * 0.32 : w * 0.34;
+    const ry = isNarrow ? h * 0.32 : h * 0.34;
+
+    // Positions: top-left, top-right, bottom-right, bottom-left
+    return [
+      { x: cx - rx, y: cy - ry },
+      { x: cx + rx, y: cy - ry },
+      { x: cx + rx, y: cy + ry },
+      { x: cx - rx, y: cy + ry },
+    ];
+  }
+
+  function drawRoundedRect(x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.roundRect(x - w / 2, y - h / 2, w, h, r);
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    ctx.clearRect(0, 0, w, h);
+
+    const cx = w / 2;
+    const cy = h / 2;
+    const positions = getSystemPositions(w, h, isNarrow);
+    const boxW = isNarrow ? 90 : 120;
+    const boxH = isNarrow ? 44 : 52;
+
+    // Proof package in centre
+    const pkgW = isNarrow ? 80 : 110;
+    const pkgH = isNarrow ? 48 : 56;
+
+    // Draw connections first (behind everything)
+    for (let i = 0; i < 4; i++) {
+      const pos = positions[i];
+      const sys = systems[i];
+      const [sr, sg, sb] = sys.color;
+      const isRemoved = i === removedSystem;
+
+      if (mode === 'local') {
+        if (i === 0 && !isRemoved) {
+          // Solid connection to Application DB only
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = `rgba(${sr},${sg},${sb},0.3)`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        } else {
+          // Dashed dim connections
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = `rgba(${DIM[0]},${DIM[1]},${DIM[2]},0.12)`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 6]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      } else {
+        // Portable — all connected
+        if (isRemoved) {
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = `rgba(${RED[0]},${RED[1]},${RED[2]},0.15)`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 5]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = `rgba(${sr},${sg},${sb},0.3)`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // Flowing dots along the connection
+          if (!prefersReducedMotion) {
+            const dx = pos.x - cx;
+            const dy = pos.y - cy;
+            const t = ((now * 0.0003 + i * 0.25) % 1);
+            const px = cx + dx * t;
+            const py = cy + dy * t;
+            ctx.beginPath();
+            ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${sr},${sg},${sb},${0.2 + 0.4 * Math.sin(t * Math.PI)})`;
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    // Draw proof package (centre)
+    if (mode === 'local' && removedSystem === 0) {
+      // Proof lost — draw faded
+      drawRoundedRect(cx, cy, pkgW, pkgH, 6);
+      ctx.fillStyle = 'rgba(239,68,68,0.04)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(239,68,68,0.15)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.fillStyle = 'rgba(239,68,68,0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText('PROOF LOST', cx, cy + 3);
+    } else {
+      const pkgColor = mode === 'portable' ? GREEN : VIOLET;
+      const [pr, pg, pb] = pkgColor;
+
+      drawRoundedRect(cx, cy, pkgW, pkgH, 6);
+      ctx.fillStyle = `rgba(${pr},${pg},${pb},0.06)`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${pr},${pg},${pb},0.35)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Glow
+      ctx.shadowColor = `rgba(${pr},${pg},${pb},0.15)`;
+      ctx.shadowBlur = 12;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Label
+      ctx.font = `600 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${pr},${pg},${pb},0.6)`;
+      ctx.textAlign = 'center';
+      ctx.fillText('PROOF PACKAGE', cx, cy - (isNarrow ? 12 : 16));
+
+      if (mode === 'portable') {
+        // Show field labels
+        ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = `rgba(${pr},${pg},${pb},0.45)`;
+        const fieldStr = proofFields.join(' + ');
+        // Wrap if needed
+        const maxW = pkgW - 10;
+        const words = fieldStr.split(' + ');
+        const lines: string[] = [];
+        let line = '';
+        for (const word of words) {
+          const sep = line ? ' + ' : '';
+          if (ctx.measureText(line + sep + word).width > maxW && line) {
+            lines.push(line);
+            line = word;
+          } else {
+            line = line + sep + word;
+          }
+        }
+        if (line) lines.push(line);
+        const lineH = isNarrow ? 9 : 10;
+        const startY = cy - (lines.length * lineH) / 2 + 4;
+        for (let l = 0; l < lines.length; l++) {
+          ctx.fillText(lines[l], cx, startY + l * lineH);
+        }
+      } else {
+        ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = `rgba(${pr},${pg},${pb},0.4)`;
+        ctx.fillText('signature', cx, cy + 3);
+      }
+    }
+
+    // Draw system boxes
+    for (let i = 0; i < 4; i++) {
+      const pos = positions[i];
+      const sys = systems[i];
+      const [sr, sg, sb] = sys.color;
+      const isRemoved = i === removedSystem;
+
+      const isActive = mode === 'portable' ? !isRemoved : (i === 0 && !isRemoved);
+      const isDim = mode === 'local' && i !== 0;
+
+      if (isRemoved) {
+        // Removed system — X'd out
+        drawRoundedRect(pos.x, pos.y, boxW, boxH, 5);
+        ctx.fillStyle = 'rgba(239,68,68,0.04)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(239,68,68,0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // X
+        const xr = 8;
+        ctx.strokeStyle = 'rgba(239,68,68,0.4)';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(pos.x - xr, pos.y - xr);
+        ctx.lineTo(pos.x + xr, pos.y + xr);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pos.x + xr, pos.y - xr);
+        ctx.lineTo(pos.x - xr, pos.y + xr);
+        ctx.stroke();
+        ctx.lineCap = 'butt';
+
+        ctx.font = `500 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+        ctx.fillStyle = 'rgba(239,68,68,0.35)';
+        ctx.textAlign = 'center';
+        ctx.fillText('REMOVED', pos.x, pos.y + boxH / 2 + (isNarrow ? 10 : 14));
+
+      } else {
+        const alpha = isActive ? 1 : 0.35;
+        const bgAlpha = isActive ? 0.08 : 0.02;
+        const borderAlpha = isActive ? 0.35 : 0.1;
+
+        const c = isDim ? DIM : [sr, sg, sb];
+
+        drawRoundedRect(pos.x, pos.y, boxW, boxH, 5);
+        ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${bgAlpha})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${borderAlpha})`;
+        ctx.lineWidth = isDim ? 0.75 : 1.5;
+        ctx.stroke();
+
+        if (isActive && !isDim) {
+          ctx.shadowColor = `rgba(${c[0]},${c[1]},${c[2]},0.15)`;
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+
+        // System label
+        ctx.font = `600 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+        ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${isActive ? 0.8 : 0.3})`;
+        ctx.textAlign = 'center';
+        ctx.fillText(sys.label, pos.x, pos.y - 2);
+
+        // Preserves label
+        if (mode === 'portable' && isActive) {
+          ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+          ctx.fillStyle = `rgba(${sr},${sg},${sb},0.45)`;
+          ctx.fillText(sys.preserves, pos.x, pos.y + 12);
+        }
+      }
+    }
+
+    // Flash animation for removed system in local mode
+    if (mode === 'local' && removedSystem === -1 && !prefersReducedMotion) {
+      // Subtle pulse on Application DB to hint it can be clicked
+      const pulseAlpha = 0.06 + 0.04 * Math.sin(now * 0.003);
+      const pos = positions[0];
+      drawRoundedRect(pos.x, pos.y, boxW + 6, boxH + 6, 7);
+      ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${pulseAlpha})`;
+      ctx.fill();
+
+      // "Click to remove" hint
+      ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},0.3)`;
+      ctx.textAlign = 'center';
+      ctx.fillText('click to remove', positions[0].x, positions[0].y + boxH / 2 + (isNarrow ? 10 : 14));
+    }
+
+    if (mode === 'portable' && removedSystem === -1 && !prefersReducedMotion) {
+      // Hint on all boxes
+      ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = 'rgba(232,232,240,0.2)';
+      ctx.textAlign = 'center';
+      for (let i = 0; i < 4; i++) {
+        ctx.fillText('click to remove', positions[i].x, positions[i].y + boxH / 2 + (isNarrow ? 10 : 14));
+      }
+    }
+
+    if (!prefersReducedMotion) {
+      animId = requestAnimationFrame(render);
+    }
+  }
+
+  function updateStatus() {
+    if (mode === 'local') {
+      if (removedSystem === 0) {
+        statusEl.textContent = 'System removed — proof lost, replay impossible';
+        statusEl.style.color = 'rgba(239,68,68,0.8)';
+      } else if (removedSystem >= 0) {
+        statusEl.textContent = 'Disconnected system removed — proof still in Application DB only';
+        statusEl.style.color = 'rgba(245,158,11,0.8)';
+      } else {
+        statusEl.textContent = 'Single point of failure — replay depends on one system';
+        statusEl.style.color = 'rgba(239,68,68,0.8)';
+      }
+    } else {
+      if (removedSystem >= 0) {
+        statusEl.textContent = 'System removed — remaining systems hold enough for reconstruction';
+        statusEl.style.color = 'rgba(74,222,128,0.8)';
+      } else {
+        statusEl.textContent = 'Distributed proof — replay survives system removal';
+        statusEl.style.color = 'rgba(74,222,128,0.8)';
+      }
+    }
+  }
+
+  function handleClick(e: MouseEvent | TouchEvent) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX: number, clientY: number;
+    if ('touches' in e) {
+      clientX = e.changedTouches[0].clientX;
+      clientY = e.changedTouches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    const positions = getSystemPositions(w, h, isNarrow);
+    const boxW = isNarrow ? 90 : 120;
+    const boxH = isNarrow ? 44 : 52;
+
+    for (let i = 0; i < 4; i++) {
+      const pos = positions[i];
+      if (mx >= pos.x - boxW / 2 && mx <= pos.x + boxW / 2 &&
+          my >= pos.y - boxH / 2 && my <= pos.y + boxH / 2) {
+        // Clicked on system i
+        if (mode === 'local' && i === 0 && removedSystem === -1) {
+          removedSystem = 0;
+          updateStatus();
+        } else if (mode === 'portable' && removedSystem === -1) {
+          removedSystem = i;
+          updateStatus();
+        } else if (removedSystem >= 0) {
+          // Restore
+          removedSystem = -1;
+          updateStatus();
+        }
+        break;
+      }
+    }
+
+    // Click anywhere else to restore
+    if (removedSystem >= 0) {
+      let hitBox = false;
+      for (let i = 0; i < 4; i++) {
+        const pos = positions[i];
+        if (mx >= pos.x - boxW / 2 && mx <= pos.x + boxW / 2 &&
+            my >= pos.y - boxH / 2 && my <= pos.y + boxH / 2) {
+          hitBox = true;
+        }
+      }
+    }
+
+    if (prefersReducedMotion) render(0);
+  }
+
+  canvas.addEventListener('click', handleClick);
+  canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleClick(e); }, { passive: false });
+
+  function setMode(m: 'local' | 'portable') {
+    mode = m;
+    removedSystem = -1;
+
+    if (m === 'local') {
+      btnLocal.setAttribute('aria-selected', 'true');
+      btnLocal.style.background = 'rgba(239,68,68,0.15)';
+      btnLocal.style.color = 'rgba(239,68,68,0.9)';
+      btnLocal.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnPortable.setAttribute('aria-selected', 'false');
+      btnPortable.style.background = 'transparent';
+      btnPortable.style.color = 'rgba(232,232,240,0.3)';
+      btnPortable.style.borderColor = 'rgba(255,255,255,0.06)';
+
+      metricSpof.textContent = 'Yes';
+      metricSpof.style.color = 'rgba(239,68,68,0.8)';
+      metricSurvive.textContent = 'No';
+      metricSurvive.style.color = 'rgba(239,68,68,0.8)';
+      metricCross.textContent = 'Not possible';
+      metricCross.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      btnPortable.setAttribute('aria-selected', 'true');
+      btnPortable.style.background = 'rgba(74,222,128,0.12)';
+      btnPortable.style.color = 'rgba(74,222,128,0.9)';
+      btnPortable.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnLocal.setAttribute('aria-selected', 'false');
+      btnLocal.style.background = 'transparent';
+      btnLocal.style.color = 'rgba(232,232,240,0.3)';
+      btnLocal.style.borderColor = 'rgba(255,255,255,0.06)';
+
+      metricSpof.textContent = 'No';
+      metricSpof.style.color = 'rgba(74,222,128,0.8)';
+      metricSurvive.textContent = 'Yes';
+      metricSurvive.style.color = 'rgba(74,222,128,0.8)';
+      metricCross.textContent = 'Reconstructable';
+      metricCross.style.color = 'rgba(74,222,128,0.8)';
+    }
+
+    updateStatus();
+    if (prefersReducedMotion) render(0);
+  }
+
+  btnLocal.addEventListener('click', () => setMode('local'));
+  btnPortable.addEventListener('click', () => setMode('portable'));
+
+  resize();
+  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
+
+  if (!prefersReducedMotion) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(0);
+  }
+}
+</script>

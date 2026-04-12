@@ -1,0 +1,368 @@
+---
+// Visual: Multi-actor signature chain
+// Canvas-based horizontal chain of 5 stages with flowing particles
+// Click/tap a node to remove its signature; downstream edges break
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <canvas
+      id="masc-canvas"
+      class="w-full"
+      style="height: 340px; cursor: pointer;"
+      role="img"
+      aria-label="Multi-actor signature chain. Five stages from Drafted to Anchored. Click a node to remove its signature and see how downstream integrity breaks."
+    ></canvas>
+    <div class="px-6 pb-5 pt-2">
+      <!-- Status panel -->
+      <div id="masc-status" class="p-4 rounded-lg border border-border mb-4 transition-all duration-300" style="background: rgba(11,11,17,0.8);">
+        <p id="masc-status-text" class="text-sm font-display font-semibold" style="color: rgba(74,222,128,0.85);">Full signature chain &mdash; replay from origin to anchor</p>
+      </div>
+      <!-- Metrics -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-text-tertiary font-mono">Chain integrity:</span>
+          <span id="masc-integrity" class="text-xs font-mono font-semibold" style="color: rgba(74,222,128,0.8);">Full</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-text-tertiary font-mono">Replay confidence:</span>
+          <span id="masc-confidence" class="text-xs font-mono font-semibold" style="color: rgba(74,222,128,0.8);">Reconstructable</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    In serious systems, truth is often cumulative. Replayability has to preserve the chain that formed it.
+  </p>
+</div>
+
+<script>
+interface ChainStage {
+  label: string;
+  role: string;
+  color: [number, number, number];
+  removed: boolean;
+  x: number;
+  y: number;
+  radius: number;
+  statusWhenRemoved: string;
+  isCritical: boolean;
+}
+
+interface Particle {
+  edgeIndex: number;
+  t: number;
+  speed: number;
+}
+
+const canvas = document.getElementById('masc-canvas') as HTMLCanvasElement;
+const statusText = document.getElementById('masc-status-text')!;
+const statusBox = document.getElementById('masc-status')!;
+const integrityEl = document.getElementById('masc-integrity')!;
+const confidenceEl = document.getElementById('masc-confidence')!;
+
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  let stages: ChainStage[] = [];
+  let particles: Particle[] = [];
+  let hoverIndex = -1;
+  let animId = 0;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function buildStages(w: number, h: number): ChainStage[] {
+    const isNarrow = w < 500;
+    const nodeScale = isNarrow ? 0.8 : 1;
+    const cy = h * 0.45;
+    const padX = isNarrow ? 35 : 60;
+    const spacing = (w - padX * 2) / 4;
+
+    return [
+      { label: 'Drafted', role: 'Originator', color: VIOLET, removed: false, x: padX, y: cy, radius: 26 * nodeScale, statusWhenRemoved: 'Origin lost \u2014 cannot attribute initial draft', isCritical: false },
+      { label: 'Evidence signed', role: 'Contributor', color: BLUE, removed: false, x: padX + spacing, y: cy, radius: 26 * nodeScale, statusWhenRemoved: 'Evidence unsigned \u2014 contributor attestation missing', isCritical: false },
+      { label: 'Reviewed', role: 'Verifier', color: BLUE, removed: false, x: padX + spacing * 2, y: cy, radius: 26 * nodeScale, statusWhenRemoved: 'Review unverified \u2014 no independent check', isCritical: false },
+      { label: 'Approved', role: 'Authority', color: GREEN, removed: false, x: padX + spacing * 3, y: cy, radius: 26 * nodeScale, statusWhenRemoved: 'Authority broken \u2014 approval has no valid proof', isCritical: true },
+      { label: 'Anchored', role: 'Public network', color: GREEN, removed: false, x: padX + spacing * 4, y: cy, radius: 26 * nodeScale, statusWhenRemoved: 'No external anchor \u2014 trust depends on internal system only', isCritical: false },
+    ];
+  }
+
+  function seedParticles() {
+    particles = [];
+    for (let i = 0; i < 4; i++) {
+      const count = 3;
+      for (let j = 0; j < count; j++) {
+        particles.push({
+          edgeIndex: i,
+          t: Math.random(),
+          speed: 0.003 + Math.random() * 0.004,
+        });
+      }
+    }
+  }
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const oldRemoved = stages.map(s => s.removed);
+    stages = buildStages(canvas.clientWidth, canvas.clientHeight);
+    for (let i = 0; i < oldRemoved.length && i < stages.length; i++) {
+      stages[i].removed = oldRemoved[i];
+    }
+  }
+
+  function isEdgeBroken(edgeIndex: number): boolean {
+    // An edge from stage[edgeIndex] to stage[edgeIndex+1] is broken if
+    // the source stage or any upstream stage is removed
+    for (let i = 0; i <= edgeIndex; i++) {
+      if (stages[i].removed) return true;
+    }
+    return false;
+  }
+
+  function isDownstreamBroken(stageIndex: number): boolean {
+    // A stage is broken if it or any upstream stage is removed
+    for (let i = 0; i < stageIndex; i++) {
+      if (stages[i].removed) return true;
+    }
+    return false;
+  }
+
+  function updateStatus() {
+    const removedIndices = stages.map((s, i) => s.removed ? i : -1).filter(i => i >= 0);
+
+    if (removedIndices.length === 0) {
+      statusText.textContent = 'Full signature chain \u2014 replay from origin to anchor';
+      statusText.style.color = 'rgba(74,222,128,0.85)';
+      statusBox.style.borderColor = 'rgba(74,222,128,0.2)';
+      statusBox.style.background = 'rgba(11,11,17,0.8)';
+      integrityEl.textContent = 'Full';
+      integrityEl.style.color = 'rgba(74,222,128,0.8)';
+      confidenceEl.textContent = 'Reconstructable';
+      confidenceEl.style.color = 'rgba(74,222,128,0.8)';
+      return;
+    }
+
+    // Show the most recently removed stage's status
+    const lastRemoved = removedIndices[removedIndices.length - 1];
+    const stage = stages[lastRemoved];
+    statusText.textContent = stage.statusWhenRemoved;
+
+    if (stage.isCritical) {
+      statusText.style.color = 'rgba(239,68,68,0.95)';
+      statusBox.style.borderColor = 'rgba(239,68,68,0.4)';
+      statusBox.style.background = 'rgba(239,68,68,0.06)';
+    } else {
+      statusText.style.color = 'rgba(245,158,11,0.85)';
+      statusBox.style.borderColor = 'rgba(245,158,11,0.3)';
+      statusBox.style.background = 'rgba(11,11,17,0.8)';
+    }
+
+    // Update metrics
+    if (removedIndices.length >= 3 || removedIndices.includes(3)) {
+      integrityEl.textContent = 'Broken';
+      integrityEl.style.color = 'rgba(239,68,68,0.8)';
+      confidenceEl.textContent = 'Ambiguous';
+      confidenceEl.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      integrityEl.textContent = 'Degraded';
+      integrityEl.style.color = 'rgba(245,158,11,0.8)';
+      confidenceEl.textContent = 'Partial';
+      confidenceEl.style.color = 'rgba(245,158,11,0.8)';
+    }
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Draw edges
+    for (let i = 0; i < stages.length - 1; i++) {
+      const a = stages[i];
+      const b = stages[i + 1];
+      const broken = isEdgeBroken(i) || stages[i + 1].removed;
+
+      if (broken) {
+        // Dashed red edge
+        ctx.beginPath();
+        ctx.setLineDash([6, 4]);
+        ctx.moveTo(a.x + a.radius, a.y);
+        ctx.lineTo(b.x - b.radius, b.y);
+        ctx.strokeStyle = 'rgba(239,68,68,0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        // Solid edge
+        const [r, g, bl] = b.color;
+        ctx.beginPath();
+        ctx.moveTo(a.x + a.radius, a.y);
+        ctx.lineTo(b.x - b.radius, b.y);
+        ctx.strokeStyle = `rgba(${r},${g},${bl},0.2)`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+
+    // Draw particles along intact edges
+    if (!reducedMotion) {
+      for (const p of particles) {
+        const broken = isEdgeBroken(p.edgeIndex) || stages[p.edgeIndex + 1].removed;
+        if (broken) continue;
+
+        p.t += p.speed;
+        if (p.t > 1) p.t -= 1;
+
+        const a = stages[p.edgeIndex];
+        const b = stages[p.edgeIndex + 1];
+        const startX = a.x + a.radius;
+        const endX = b.x - b.radius;
+        const px = startX + (endX - startX) * p.t;
+        const py = a.y + (b.y - a.y) * p.t;
+        const [r, g, bl] = b.color;
+
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${bl},0.6)`;
+        ctx.fill();
+      }
+    }
+
+    // Draw nodes
+    for (let i = 0; i < stages.length; i++) {
+      const stage = stages[i];
+      const isHover = i === hoverIndex;
+      const broken = stage.removed || isDownstreamBroken(i);
+      const [r, g, b] = stage.removed ? RED : broken ? DIM : stage.color;
+      const alpha = stage.removed ? 0.4 : broken ? 0.3 : 1;
+
+      // Glow
+      const grad = ctx.createRadialGradient(stage.x, stage.y, 0, stage.x, stage.y, stage.radius * 2.5);
+      grad.addColorStop(0, `rgba(${r},${g},${b},${(stage.removed ? 0.06 : 0.12) * alpha})`);
+      grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(stage.x, stage.y, stage.radius * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ring
+      ctx.beginPath();
+      ctx.arc(stage.x, stage.y, stage.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${r},${g},${b},${(isHover ? 0.7 : 0.4) * alpha})`;
+      ctx.lineWidth = isHover ? 2 : 1.5;
+      ctx.stroke();
+      ctx.fillStyle = `rgba(${r},${g},${b},${0.06 * alpha})`;
+      ctx.fill();
+
+      // Critical node: extra emphasis when removed
+      if (stage.isCritical && stage.removed) {
+        ctx.beginPath();
+        ctx.arc(stage.x, stage.y, stage.radius + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(239,68,68,0.3)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Icon inside: checkmark or X
+      ctx.font = `${stage.removed ? '600' : '400'} ${isNarrow ? 14 : 16}px system-ui`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      if (stage.removed) {
+        ctx.fillStyle = 'rgba(239,68,68,0.8)';
+        ctx.fillText('\u2717', stage.x, stage.y);
+      } else {
+        ctx.fillStyle = `rgba(${r},${g},${b},0.7)`;
+        // Lock icon (simple representation)
+        ctx.font = `400 ${isNarrow ? 12 : 14}px system-ui`;
+        ctx.fillText('\u2713', stage.x, stage.y);
+      }
+
+      // Role label above
+      ctx.font = `400 ${isNarrow ? 8 : 9}px 'Inter', system-ui`;
+      ctx.fillStyle = `rgba(${r},${g},${b},${0.55 * alpha})`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(stage.role, stage.x, stage.y - stage.radius - 18);
+
+      // Stage label below
+      ctx.font = `600 ${isNarrow ? 9 : 10}px 'Syne', system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${0.8 * alpha})`;
+      ctx.textAlign = 'center';
+      ctx.fillText(stage.label, stage.x, stage.y + stage.radius + 16);
+
+      // "Removed" label for removed stages
+      if (stage.removed) {
+        ctx.font = `600 ${isNarrow ? 7 : 8}px 'JetBrains Mono', monospace`;
+        ctx.fillStyle = 'rgba(239,68,68,0.6)';
+        ctx.fillText('REMOVED', stage.x, stage.y + stage.radius + 28);
+      }
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function hitTest(clientX: number, clientY: number): number {
+    const rect = canvas.getBoundingClientRect();
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+    for (let i = 0; i < stages.length; i++) {
+      const dx = stages[i].x - mx;
+      const dy = stages[i].y - my;
+      if (dx * dx + dy * dy < stages[i].radius * stages[i].radius * 1.8) return i;
+    }
+    return -1;
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    hoverIndex = hitTest(e.clientX, e.clientY);
+    canvas.style.cursor = hoverIndex >= 0 ? 'pointer' : 'default';
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    hoverIndex = -1;
+    canvas.style.cursor = 'pointer';
+  });
+
+  canvas.addEventListener('click', (e) => {
+    const idx = hitTest(e.clientX, e.clientY);
+    if (idx >= 0) {
+      stages[idx].removed = !stages[idx].removed;
+      updateStatus();
+    }
+  });
+
+  // Touch support
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const idx = hitTest(touch.clientX, touch.clientY);
+    if (idx >= 0) {
+      stages[idx].removed = !stages[idx].removed;
+      updateStatus();
+    }
+  }, { passive: false });
+
+  resize();
+  seedParticles();
+  window.addEventListener('resize', () => { resize(); });
+
+  if (!reducedMotion) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(5000);
+  }
+}
+</script>

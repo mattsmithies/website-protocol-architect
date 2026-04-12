@@ -1,0 +1,197 @@
+---
+// Visual 7: Stable record, changing views
+// One replayable record, five views — the record never changes. HTML/CSS with JS interaction.
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <!-- View selector buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6" role="tablist" aria-label="Select a view to see how the same replayable record appears to different consumers">
+        <button id="srcv-operator" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(167,139,250,0.15); color: rgba(167,139,250,0.9); border: 1px solid rgba(167,139,250,0.3);">
+          Operator dashboard
+        </button>
+        <button id="srcv-auditor" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Auditor view
+        </button>
+        <button id="srcv-api" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          API response
+        </button>
+        <button id="srcv-search" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Search index
+        </button>
+        <button id="srcv-mirror" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Cross-system mirror
+        </button>
+      </div>
+
+      <!-- View card (changes per selection) -->
+      <div id="srcv-view-card" class="glass-card p-5 sm:p-6 mb-6 max-w-2xl mx-auto transition-all duration-400" role="tabpanel" aria-label="Selected view output" aria-live="polite">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-2 h-2 rounded-full flex-shrink-0" id="srcv-view-dot" style="background: rgba(167,139,250,0.8);"></span>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold" id="srcv-view-label">Operator dashboard</p>
+        </div>
+        <p class="text-sm text-text-secondary leading-relaxed" id="srcv-view-text">Status: Issued. Last action: Final approval by Actor B. Next: Distribution.</p>
+      </div>
+
+      <!-- Connection indicator -->
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="w-px h-6" style="background: rgba(167,139,250,0.2);"></div>
+      </div>
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider transition-all duration-600" style="color: rgba(74,222,128,0.5);" id="srcv-unchanged-label">Record unchanged</span>
+      </div>
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="w-px h-6" style="background: rgba(167,139,250,0.2);"></div>
+      </div>
+
+      <!-- Record card (never changes) -->
+      <div class="glass-card p-5 sm:p-6 max-w-2xl mx-auto" id="srcv-record" style="border: 1px solid rgba(167,139,250,0.15);">
+        <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold mb-4">Replayable Record</p>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 90px;">State</span>
+            <span class="text-text-secondary">Asset issued</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 90px;">Prior state</span>
+            <span class="text-text-secondary">Awaiting final approval</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 90px;">Actor</span>
+            <span class="text-text-secondary">Actor B (delegated authority, valid until 22 June)</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 90px;">Evidence</span>
+            <span class="text-text-secondary">4 documents, 2 signatures attached</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 90px;">Proof</span>
+            <span class="text-text-secondary">Ed25519 signature, content hash SHA-256</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 90px;">Anchor</span>
+            <span class="text-text-secondary">Block 14,291,003</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Replayability belongs to the record. Views only expose slices of what the record preserves.
+  </p>
+</div>
+
+<script>
+interface ViewConfig {
+  id: string;
+  label: string;
+  text: string;
+  color: [number, number, number];
+  isCode?: boolean;
+}
+
+const views: ViewConfig[] = [
+  {
+    id: 'operator',
+    label: 'Operator dashboard',
+    text: 'Status: Issued. Last action: Final approval by Actor B. Next: Distribution.',
+    color: [167, 139, 250],
+  },
+  {
+    id: 'auditor',
+    label: 'Auditor view',
+    text: '6 state transitions. 3 actors. 2 delegations. Full signature chain. Anchor verified.',
+    color: [56, 189, 248],
+  },
+  {
+    id: 'api',
+    label: 'API response',
+    text: '{ "state": "issued", "proof": { "algorithm": "Ed25519", "anchor": "block:14291003" }, "replayable": true }',
+    color: [74, 222, 128],
+    isCode: true,
+  },
+  {
+    id: 'search',
+    label: 'Search index',
+    text: 'Asset #4721 | Class: Carbon credit | Methodology: VM0007 | Vintage: 2024 | Status: Issued',
+    color: [245, 158, 11],
+  },
+  {
+    id: 'mirror',
+    label: 'Cross-system mirror',
+    text: 'Proof package portable. State, authority, evidence, and anchor intact. Independent verification possible.',
+    color: [167, 139, 250],
+  },
+];
+
+const buttons = views.map(v => document.getElementById(`srcv-${v.id}`) as HTMLButtonElement);
+const viewDot = document.getElementById('srcv-view-dot')!;
+const viewLabel = document.getElementById('srcv-view-label')!;
+const viewText = document.getElementById('srcv-view-text')!;
+const viewCard = document.getElementById('srcv-view-card')!;
+const unchangedLabel = document.getElementById('srcv-unchanged-label')!;
+
+let activeView = 0;
+
+function setView(index: number) {
+  if (index === activeView) return;
+  activeView = index;
+  const v = views[index];
+  const [r, g, b] = v.color;
+
+  // Update buttons
+  for (let i = 0; i < buttons.length; i++) {
+    const btn = buttons[i];
+    if (!btn) continue;
+    btn.setAttribute('aria-selected', String(i === index));
+    if (i === index) {
+      btn.style.background = `rgba(${r},${g},${b},0.15)`;
+      btn.style.color = `rgba(${r},${g},${b},0.9)`;
+      btn.style.borderColor = `rgba(${r},${g},${b},0.3)`;
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'rgba(232,232,240,0.3)';
+      btn.style.borderColor = 'rgba(255,255,255,0.06)';
+    }
+  }
+
+  // Update view card
+  viewDot.style.background = `rgba(${r},${g},${b},0.8)`;
+  viewLabel.textContent = v.label;
+  viewLabel.style.color = `rgba(${r},${g},${b},0.6)`;
+
+  // Fade transition
+  viewCard.style.opacity = '0';
+  viewCard.style.transform = 'translateY(4px)';
+
+  setTimeout(() => {
+    if (v.isCode) {
+      viewText.innerHTML = `<code class="font-mono text-xs leading-relaxed" style="color: rgba(${r},${g},${b},0.7);">${v.text}</code>`;
+    } else {
+      viewText.innerHTML = '';
+      viewText.textContent = v.text;
+      viewText.style.color = '';
+    }
+    viewCard.style.opacity = '1';
+    viewCard.style.transform = 'translateY(0)';
+  }, 150);
+
+  // Flash the unchanged label
+  unchangedLabel.style.color = 'rgba(74,222,128,0.8)';
+  unchangedLabel.style.textShadow = '0 0 8px rgba(74,222,128,0.3)';
+  setTimeout(() => {
+    unchangedLabel.style.color = 'rgba(74,222,128,0.5)';
+    unchangedLabel.style.textShadow = 'none';
+  }, 600);
+}
+
+for (let i = 0; i < buttons.length; i++) {
+  const btn = buttons[i];
+  if (btn) {
+    btn.addEventListener('click', () => setView(i));
+  }
+}
+</script>
