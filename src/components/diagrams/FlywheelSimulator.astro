@@ -1,96 +1,121 @@
 ---
-// Flywheel Simulator — Single token economy model
-// Protocol split (must sum to 100) → recipient behaviour → derived leakage → loop score
-// Illustration only. Shows directional dynamics, not price predictions.
+// Flywheel Simulator — Scenario-first, then optional manual tuning
+// Single token economy. Teaches through contrast, not abstraction.
 ---
 
 <div class="reveal my-12 md:my-16">
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
-    <canvas id="flywheel-canvas" class="w-full" style="height: 340px;"></canvas>
 
-    <div class="p-6 border-t border-border">
-      {/* Protocol allocation — must sum to 100 */}
-      <div class="flex items-center justify-between mb-4">
-        <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold">Protocol spend allocation</p>
-        <p class="text-xs font-mono" id="fw-total">100%</p>
+    {/* Scenario selector */}
+    <div class="p-6 pb-4">
+      <p class="text-text-tertiary text-[10px] uppercase tracking-wider font-semibold mb-4">
+        Select a token design scenario
+      </p>
+      <div class="flex flex-wrap gap-2" id="fw-scenarios">
+        <button data-scenario="productive" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Productive flywheel</button>
+        <button data-scenario="meme" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Average meme token</button>
+        <button data-scenario="narrative" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Narrative token</button>
+        <button data-scenario="extractive" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Extractive design</button>
+        <button data-scenario="agent" class="fw-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer">Agent driven utility</button>
       </div>
+    </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3 mb-6">
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Burn</label>
-          <input type="range" min="0" max="40" value="5" id="fw-burn" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-burn-val">5%</span>
-        </div>
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury</label>
-          <input type="range" min="0" max="50" value="20" id="fw-treasury" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-treasury-val">20%</span>
-        </div>
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributors</label>
-          <input type="range" min="0" max="80" value="55" id="fw-contrib" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-contrib-val">55%</span>
-        </div>
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Operators</label>
-          <input type="range" min="0" max="50" value="20" id="fw-ops" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-ops-val">20%</span>
-        </div>
-      </div>
+    {/* Canvas */}
+    <canvas id="flywheel-canvas" class="w-full" style="height: 320px;"></canvas>
 
-      {/* Behaviour + Demand quality */}
-      <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold mb-3">Recipient behaviour &amp; demand quality</p>
-
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 mb-6">
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor sell-through</label>
-          <input type="range" min="5" max="90" value="30" id="fw-csell" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-csell-val">30%</span>
+    {/* Diagnosis */}
+    <div class="px-6 py-4 border-t border-border">
+      <div class="flex flex-wrap items-start gap-6">
+        <div class="flex-1 min-w-[200px]">
+          <p class="text-sm text-text-secondary leading-relaxed" id="fw-diagnosis">
+            Choose a scenario above to see how value routing, recurring demand, and leakage shape long term outcomes.
+          </p>
         </div>
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury redeployment</label>
-          <input type="range" min="0" max="100" value="60" id="fw-tredeploy" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-tredeploy-val">60%</span>
-        </div>
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Required spend ratio</label>
-          <input type="range" min="10" max="100" value="70" id="fw-reqspend" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-reqspend-val">70%</span>
-        </div>
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Recurrence rate</label>
-          <input type="range" min="10" max="100" value="60" id="fw-recurrence" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-recurrence-val">60%</span>
-        </div>
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Bypassability</label>
-          <input type="range" min="0" max="80" value="15" id="fw-bypass" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-bypass-val">15%</span>
-        </div>
-        <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor effectiveness</label>
-          <input type="range" min="10" max="100" value="65" id="fw-ceffect" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-ceffect-val">65%</span>
+        <div class="flex items-center gap-6 flex-shrink-0">
+          <div class="text-center">
+            <span class="text-[9px] text-text-tertiary uppercase tracking-wider block">Leakage</span>
+            <span class="text-sm font-display font-bold" id="fw-leakage">&mdash;</span>
+          </div>
+          <div class="text-center">
+            <span class="text-[9px] text-text-tertiary uppercase tracking-wider block">Reinforce</span>
+            <span class="text-sm font-display font-bold" id="fw-reinforce">&mdash;</span>
+          </div>
+          <div class="text-center">
+            <span class="text-[9px] text-text-tertiary uppercase tracking-wider block">State</span>
+            <span class="text-sm font-display font-bold" id="fw-verdict">&mdash;</span>
+          </div>
         </div>
       </div>
+    </div>
 
-      {/* Derived outputs + verdict */}
-      <div class="flex flex-wrap items-center gap-6 border-t border-border pt-4">
-        <div>
-          <span class="text-[10px] text-text-tertiary uppercase tracking-wider block">Derived leakage</span>
-          <span class="text-sm font-display font-bold" id="fw-leakage">—</span>
+    {/* Manual tuning (collapsed by default) */}
+    <div id="fw-manual-wrapper">
+      <button id="fw-manual-toggle" class="w-full px-6 py-3 text-xs text-text-tertiary hover:text-signal transition-colors text-left border-t border-border cursor-pointer font-display">
+        Adjust the model yourself &darr;
+      </button>
+      <div id="fw-manual-panel" class="px-6 pb-6 border-t border-border" style="display: none;">
+
+        <div class="flex items-center justify-between mt-4 mb-3">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold">Protocol spend allocation</p>
+          <p class="text-xs font-mono" id="fw-total">100%</p>
         </div>
-        <div>
-          <span class="text-[10px] text-text-tertiary uppercase tracking-wider block">Reinforcement</span>
-          <span class="text-sm font-display font-bold" id="fw-reinforce">—</span>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3 mb-5">
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Burn</label>
+            <input type="range" min="0" max="40" value="5" id="fw-burn" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-burn-val">5%</span>
+          </div>
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury</label>
+            <input type="range" min="0" max="50" value="20" id="fw-treasury" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-treasury-val">20%</span>
+          </div>
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributors</label>
+            <input type="range" min="0" max="80" value="55" id="fw-contrib" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-contrib-val">55%</span>
+          </div>
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Operators</label>
+            <input type="range" min="0" max="50" value="20" id="fw-ops" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-ops-val">20%</span>
+          </div>
         </div>
-        <div>
-          <span class="text-[10px] text-text-tertiary uppercase tracking-wider block">Demand strength</span>
-          <span class="text-sm font-display font-bold" id="fw-demand">—</span>
-        </div>
-        <div class="ml-auto">
-          <span class="text-[10px] text-text-tertiary uppercase tracking-wider block">Loop state</span>
-          <span class="text-base font-display font-bold" id="fw-verdict">—</span>
+
+        <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold mb-3">Behaviour &amp; demand quality</p>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor sell-through</label>
+            <input type="range" min="5" max="90" value="30" id="fw-csell" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-csell-val">30%</span>
+          </div>
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury redeployment</label>
+            <input type="range" min="0" max="100" value="60" id="fw-tredeploy" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-tredeploy-val">60%</span>
+          </div>
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Required spend ratio</label>
+            <input type="range" min="10" max="100" value="70" id="fw-reqspend" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-reqspend-val">70%</span>
+          </div>
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Recurrence rate</label>
+            <input type="range" min="10" max="100" value="60" id="fw-recurrence" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-recurrence-val">60%</span>
+          </div>
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Bypassability</label>
+            <input type="range" min="0" max="80" value="15" id="fw-bypass" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-bypass-val">15%</span>
+          </div>
+          <div>
+            <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor effectiveness</label>
+            <input type="range" min="10" max="100" value="65" id="fw-ceffect" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+            <span class="text-xs text-text-tertiary font-mono" id="fw-ceffect-val">65%</span>
+          </div>
         </div>
       </div>
     </div>
@@ -100,7 +125,7 @@
       A token becomes durable when spend strengthens the people who make future spend worth paying.
     </p>
     <p class="text-text-tertiary text-[10px] text-center">
-      Illustration only. This is a simplified model of token flow. It shows directional pressure, not exact market behaviour. Negative settings tend to produce worse value and market outcomes because more token value escapes the network than returns to strengthen it.
+      Illustration only. This simplified model shows directional pressure, not exact market behaviour.
     </p>
   </div>
 </div>
@@ -115,8 +140,8 @@ if (canvas) {
   const VIOLET = [167, 139, 250];
   const RED = [239, 68, 68];
   const AMBER = [245, 158, 11];
+  const DIM = [100, 100, 120];
 
-  // Slider refs
   const sl = (id: string) => document.getElementById(id) as HTMLInputElement;
   const el = (id: string) => document.getElementById(id)!;
 
@@ -128,17 +153,124 @@ if (canvas) {
     bypass: sl('fw-bypass'), ceffect: sl('fw-ceffect'),
   };
 
+  // ── Scenarios ─────────────────────────────────────────
+  interface Scenario {
+    burn: number; treasury: number; contrib: number; ops: number;
+    csell: number; tredeploy: number; reqspend: number; recurrence: number;
+    bypass: number; ceffect: number;
+    diagnosis: string;
+  }
+
+  const scenarios: Record<string, Scenario> = {
+    productive: {
+      burn: 5, treasury: 15, contrib: 55, ops: 25,
+      csell: 25, tredeploy: 70, reqspend: 80, recurrence: 75,
+      bypass: 10, ceffect: 75,
+      diagnosis: 'Required spend is high and recurring. Contributors receive the majority of token flow and most of it stays in the network. Treasury is actively redeployed. Leakage is moderate and subordinate to reinforcement. The loop compounds because spend improves the people who make future spend worth paying.',
+    },
+    meme: {
+      burn: 2, treasury: 5, contrib: 8, ops: 5,
+      csell: 85, tredeploy: 10, reqspend: 10, recurrence: 15,
+      bypass: 75, ceffect: 15,
+      diagnosis: 'This token has almost no internal demand. Required spend is negligible. The network can be used without touching the token at all. Most value depends on attention rather than recurring required spend. Leakage dominates because there is nothing structural holding value inside the system.',
+    },
+    narrative: {
+      burn: 8, treasury: 30, contrib: 35, ops: 15,
+      csell: 50, tredeploy: 35, reqspend: 40, recurrence: 40,
+      bypass: 40, ceffect: 40,
+      diagnosis: 'The story is strong and the treasury is well funded. Some usage exists, but required spend is partial and can be bypassed. Contributors are paid but the link between rewards and quality improvement is loose. The system consumes value to support the narrative faster than it earns recurring demand. Fragile until proven otherwise.',
+    },
+    extractive: {
+      burn: 3, treasury: 45, contrib: 20, ops: 12,
+      csell: 60, tredeploy: 20, reqspend: 55, recurrence: 50,
+      bypass: 25, ceffect: 35,
+      diagnosis: 'Real usage exists but value routing is poor. Treasury captures too much and redeploys too little. Contributors are underfunded relative to the value they create. Operators are misaligned. Even with genuine spend, the productive edge of the network is starved. Value exits faster than it reinforces.',
+    },
+    agent: {
+      burn: 5, treasury: 10, contrib: 50, ops: 35,
+      csell: 20, tredeploy: 75, reqspend: 90, recurrence: 85,
+      bypass: 5, ceffect: 80,
+      diagnosis: 'Agents buy the token because the network requires it for execution, data, memory, or priority access. Spend is metered and recurring. Contributors and operators receive the majority and most of it stays working. Quality improvements drive more agent demand. The loop deepens because AI does not care about narrative. It cares about access to scarce network outputs.',
+    },
+  };
+
+  let currentScenario = '';
+  let manualOpen = false;
+
+  function applyScenario(name: string) {
+    const s = scenarios[name];
+    if (!s) return;
+    currentScenario = name;
+
+    // Update sliders
+    sliders.burn.value = String(s.burn);
+    sliders.treasury.value = String(s.treasury);
+    sliders.contrib.value = String(s.contrib);
+    sliders.ops.value = String(s.ops);
+    sliders.csell.value = String(s.csell);
+    sliders.tredeploy.value = String(s.tredeploy);
+    sliders.reqspend.value = String(s.reqspend);
+    sliders.recurrence.value = String(s.recurrence);
+    sliders.bypass.value = String(s.bypass);
+    sliders.ceffect.value = String(s.ceffect);
+
+    // Update diagnosis
+    el('fw-diagnosis').textContent = s.diagnosis;
+
+    // Update button states
+    document.querySelectorAll('.fw-scenario-btn').forEach(btn => {
+      const b = btn as HTMLElement;
+      if (b.dataset.scenario === name) {
+        b.style.background = 'rgba(167,139,250,0.15)';
+        b.style.color = 'rgba(167,139,250,0.9)';
+        b.style.border = '1px solid rgba(167,139,250,0.3)';
+      } else {
+        b.style.background = 'transparent';
+        b.style.color = 'rgba(232,232,240,0.3)';
+        b.style.border = '1px solid rgba(255,255,255,0.06)';
+      }
+    });
+  }
+
+  // Scenario click handlers
+  document.querySelectorAll('.fw-scenario-btn').forEach(btn => {
+    (btn as HTMLElement).addEventListener('click', () => {
+      applyScenario((btn as HTMLElement).dataset.scenario || '');
+    });
+  });
+
+  // Manual toggle
+  const manualToggle = el('fw-manual-toggle');
+  const manualPanel = el('fw-manual-panel');
+  manualToggle.addEventListener('click', () => {
+    manualOpen = !manualOpen;
+    manualPanel.style.display = manualOpen ? 'block' : 'none';
+    manualToggle.innerHTML = manualOpen ? 'Hide manual controls &uarr;' : 'Adjust the model yourself &darr;';
+  });
+
+  // When sliders change manually, clear scenario selection
+  Object.values(sliders).forEach(s => s.addEventListener('input', () => {
+    if (currentScenario) {
+      currentScenario = '';
+      document.querySelectorAll('.fw-scenario-btn').forEach(btn => {
+        const b = btn as HTMLElement;
+        b.style.background = 'transparent';
+        b.style.color = 'rgba(232,232,240,0.3)';
+        b.style.border = '1px solid rgba(255,255,255,0.06)';
+      });
+      el('fw-diagnosis').textContent = 'Custom configuration. Watch how the derived outputs change as you adjust the levers.';
+    }
+  }));
+
   function v(s: HTMLInputElement): number { return parseInt(s.value); }
 
   function compute() {
-    // Protocol split (normalize to 100)
     const rawBurn = v(sliders.burn);
     const rawTreasury = v(sliders.treasury);
     const rawContrib = v(sliders.contrib);
     const rawOps = v(sliders.ops);
     const rawTotal = rawBurn + rawTreasury + rawContrib + rawOps;
 
-    // Display raw total
     const totalEl = el('fw-total');
     if (rawTotal !== 100) {
       totalEl.textContent = `${rawTotal}% — should be 100`;
@@ -148,14 +280,12 @@ if (canvas) {
       totalEl.style.color = 'rgba(74,222,128,0.6)';
     }
 
-    // Normalize
     const norm = rawTotal > 0 ? 100 / rawTotal : 1;
     const burn = rawBurn * norm;
     const treasury = rawTreasury * norm;
     const contrib = rawContrib * norm;
     const ops = rawOps * norm;
 
-    // Behaviour
     const cSellThrough = v(sliders.csell) / 100;
     const tRedeploy = v(sliders.tredeploy) / 100;
     const reqSpend = v(sliders.reqspend) / 100;
@@ -163,30 +293,26 @@ if (canvas) {
     const bypass = v(sliders.bypass) / 100;
     const cEffect = v(sliders.ceffect) / 100;
 
-    // Step 1: Derived leakage (what gets sold)
     const contribLeakage = contrib * cSellThrough;
-    const opsLeakage = ops * 0.4; // operators sell ~40% (fixed assumption)
-    const treasuryLeakage = treasury * (1 - tRedeploy) * 0.5; // idle treasury partially exits
+    const opsLeakage = ops * 0.4;
+    const treasuryLeakage = treasury * (1 - tRedeploy) * 0.5;
     const totalLeakage = contribLeakage + opsLeakage + treasuryLeakage;
 
-    // Step 2: Reinforcement (value that strengthens the network)
     const contribReinforce = contrib * (1 - cSellThrough) * cEffect;
-    const opsReinforce = ops * 0.6 * 0.7; // ops hold 60%, effectiveness 70%
-    const treasuryReinforce = treasury * tRedeploy * 0.6; // redeployed treasury, 60% effective
+    const opsReinforce = ops * 0.6 * 0.7;
+    const treasuryReinforce = treasury * tRedeploy * 0.6;
     const totalReinforce = contribReinforce + opsReinforce + treasuryReinforce;
 
-    // Step 3: Demand strength
     const demandBase = reqSpend * recurrence * 100;
     const bypassPenalty = bypass * 40;
-    const burnBonus = Math.min(burn * 0.3, 8); // burn helps but can't carry the model
+    const burnBonus = Math.min(burn * 0.3, 8);
     const demandStrength = Math.max(0, demandBase + burnBonus - bypassPenalty);
 
-    // Step 4: Loop score (0-100)
     const loopScore = Math.min(100, Math.max(0,
       (demandStrength * 0.4) + (totalReinforce * 0.5) - (totalLeakage * 0.3) - (bypass * 15)
     ));
 
-    // Update value labels
+    // Update labels
     el('fw-burn-val').textContent = rawBurn + '%';
     el('fw-treasury-val').textContent = rawTreasury + '%';
     el('fw-contrib-val').textContent = rawContrib + '%';
@@ -198,36 +324,38 @@ if (canvas) {
     el('fw-bypass-val').textContent = v(sliders.bypass) + '%';
     el('fw-ceffect-val').textContent = v(sliders.ceffect) + '%';
 
-    // Update derived outputs
     el('fw-leakage').textContent = Math.round(totalLeakage) + '%';
     el('fw-leakage').style.color = totalLeakage > 25 ? 'rgba(239,68,68,0.8)' : totalLeakage > 15 ? 'rgba(245,158,11,0.8)' : 'rgba(74,222,128,0.7)';
 
     el('fw-reinforce').textContent = Math.round(totalReinforce) + '%';
     el('fw-reinforce').style.color = totalReinforce > 20 ? 'rgba(74,222,128,0.8)' : totalReinforce > 10 ? 'rgba(245,158,11,0.8)' : 'rgba(239,68,68,0.7)';
 
-    el('fw-demand').textContent = Math.round(demandStrength) + '';
-    el('fw-demand').style.color = demandStrength > 40 ? 'rgba(74,222,128,0.8)' : demandStrength > 20 ? 'rgba(245,158,11,0.8)' : 'rgba(239,68,68,0.7)';
-
-    // Verdict
     const verdict = el('fw-verdict');
-    if (loopScore >= 60) {
-      verdict.textContent = 'Loop strengthening';
+    if (loopScore >= 70) {
+      verdict.textContent = 'Loop compounding';
       verdict.style.color = 'rgba(74,222,128,0.9)';
-    } else if (loopScore >= 40) {
-      verdict.textContent = 'Fragile equilibrium';
+    } else if (loopScore >= 50) {
+      verdict.textContent = 'Loop strengthening';
+      verdict.style.color = 'rgba(56,189,248,0.9)';
+    } else if (loopScore >= 35) {
+      verdict.textContent = 'Loop fragile';
       verdict.style.color = 'rgba(245,158,11,0.9)';
-    } else if (loopScore >= 20) {
+    } else if (loopScore >= 18) {
       verdict.textContent = 'Loop weakening';
       verdict.style.color = 'rgba(239,68,68,0.8)';
+    } else if (loopScore >= 5) {
+      verdict.textContent = 'Loop hollow';
+      verdict.style.color = 'rgba(239,68,68,0.9)';
     } else {
       verdict.textContent = 'Loop failing';
-      verdict.style.color = 'rgba(239,68,68,0.9)';
+      verdict.style.color = 'rgba(239,68,68,1)';
     }
 
-    return { loopScore, totalLeakage, totalReinforce, demandStrength, burn, treasury, contrib, ops };
+    return { loopScore, totalLeakage, totalReinforce };
   }
 
-  // Canvas rendering
+  // ── Canvas ────────────────────────────────────────────
+
   let animId = 0;
 
   function resize() {
@@ -238,44 +366,38 @@ if (canvas) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  interface Stage { x: number; y: number; label: string; sublabel: string; }
-
-  function getStages(w: number, h: number): Stage[] {
-    const cx = w / 2;
-    const cy = h / 2;
-    const rx = Math.min(w * 0.3, 140);
-    const ry = Math.min(h * 0.32, 120);
-    const angles = [-Math.PI / 2, -Math.PI / 10, Math.PI / 3, Math.PI * 0.8, Math.PI * 1.3];
-    const labels = ['Acquire', 'Spend', 'Redistribute', 'Network\nimproves', 'More\nusage'];
-    const sublabels = ['Required', 'Metered action', 'To contributors', 'Quality rises', 'Demand deepens'];
-    return angles.map((a, i) => ({
-      x: cx + Math.cos(a) * rx,
-      y: cy + Math.sin(a) * ry,
-      label: labels[i],
-      sublabel: sublabels[i],
-    }));
-  }
-
   function render(now: number) {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
     const t = now * 0.0015;
     const state = compute();
+    const health = state.loopScore / 100;
 
     ctx.clearRect(0, 0, w, h);
-    const stages = getStages(w, h);
 
-    // Health colour
-    const health = state.loopScore / 100;
-    const loopColor = health > 0.6 ? GREEN : health > 0.4 ? AMBER : RED;
+    const cx = w / 2;
+    const cy = h / 2;
+    const rx = Math.min(w * 0.28, 130);
+    const ry = Math.min(h * 0.32, 115);
+
+    const loopColor = health > 0.5 ? GREEN : health > 0.35 ? AMBER : health > 0.15 ? RED : DIM;
     const [lr, lg, lb] = loopColor;
 
+    const angles = [-Math.PI / 2, -Math.PI / 10, Math.PI / 3, Math.PI * 0.8, Math.PI * 1.3];
+    const labels = ['Acquire', 'Spend', 'Redistribute', 'Network\nimproves', 'More\nusage'];
+    const sublabels = ['Required', 'Metered action', 'To contributors', 'Quality rises', 'Demand deepens'];
+
+    const stages = angles.map((a, i) => ({
+      x: cx + Math.cos(a) * rx,
+      y: cy + Math.sin(a) * ry,
+    }));
+
     // Edges
-    for (let i = 0; i < stages.length; i++) {
+    for (let i = 0; i < 5; i++) {
       const a = stages[i];
-      const b = stages[(i + 1) % stages.length];
-      const alpha = 0.08 + health * 0.18;
-      const width = 1 + health * 2;
+      const b = stages[(i + 1) % 5];
+      const alpha = 0.06 + health * 0.2;
+      const width = 0.8 + health * 2;
 
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
@@ -284,63 +406,76 @@ if (canvas) {
       ctx.lineWidth = width;
       ctx.stroke();
 
-      // Particles (speed varies with health)
-      const speed = 0.1 + health * 0.25;
+      const speed = 0.08 + health * 0.25;
       for (let p = 0; p < 2; p++) {
         const pt = ((t * speed + i * 0.2 + p * 0.5) % 1);
         ctx.beginPath();
-        ctx.arc(a.x + (b.x - a.x) * pt, a.y + (b.y - a.y) * pt, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${lr},${lg},${lb},${0.2 + health * 0.5})`;
+        ctx.arc(a.x + (b.x - a.x) * pt, a.y + (b.y - a.y) * pt, 1.8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${lr},${lg},${lb},${0.15 + health * 0.5})`;
         ctx.fill();
       }
     }
 
-    // Leakage indicator (red exit arrow from bottom)
-    if (state.totalLeakage > 10) {
+    // Leakage exit arrow
+    if (state.totalLeakage > 8) {
       const leakAlpha = Math.min(state.totalLeakage / 50, 0.5);
-      const cx = w / 2 + 80;
-      const cy = h - 20;
       ctx.font = '400 8px "Inter", system-ui';
       ctx.fillStyle = `rgba(239,68,68,${leakAlpha})`;
       ctx.textAlign = 'center';
-      ctx.fillText(`${Math.round(state.totalLeakage)}% leaks to exchanges`, cx, cy);
+      ctx.fillText(`${Math.round(state.totalLeakage)}% leaks to exchanges`, cx + 70, h - 16);
+      // Arrow line
+      const fromX = stages[1].x + 20;
+      const fromY = stages[1].y + 10;
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(cx + 70, h - 24);
+      ctx.strokeStyle = `rgba(239,68,68,${leakAlpha * 0.4})`;
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
 
     // Nodes
-    for (const stage of stages) {
-      const grad = ctx.createRadialGradient(stage.x, stage.y, 0, stage.x, stage.y, 35);
-      grad.addColorStop(0, `rgba(${lr},${lg},${lb},0.08)`);
+    for (let i = 0; i < 5; i++) {
+      const s = stages[i];
+
+      const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 32);
+      grad.addColorStop(0, `rgba(${lr},${lg},${lb},0.07)`);
       grad.addColorStop(1, `rgba(${lr},${lg},${lb},0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(stage.x, stage.y, 35, 0, Math.PI * 2);
+      ctx.arc(s.x, s.y, 32, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(stage.x, stage.y, 14, 0, Math.PI * 2);
+      ctx.arc(s.x, s.y, 13, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(${lr},${lg},${lb},0.3)`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
       ctx.font = '600 9px "Syne", system-ui';
-      ctx.fillStyle = 'rgba(232,232,240,0.7)';
+      ctx.fillStyle = 'rgba(232,232,240,0.65)';
       ctx.textAlign = 'center';
-      const lines = stage.label.split('\n');
-      lines.forEach((line, li) => {
-        ctx.fillText(line, stage.x, stage.y - 22 - (lines.length - 1 - li) * 11);
+      const lns = labels[i].split('\n');
+      lns.forEach((line, li) => {
+        ctx.fillText(line, s.x, s.y - 20 - (lns.length - 1 - li) * 11);
       });
 
-      ctx.font = '400 8px "Inter", system-ui';
-      ctx.fillStyle = `rgba(${lr},${lg},${lb},0.35)`;
-      ctx.fillText(stage.sublabel, stage.x, stage.y + 24);
+      ctx.font = '400 7px "Inter", system-ui';
+      ctx.fillStyle = `rgba(${lr},${lg},${lb},0.3)`;
+      ctx.fillText(sublabels[i], s.x, s.y + 22);
     }
 
     animId = requestAnimationFrame(render);
   }
 
+  // Init
   resize();
   window.addEventListener('resize', resize);
-  Object.values(sliders).forEach(s => s.addEventListener('input', () => {}));
+
+  // Default to productive scenario
+  applyScenario('productive');
 
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     animId = requestAnimationFrame(render);
