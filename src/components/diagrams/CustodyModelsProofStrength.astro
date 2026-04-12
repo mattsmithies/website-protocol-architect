@@ -1,0 +1,170 @@
+---
+// Visual: Custody Models and Proof Strength
+// Four horizontal rows — click/tap to select a custody model and see detail
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="max-w-2xl mx-auto">
+        <div id="cmps-rows" class="space-y-3"></div>
+
+        <!-- Detail panel -->
+        <div id="cmps-detail" class="mt-6 p-4 rounded-lg border border-border transition-all duration-300" style="background: rgba(11,11,17,0.8);">
+          <div class="flex items-start gap-3">
+            <span id="cmps-detail-icon" class="text-sm mt-0.5" style="color: rgba(74,222,128,0.7);">&#9679;</span>
+            <div>
+              <p id="cmps-detail-label" class="text-sm font-display font-semibold mb-1" style="color: rgba(74,222,128,0.8);">Self-custody</p>
+              <p id="cmps-detail-text" class="text-sm leading-relaxed" style="color: rgba(232,232,240,0.6);">The actor held the key. The signature is attributable to them directly. This is the strongest proof of individual origin, but requires the actor to manage key security.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    A signature proves less than people think when the custody model is hidden.
+  </p>
+</div>
+
+<script>
+interface CustodyModel {
+  name: string;
+  color: [number, number, number];
+  strength: number;
+  shortDesc: string;
+  proofDesc: string;
+  detailText: string;
+}
+
+const models: CustodyModel[] = [
+  {
+    name: 'Self-custody',
+    color: [74, 222, 128],
+    strength: 95,
+    shortDesc: 'Actor controls the key directly',
+    proofDesc: 'Strong actor origin — signature attributable to individual',
+    detailText: 'The actor held the key. The signature is attributable to them directly. This is the strongest proof of individual origin, but requires the actor to manage key security.',
+  },
+  {
+    name: 'Delegated custody',
+    color: [56, 189, 248],
+    strength: 70,
+    shortDesc: 'Actor delegates key operation to a trusted agent',
+    proofDesc: 'Constrained delegated origin — proof depends on delegation validity',
+    detailText: 'The actor authorised a specific agent to sign on their behalf. Proof depends on the delegation being valid and time-bound. Stronger than platform custody, weaker than self-custody.',
+  },
+  {
+    name: 'Institutional custody',
+    color: [245, 158, 11],
+    strength: 50,
+    shortDesc: 'Organisation holds the key on behalf of actors',
+    proofDesc: 'Institutional origin — signature proves organisation acted, not individual',
+    detailText: 'The organisation\'s key signed. The individual actor is identified by the system, not by the cryptographic proof. Audit depends on internal access controls being trustworthy.',
+  },
+  {
+    name: 'Platform custody',
+    color: [239, 68, 68],
+    strength: 25,
+    shortDesc: 'Platform manages all keys internally',
+    proofDesc: 'Platform-asserted origin — signature proves platform action, not actor action',
+    detailText: 'The platform signed on the actor\'s behalf using a platform-managed key. The signature proves the platform acted. It does not cryptographically prove the named actor authorised the specific action.',
+  },
+];
+
+const container = document.getElementById('cmps-rows')!;
+const detail = document.getElementById('cmps-detail')!;
+const detailIcon = document.getElementById('cmps-detail-icon')!;
+const detailLabel = document.getElementById('cmps-detail-label')!;
+const detailText = document.getElementById('cmps-detail-text')!;
+
+let selectedIndex = 0;
+const rowElements: HTMLElement[] = [];
+
+function selectModel(index: number) {
+  selectedIndex = index;
+  const model = models[index];
+  const [r, g, b] = model.color;
+
+  // Update detail panel
+  detailIcon.textContent = '\u25CF';
+  detailIcon.style.color = `rgba(${r},${g},${b},0.7)`;
+  detailLabel.textContent = model.name;
+  detailLabel.style.color = `rgba(${r},${g},${b},0.8)`;
+  detailText.textContent = model.detailText;
+  detailText.style.color = 'rgba(232,232,240,0.6)';
+  detail.style.borderColor = `rgba(${r},${g},${b},0.2)`;
+
+  // Update row styles
+  for (let i = 0; i < rowElements.length; i++) {
+    const row = rowElements[i];
+    const m = models[i];
+    const [mr, mg, mb] = m.color;
+    const isSelected = i === index;
+
+    row.style.borderColor = isSelected ? `rgba(${mr},${mg},${mb},0.35)` : 'rgba(255,255,255,0.06)';
+    row.style.background = isSelected ? `rgba(${mr},${mg},${mb},0.06)` : 'rgba(11,11,17,0.4)';
+    row.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+
+    // Update the indicator dot
+    const dot = row.querySelector('[data-dot]') as HTMLElement;
+    if (dot) {
+      dot.style.opacity = isSelected ? '1' : '0.4';
+      dot.style.transform = isSelected ? 'scale(1.3)' : 'scale(1)';
+    }
+  }
+}
+
+for (let i = 0; i < models.length; i++) {
+  const model = models[i];
+  const [r, g, b] = model.color;
+
+  const row = document.createElement('div');
+  row.className = 'rounded-lg border border-border p-4 cursor-pointer transition-all duration-300';
+  row.style.background = i === 0 ? `rgba(${r},${g},${b},0.06)` : 'rgba(11,11,17,0.4)';
+  row.style.borderColor = i === 0 ? `rgba(${r},${g},${b},0.35)` : 'rgba(255,255,255,0.06)';
+  row.setAttribute('tabindex', '0');
+  row.setAttribute('role', 'tab');
+  row.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+  row.setAttribute('aria-label', `${model.name} — ${model.shortDesc}. Proof strength ${model.strength}%`);
+
+  row.innerHTML = `
+    <div class="flex items-center gap-4">
+      <span data-dot class="w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300" style="background: rgba(${r},${g},${b},0.8); opacity: ${i === 0 ? '1' : '0.4'}; transform: ${i === 0 ? 'scale(1.3)' : 'scale(1)'};"></span>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <span class="text-sm font-display font-bold text-text-primary">${model.name}</span>
+          <span class="text-[10px] font-mono text-text-tertiary flex-shrink-0">${model.strength}%</span>
+        </div>
+        <div class="w-full h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.04);">
+          <div class="h-full rounded-full transition-all duration-700" style="width: ${model.strength}%; background: rgba(${r},${g},${b},0.6);"></div>
+        </div>
+        <p class="text-xs text-text-tertiary mt-2 hidden sm:block">${model.proofDesc}</p>
+      </div>
+    </div>
+  `;
+
+  row.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectModel(i);
+  });
+
+  row.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      selectModel(i);
+    }
+  });
+
+  row.addEventListener('focus', () => {
+    selectModel(i);
+  });
+
+  container.appendChild(row);
+  rowElements.push(row);
+}
+
+// Click outside to keep selection (no reset needed — always one selected)
+</script>

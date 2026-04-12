@@ -1,0 +1,488 @@
+---
+// Visual 8: Local vs portable proof
+// Toggle between local-only verification and portable proof package
+// Shows how proof survives system removal when portable
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <!-- Toggle -->
+      <div class="flex items-center justify-center gap-3 mb-6" role="tablist" aria-label="Toggle between local verification only and portable proof package">
+        <button id="lvpp-local" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.15); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          Local verification only
+        </button>
+        <button id="lvpp-portable" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Portable proof package
+        </button>
+      </div>
+
+      <canvas
+        id="lvpp-canvas"
+        class="w-full"
+        style="height: 380px; cursor: pointer;"
+        role="img"
+        aria-label="Five system boxes arranged around a central proof package. In local-only mode, proof exists only in the Application DB and is lost when that system fails. In portable mode, proof connects to all five systems and survives removal of any one."
+      ></canvas>
+
+      <!-- Status line -->
+      <div class="text-center mt-2 mb-4" aria-live="polite">
+        <p class="text-sm font-display font-semibold" id="lvpp-status" style="color: rgba(239,68,68,0.8);">Proof depends on original system</p>
+      </div>
+
+      <!-- Metrics -->
+      <div class="grid grid-cols-3 gap-4 border-t border-border pt-4" aria-live="polite">
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Survives system removal</p>
+          <p class="text-sm font-display font-bold" id="lvpp-metric-survive" style="color: rgba(239,68,68,0.8);">No</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Independent verification</p>
+          <p class="text-sm font-display font-bold" id="lvpp-metric-indep" style="color: rgba(239,68,68,0.8);">Not possible</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Cross-boundary audit</p>
+          <p class="text-sm font-display font-bold" id="lvpp-metric-cross" style="color: rgba(239,68,68,0.8);">Requires original system</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Proof becomes durable when it can be checked outside the system that created it.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('lvpp-canvas') as HTMLCanvasElement;
+const btnLocal = document.getElementById('lvpp-local') as HTMLButtonElement;
+const btnPortable = document.getElementById('lvpp-portable') as HTMLButtonElement;
+const statusEl = document.getElementById('lvpp-status') as HTMLElement;
+const metricSurvive = document.getElementById('lvpp-metric-survive') as HTMLElement;
+const metricIndep = document.getElementById('lvpp-metric-indep') as HTMLElement;
+const metricCross = document.getElementById('lvpp-metric-cross') as HTMLElement;
+
+if (canvas && btnLocal && btnPortable) {
+  const ctx = canvas.getContext('2d')!;
+
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  let mode: 'local' | 'portable' = 'local';
+  let removedSystem: number = -1;
+  let animId = 0;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  interface SystemBox {
+    label: string;
+    color: [number, number, number];
+  }
+
+  const systems: SystemBox[] = [
+    { label: 'Application DB', color: VIOLET },
+    { label: 'Object storage', color: BLUE },
+    { label: 'Public anchor', color: GREEN },
+    { label: 'External auditor', color: AMBER },
+    { label: 'Independent verifier', color: GREEN },
+  ];
+
+  const proofFields = 'actor + key + algorithm + hash + nonce + signature + authority + evidence + anchor';
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getSystemPositions(w: number, h: number, isNarrow: boolean) {
+    const cx = w / 2;
+    const cy = h / 2;
+    const rx = isNarrow ? w * 0.34 : w * 0.36;
+    const ry = isNarrow ? h * 0.34 : h * 0.36;
+
+    // 5 positions arranged in a loose pentagon around centre
+    const positions: { x: number; y: number }[] = [];
+    for (let i = 0; i < 5; i++) {
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+      positions.push({
+        x: cx + rx * Math.cos(angle),
+        y: cy + ry * Math.sin(angle),
+      });
+    }
+    return positions;
+  }
+
+  function drawRoundedRect(x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.roundRect(x - w / 2, y - h / 2, w, h, r);
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    ctx.clearRect(0, 0, w, h);
+
+    const cx = w / 2;
+    const cy = h / 2;
+    const positions = getSystemPositions(w, h, isNarrow);
+    const boxW = isNarrow ? 88 : 115;
+    const boxH = isNarrow ? 40 : 48;
+
+    const pkgW = isNarrow ? 90 : 120;
+    const pkgH = isNarrow ? 56 : 68;
+
+    // Draw connections
+    for (let i = 0; i < 5; i++) {
+      const pos = positions[i];
+      const sys = systems[i];
+      const [sr, sg, sb] = sys.color;
+      const isRemoved = i === removedSystem;
+
+      if (mode === 'local') {
+        if (i === 0 && !isRemoved) {
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = `rgba(${sr},${sg},${sb},0.3)`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = `rgba(${DIM[0]},${DIM[1]},${DIM[2]},0.12)`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 6]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      } else {
+        if (isRemoved) {
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = `rgba(${RED[0]},${RED[1]},${RED[2]},0.15)`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 5]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = `rgba(${sr},${sg},${sb},0.3)`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // Flowing particles
+          if (!prefersReducedMotion) {
+            const dx = pos.x - cx;
+            const dy = pos.y - cy;
+            for (let j = 0; j < 2; j++) {
+              const t = ((now * 0.0003 + i * 0.2 + j * 0.5) % 1);
+              const px = cx + dx * t;
+              const py = cy + dy * t;
+              ctx.beginPath();
+              ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(${sr},${sg},${sb},${0.2 + 0.4 * Math.sin(t * Math.PI)})`;
+              ctx.fill();
+            }
+          }
+        }
+      }
+    }
+
+    // Draw proof package (centre)
+    const proofLost = mode === 'local' && removedSystem === 0;
+
+    if (proofLost) {
+      drawRoundedRect(cx, cy, pkgW, pkgH, 6);
+      ctx.fillStyle = 'rgba(239,68,68,0.04)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(239,68,68,0.15)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.fillStyle = 'rgba(239,68,68,0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText('PROOF LOST', cx, cy + 3);
+    } else {
+      const pkgColor = mode === 'portable' ? GREEN : VIOLET;
+      const [pr, pg, pb] = pkgColor;
+
+      drawRoundedRect(cx, cy, pkgW, pkgH, 6);
+      ctx.fillStyle = `rgba(${pr},${pg},${pb},0.06)`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${pr},${pg},${pb},0.35)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.shadowColor = `rgba(${pr},${pg},${pb},0.15)`;
+      ctx.shadowBlur = 12;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      ctx.font = `600 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${pr},${pg},${pb},0.6)`;
+      ctx.textAlign = 'center';
+      ctx.fillText('PROOF PACKAGE', cx, cy - (isNarrow ? 18 : 22));
+
+      if (mode === 'portable') {
+        // Show proof field labels
+        ctx.font = `400 ${isNarrow ? 5.5 : 6.5}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = `rgba(${pr},${pg},${pb},0.45)`;
+        const fields = proofFields.split(' + ');
+        const maxW = pkgW - 12;
+        const lines: string[] = [];
+        let line = '';
+        for (const f of fields) {
+          const sep = line ? ' + ' : '';
+          if (ctx.measureText(line + sep + f).width > maxW && line) {
+            lines.push(line);
+            line = f;
+          } else {
+            line = line + sep + f;
+          }
+        }
+        if (line) lines.push(line);
+        const lineH = isNarrow ? 8 : 9;
+        const startY = cy - (lines.length * lineH) / 2 + 2;
+        for (let l = 0; l < lines.length; l++) {
+          ctx.fillText(lines[l], cx, startY + l * lineH);
+        }
+      } else {
+        ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = `rgba(${pr},${pg},${pb},0.4)`;
+        ctx.fillText('signature', cx, cy + 3);
+      }
+    }
+
+    // Draw system boxes
+    for (let i = 0; i < 5; i++) {
+      const pos = positions[i];
+      const sys = systems[i];
+      const [sr, sg, sb] = sys.color;
+      const isRemoved = i === removedSystem;
+      const isActive = mode === 'portable' ? !isRemoved : (i === 0 && !isRemoved);
+      const isDim = mode === 'local' && i !== 0;
+
+      if (isRemoved) {
+        drawRoundedRect(pos.x, pos.y, boxW, boxH, 5);
+        ctx.fillStyle = 'rgba(239,68,68,0.04)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(239,68,68,0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const xr = 8;
+        ctx.strokeStyle = 'rgba(239,68,68,0.4)';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(pos.x - xr, pos.y - xr);
+        ctx.lineTo(pos.x + xr, pos.y + xr);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pos.x + xr, pos.y - xr);
+        ctx.lineTo(pos.x - xr, pos.y + xr);
+        ctx.stroke();
+        ctx.lineCap = 'butt';
+
+        ctx.font = `500 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+        ctx.fillStyle = 'rgba(239,68,68,0.35)';
+        ctx.textAlign = 'center';
+        ctx.fillText('REMOVED', pos.x, pos.y + boxH / 2 + (isNarrow ? 10 : 14));
+      } else {
+        const alpha = isActive ? 1 : 0.35;
+        const bgAlpha = isActive ? 0.08 : 0.02;
+        const borderAlpha = isActive ? 0.35 : 0.1;
+        const c = isDim ? DIM : [sr, sg, sb];
+
+        drawRoundedRect(pos.x, pos.y, boxW, boxH, 5);
+        ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${bgAlpha})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${borderAlpha})`;
+        ctx.lineWidth = isDim ? 0.75 : 1.5;
+        ctx.stroke();
+
+        if (isActive && !isDim) {
+          ctx.shadowColor = `rgba(${c[0]},${c[1]},${c[2]},0.15)`;
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.font = `600 ${isNarrow ? 7.5 : 9}px "Syne", system-ui`;
+        ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${isActive ? 0.8 : 0.3})`;
+        ctx.textAlign = 'center';
+        ctx.fillText(sys.label, pos.x, pos.y + 3);
+      }
+    }
+
+    // Hint text for clickable systems
+    if (mode === 'local' && removedSystem === -1 && !prefersReducedMotion) {
+      const pulseAlpha = 0.06 + 0.04 * Math.sin(now * 0.003);
+      const pos = positions[0];
+      drawRoundedRect(pos.x, pos.y, boxW + 6, boxH + 6, 7);
+      ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${pulseAlpha})`;
+      ctx.fill();
+
+      ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},0.3)`;
+      ctx.textAlign = 'center';
+      ctx.fillText('click to remove', positions[0].x, positions[0].y + boxH / 2 + (isNarrow ? 10 : 14));
+    }
+
+    if (mode === 'portable' && removedSystem === -1 && !prefersReducedMotion) {
+      ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = 'rgba(232,232,240,0.2)';
+      ctx.textAlign = 'center';
+      for (let i = 0; i < 5; i++) {
+        ctx.fillText('click to remove', positions[i].x, positions[i].y + boxH / 2 + (isNarrow ? 10 : 14));
+      }
+    }
+
+    if (!prefersReducedMotion) {
+      animId = requestAnimationFrame(render);
+    }
+  }
+
+  function updateStatus() {
+    if (mode === 'local') {
+      if (removedSystem === 0) {
+        statusEl.textContent = 'System removed \u2014 proof lost, verification impossible';
+        statusEl.style.color = 'rgba(239,68,68,0.8)';
+      } else if (removedSystem >= 0) {
+        statusEl.textContent = 'Disconnected system removed \u2014 proof still in Application DB only';
+        statusEl.style.color = 'rgba(245,158,11,0.8)';
+      } else {
+        statusEl.textContent = 'Proof depends on original system';
+        statusEl.style.color = 'rgba(239,68,68,0.8)';
+      }
+    } else {
+      if (removedSystem >= 0) {
+        statusEl.textContent = 'System removed \u2014 remaining systems hold sufficient proof for verification';
+        statusEl.style.color = 'rgba(74,222,128,0.8)';
+      } else {
+        statusEl.textContent = 'Proof survives beyond the system that created it';
+        statusEl.style.color = 'rgba(74,222,128,0.8)';
+      }
+    }
+  }
+
+  function handleClick(e: MouseEvent | TouchEvent) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX: number, clientY: number;
+    if ('touches' in e) {
+      clientX = e.changedTouches[0].clientX;
+      clientY = e.changedTouches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    const positions = getSystemPositions(w, h, isNarrow);
+    const boxW = isNarrow ? 88 : 115;
+    const boxH = isNarrow ? 40 : 48;
+
+    for (let i = 0; i < 5; i++) {
+      const pos = positions[i];
+      if (mx >= pos.x - boxW / 2 && mx <= pos.x + boxW / 2 &&
+          my >= pos.y - boxH / 2 && my <= pos.y + boxH / 2) {
+        if (mode === 'local' && i === 0 && removedSystem === -1) {
+          removedSystem = 0;
+          updateStatus();
+        } else if (mode === 'portable' && removedSystem === -1) {
+          removedSystem = i;
+          updateStatus();
+        } else if (removedSystem >= 0) {
+          removedSystem = -1;
+          updateStatus();
+        }
+        break;
+      }
+    }
+
+    if (prefersReducedMotion) render(0);
+  }
+
+  canvas.addEventListener('click', handleClick);
+  canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleClick(e); }, { passive: false });
+
+  function setMode(m: 'local' | 'portable') {
+    mode = m;
+    removedSystem = -1;
+
+    if (m === 'local') {
+      btnLocal.setAttribute('aria-selected', 'true');
+      btnLocal.style.background = 'rgba(239,68,68,0.15)';
+      btnLocal.style.color = 'rgba(239,68,68,0.9)';
+      btnLocal.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnPortable.setAttribute('aria-selected', 'false');
+      btnPortable.style.background = 'transparent';
+      btnPortable.style.color = 'rgba(232,232,240,0.3)';
+      btnPortable.style.borderColor = 'rgba(255,255,255,0.06)';
+
+      statusEl.textContent = 'Proof depends on original system';
+      statusEl.style.color = 'rgba(239,68,68,0.8)';
+      metricSurvive.textContent = 'No';
+      metricSurvive.style.color = 'rgba(239,68,68,0.8)';
+      metricIndep.textContent = 'Not possible';
+      metricIndep.style.color = 'rgba(239,68,68,0.8)';
+      metricCross.textContent = 'Requires original system';
+      metricCross.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      btnPortable.setAttribute('aria-selected', 'true');
+      btnPortable.style.background = 'rgba(74,222,128,0.12)';
+      btnPortable.style.color = 'rgba(74,222,128,0.9)';
+      btnPortable.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnLocal.setAttribute('aria-selected', 'false');
+      btnLocal.style.background = 'transparent';
+      btnLocal.style.color = 'rgba(232,232,240,0.3)';
+      btnLocal.style.borderColor = 'rgba(255,255,255,0.06)';
+
+      statusEl.textContent = 'Proof survives beyond the system that created it';
+      statusEl.style.color = 'rgba(74,222,128,0.8)';
+      metricSurvive.textContent = 'Yes';
+      metricSurvive.style.color = 'rgba(74,222,128,0.8)';
+      metricIndep.textContent = 'Any system with proof package';
+      metricIndep.style.color = 'rgba(74,222,128,0.8)';
+      metricCross.textContent = 'Self-describing proof';
+      metricCross.style.color = 'rgba(74,222,128,0.8)';
+    }
+
+    updateStatus();
+    if (prefersReducedMotion) render(0);
+  }
+
+  btnLocal.addEventListener('click', () => setMode('local'));
+  btnPortable.addEventListener('click', () => setMode('portable'));
+
+  resize();
+  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
+
+  if (!prefersReducedMotion) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(0);
+  }
+}
+</script>

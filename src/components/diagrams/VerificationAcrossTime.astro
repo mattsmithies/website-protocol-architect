@@ -1,0 +1,356 @@
+---
+// Visual 6: Verification across time
+// Toggle between signature-stored-only and full proof context to see how verification survives time
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <!-- Toggle -->
+      <div class="flex items-center justify-center gap-3 mb-6" role="tablist" aria-label="Toggle between signature-only and full proof context modes">
+        <button id="vat-sig" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.15); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          Signature stored only
+        </button>
+        <button id="vat-full" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Full proof context preserved
+        </button>
+      </div>
+
+      <canvas
+        id="vat-canvas"
+        class="w-full"
+        style="height: 340px;"
+        role="img"
+        aria-label="Timeline showing three checkpoints: at creation, years later, and after migration. Compares how signature-only storage degrades over time versus full proof context that remains verifiable."
+      ></canvas>
+
+      <!-- Metrics -->
+      <div class="grid grid-cols-2 gap-4 mt-4 border-t border-border pt-4" aria-live="polite">
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">At creation</p>
+          <p class="text-sm font-display font-bold" id="vat-metric-create" style="color: rgba(74,222,128,0.8);">Verified</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">After migration</p>
+          <p class="text-sm font-display font-bold" id="vat-metric-migrate" style="color: rgba(239,68,68,0.8);">Uncertain &mdash; context lost</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Long-lived proof requires preserved algorithm context, not just stored signature bytes.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('vat-canvas') as HTMLCanvasElement;
+const btnSig = document.getElementById('vat-sig') as HTMLButtonElement;
+const btnFull = document.getElementById('vat-full') as HTMLButtonElement;
+const metricCreate = document.getElementById('vat-metric-create') as HTMLElement;
+const metricMigrate = document.getElementById('vat-metric-migrate') as HTMLElement;
+
+if (canvas && btnSig && btnFull) {
+  const ctx = canvas.getContext('2d')!;
+
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const RED: [number, number, number] = [239, 68, 68];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  let mode: 'sig' | 'full' = 'sig';
+  let animId = 0;
+  let particles: { x: number; speed: number; seg: number }[] = [];
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (let seg = 0; seg < 2; seg++) {
+    for (let i = 0; i < 6; i++) {
+      particles.push({ x: Math.random(), speed: 0.0004 + Math.random() * 0.0003, seg });
+    }
+  }
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  interface Checkpoint {
+    label: string;
+    sigIcon: 'check' | 'warn' | 'x';
+    sigColor: [number, number, number];
+    sigStatus: string;
+    sigPreserved: string;
+    fullIcon: 'check';
+    fullColor: [number, number, number];
+    fullStatus: string;
+    fullPreserved: string;
+  }
+
+  const checkpoints: Checkpoint[] = [
+    {
+      label: 'At creation',
+      sigIcon: 'check', sigColor: GREEN, sigStatus: 'Verified under Ed25519', sigPreserved: 'signature bytes',
+      fullIcon: 'check', fullColor: GREEN, fullStatus: 'Verified \u2014 full proof package stored', fullPreserved: 'algorithm + key + hash + nonce + signature + anchor',
+    },
+    {
+      label: 'Years later',
+      sigIcon: 'warn', sigColor: AMBER, sigStatus: 'Algorithm deprecated \u2014 verification uncertain', sigPreserved: 'signature bytes',
+      fullIcon: 'check', fullColor: GREEN, fullStatus: 'Algorithm context preserved \u2014 still verifiable', fullPreserved: 'algorithm + key + hash + nonce + signature + anchor',
+    },
+    {
+      label: 'After migration',
+      sigIcon: 'x', sigColor: RED, sigStatus: 'Cannot verify \u2014 context not preserved', sigPreserved: 'signature bytes',
+      fullIcon: 'check', fullColor: GREEN, fullStatus: 'Proof self-describing \u2014 verification routed by metadata', fullPreserved: 'algorithm + key + hash + nonce + signature + anchor',
+    },
+  ];
+
+  function drawIcon(x: number, y: number, type: 'check' | 'warn' | 'x', color: [number, number, number], r: number) {
+    const [cr, cg, cb] = color;
+
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},0.12)`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.5)`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.shadowColor = `rgba(${cr},${cg},${cb},0.3)`;
+    ctx.shadowBlur = 8;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.9)`;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (type === 'check') {
+      ctx.beginPath();
+      ctx.moveTo(x - r * 0.35, y);
+      ctx.lineTo(x - r * 0.05, y + r * 0.3);
+      ctx.lineTo(x + r * 0.4, y - r * 0.25);
+      ctx.stroke();
+    } else if (type === 'warn') {
+      ctx.beginPath();
+      ctx.moveTo(x, y - r * 0.3);
+      ctx.lineTo(x, y + r * 0.05);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y + r * 0.28, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},0.9)`;
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(x - r * 0.28, y - r * 0.28);
+      ctx.lineTo(x + r * 0.28, y + r * 0.28);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + r * 0.28, y - r * 0.28);
+      ctx.lineTo(x - r * 0.28, y + r * 0.28);
+      ctx.stroke();
+    }
+
+    ctx.lineCap = 'butt';
+    ctx.lineJoin = 'miter';
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    ctx.clearRect(0, 0, w, h);
+
+    const margin = isNarrow ? 40 : 80;
+    const timelineY = h * 0.30;
+    const lineW = w - margin * 2;
+    const iconR = isNarrow ? 14 : 18;
+
+    const xs = checkpoints.map((_, i) => margin + (lineW / (checkpoints.length - 1)) * i);
+
+    // Draw connecting lines
+    for (let seg = 0; seg < 2; seg++) {
+      const x1 = xs[seg];
+      const x2 = xs[seg + 1];
+
+      if (mode === 'sig') {
+        const grad = ctx.createLinearGradient(x1, 0, x2, 0);
+        if (seg === 0) {
+          grad.addColorStop(0, `rgba(${GREEN[0]},${GREEN[1]},${GREEN[2]},0.5)`);
+          grad.addColorStop(1, `rgba(${AMBER[0]},${AMBER[1]},${AMBER[2]},0.4)`);
+          ctx.beginPath();
+          ctx.moveTo(x1, timelineY);
+          ctx.lineTo(x2, timelineY);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        } else {
+          grad.addColorStop(0, `rgba(${AMBER[0]},${AMBER[1]},${AMBER[2]},0.4)`);
+          grad.addColorStop(1, `rgba(${RED[0]},${RED[1]},${RED[2]},0.4)`);
+          ctx.beginPath();
+          ctx.moveTo(x1, timelineY);
+          ctx.lineTo(x2, timelineY);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 6]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(x1, timelineY);
+        ctx.lineTo(x2, timelineY);
+        ctx.strokeStyle = `rgba(${GREEN[0]},${GREEN[1]},${GREEN[2]},0.35)`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        if (!prefersReducedMotion) {
+          for (const p of particles) {
+            if (p.seg !== seg) continue;
+            p.x += p.speed;
+            if (p.x > 1) p.x -= 1;
+            const px = x1 + p.x * (x2 - x1);
+            ctx.beginPath();
+            ctx.arc(px, timelineY, 2, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${GREEN[0]},${GREEN[1]},${GREEN[2]},${0.3 + 0.4 * Math.sin(p.x * Math.PI)})`;
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    // Draw checkpoints
+    for (let i = 0; i < checkpoints.length; i++) {
+      const cp = checkpoints[i];
+      const x = xs[i];
+
+      const icon = mode === 'sig' ? cp.sigIcon : cp.fullIcon;
+      const color = mode === 'sig' ? cp.sigColor : cp.fullColor;
+      const status = mode === 'sig' ? cp.sigStatus : cp.fullStatus;
+      const preserved = mode === 'sig' ? cp.sigPreserved : cp.fullPreserved;
+
+      drawIcon(x, timelineY, icon, color, iconR);
+
+      // Checkpoint label above
+      ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+      ctx.fillStyle = 'rgba(232,232,240,0.6)';
+      ctx.textAlign = 'center';
+      ctx.fillText(cp.label, x, timelineY - iconR - 14);
+
+      // Status text below icon
+      const [sr, sg, sb] = color;
+      ctx.font = `500 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${sr},${sg},${sb},0.75)`;
+      ctx.textAlign = 'center';
+
+      const maxStatusW = isNarrow ? 100 : 160;
+      const statusWords = status.split(' ');
+      const statusLines: string[] = [];
+      let currentLine = '';
+      for (const word of statusWords) {
+        const testLine = currentLine ? currentLine + ' ' + word : word;
+        const testW = ctx.measureText(testLine).width;
+        if (testW > maxStatusW && currentLine) {
+          statusLines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) statusLines.push(currentLine);
+
+      const statusStartY = timelineY + iconR + 16;
+      for (let l = 0; l < statusLines.length; l++) {
+        ctx.fillText(statusLines[l], x, statusStartY + l * (isNarrow ? 12 : 14));
+      }
+
+      // Preserved fields below status
+      const preservedY = statusStartY + statusLines.length * (isNarrow ? 12 : 14) + (isNarrow ? 12 : 16);
+      ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = `rgba(${sr},${sg},${sb},0.4)`;
+
+      if (mode === 'sig') {
+        ctx.fillText(preserved, x, preservedY);
+      } else {
+        const fields = preserved.split(' + ');
+        const fieldLines: string[] = [];
+        let fLine = '';
+        for (const f of fields) {
+          const sep = fLine ? ' + ' : '';
+          const test = fLine + sep + f;
+          if (ctx.measureText(test).width > maxStatusW && fLine) {
+            fieldLines.push(fLine);
+            fLine = f;
+          } else {
+            fLine = test;
+          }
+        }
+        if (fLine) fieldLines.push(fLine);
+        for (let l = 0; l < fieldLines.length; l++) {
+          ctx.fillText(fieldLines[l], x, preservedY + l * (isNarrow ? 10 : 12));
+        }
+      }
+    }
+
+    if (!prefersReducedMotion) {
+      animId = requestAnimationFrame(render);
+    }
+  }
+
+  function setMode(m: 'sig' | 'full') {
+    mode = m;
+
+    if (m === 'sig') {
+      btnSig.setAttribute('aria-selected', 'true');
+      btnSig.style.background = 'rgba(239,68,68,0.15)';
+      btnSig.style.color = 'rgba(239,68,68,0.9)';
+      btnSig.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnFull.setAttribute('aria-selected', 'false');
+      btnFull.style.background = 'transparent';
+      btnFull.style.color = 'rgba(232,232,240,0.3)';
+      btnFull.style.borderColor = 'rgba(255,255,255,0.06)';
+
+      metricCreate.textContent = 'Verified';
+      metricCreate.style.color = 'rgba(74,222,128,0.8)';
+      metricMigrate.innerHTML = 'Uncertain &mdash; context lost';
+      metricMigrate.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      btnFull.setAttribute('aria-selected', 'true');
+      btnFull.style.background = 'rgba(74,222,128,0.12)';
+      btnFull.style.color = 'rgba(74,222,128,0.9)';
+      btnFull.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnSig.setAttribute('aria-selected', 'false');
+      btnSig.style.background = 'transparent';
+      btnSig.style.color = 'rgba(232,232,240,0.3)';
+      btnSig.style.borderColor = 'rgba(255,255,255,0.06)';
+
+      metricCreate.textContent = 'Verified';
+      metricCreate.style.color = 'rgba(74,222,128,0.8)';
+      metricMigrate.innerHTML = 'Verified &mdash; proof self-describing';
+      metricMigrate.style.color = 'rgba(74,222,128,0.8)';
+    }
+
+    if (prefersReducedMotion) {
+      render(0);
+    }
+  }
+
+  btnSig.addEventListener('click', () => setMode('sig'));
+  btnFull.addEventListener('click', () => setMode('full'));
+
+  resize();
+  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
+
+  if (!prefersReducedMotion) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(0);
+  }
+}
+</script>

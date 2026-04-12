@@ -1,0 +1,414 @@
+---
+// Visual 7: Rigid vs algorithm-agnostic proof
+// Toggle between fixed signature model and algorithm-agnostic envelope
+// Shows how post-quantum signatures overflow fixed fields but fit agnostic envelopes
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <!-- Toggle -->
+      <div class="flex items-center justify-center gap-3 mb-6" role="tablist" aria-label="Toggle between fixed signature model and algorithm-agnostic envelope">
+        <button id="rvap-fixed" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.15); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          Fixed signature model
+        </button>
+        <button id="rvap-agnostic" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Algorithm-agnostic envelope
+        </button>
+      </div>
+
+      <canvas
+        id="rvap-canvas"
+        class="w-full"
+        style="height: 400px;"
+        role="img"
+        aria-label="Architecture comparison showing how a fixed signature model overflows when faced with large post-quantum signatures, while an algorithm-agnostic envelope accommodates any signature size."
+      ></canvas>
+
+      <!-- Metrics -->
+      <div class="grid grid-cols-3 gap-4 mt-4 border-t border-border pt-4" aria-live="polite">
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Post-quantum ready</p>
+          <p class="text-sm font-display font-bold" id="rvap-metric-pq" style="color: rgba(239,68,68,0.8);">Requires redesign</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Signature size</p>
+          <p class="text-sm font-display font-bold" id="rvap-metric-size" style="color: rgba(239,68,68,0.8);">Hard-coded</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Dual signature</p>
+          <p class="text-sm font-display font-bold" id="rvap-metric-dual" style="color: rgba(239,68,68,0.8);">Not supported</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Large signatures should pressure storage and transport, not the architecture itself.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('rvap-canvas') as HTMLCanvasElement;
+const btnFixed = document.getElementById('rvap-fixed') as HTMLButtonElement;
+const btnAgnostic = document.getElementById('rvap-agnostic') as HTMLButtonElement;
+const metricPQ = document.getElementById('rvap-metric-pq') as HTMLElement;
+const metricSize = document.getElementById('rvap-metric-size') as HTMLElement;
+const metricDual = document.getElementById('rvap-metric-dual') as HTMLElement;
+
+if (canvas && btnFixed && btnAgnostic) {
+  const ctx = canvas.getContext('2d')!;
+
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  let mode: 'fixed' | 'agnostic' = 'fixed';
+  let animId = 0;
+  let pulsePhase = 0;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function drawRoundedRect(x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!prefersReducedMotion) {
+      pulsePhase = now * 0.003;
+    }
+
+    if (mode === 'fixed') {
+      drawFixedModel(w, h, isNarrow);
+    } else {
+      drawAgnosticModel(w, h, isNarrow);
+    }
+
+    if (!prefersReducedMotion) {
+      animId = requestAnimationFrame(render);
+    }
+  }
+
+  function drawFixedModel(w: number, h: number, isNarrow: boolean) {
+    const cx = w / 2;
+    const boxW = isNarrow ? 180 : 240;
+    const boxH = isNarrow ? 30 : 36;
+    const gap = isNarrow ? 6 : 8;
+    const startX = cx - boxW / 2;
+
+    const fixedItems = [
+      { label: 'Fixed-size field', color: DIM, sub: '64 bytes allocated' },
+      { label: 'Single algorithm: Ed25519', color: VIOLET, sub: '' },
+      { label: 'Direct embedding in payload', color: BLUE, sub: '' },
+      { label: 'Chain tx carries full proof', color: BLUE, sub: '' },
+      { label: 'Migration: redesign required', color: RED, sub: '' },
+    ];
+
+    const totalH = fixedItems.length * (boxH + gap) - gap;
+    let startY = h * 0.12;
+
+    // Title
+    ctx.font = `600 ${isNarrow ? 10 : 12}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(239,68,68,0.7)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Fixed signature model', cx, startY - 6);
+    startY += isNarrow ? 10 : 14;
+
+    // Draw stacked boxes
+    for (let i = 0; i < fixedItems.length; i++) {
+      const item = fixedItems[i];
+      const [r, g, b] = item.color;
+      const y = startY + i * (boxH + gap);
+      const isWarning = i === fixedItems.length - 1;
+
+      drawRoundedRect(startX, y, boxW, boxH, 5);
+      ctx.fillStyle = `rgba(${r},${g},${b},${isWarning ? 0.08 : 0.06})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},${isWarning ? 0.4 : 0.25})`;
+      ctx.lineWidth = isWarning ? 1.5 : 1;
+      ctx.stroke();
+
+      ctx.font = `500 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
+      ctx.textAlign = 'center';
+      ctx.fillText(item.label, cx, y + boxH / 2 + 3);
+
+      if (item.sub) {
+        ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = `rgba(${r},${g},${b},0.4)`;
+        ctx.fillText(item.sub, cx + boxW / 2 + (isNarrow ? 4 : 8), y + boxH / 2 + 3);
+        ctx.textAlign = 'center';
+      }
+    }
+
+    // Draw the overflow visualization
+    const overflowY = startY + totalH + (isNarrow ? 24 : 32);
+    const fieldBoxW = isNarrow ? 140 : 180;
+    const fieldBoxH = isNarrow ? 36 : 44;
+    const fieldX = cx - fieldBoxW / 2;
+
+    // The fixed-size field box
+    ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(100,100,120,0.5)';
+    ctx.textAlign = 'center';
+    ctx.fillText('64-byte signature field', cx, overflowY - 6);
+
+    drawRoundedRect(fieldX, overflowY, fieldBoxW, fieldBoxH, 4);
+    ctx.fillStyle = 'rgba(100,100,120,0.04)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(100,100,120,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // The oversized PQ signature blob that overflows
+    const blobW = isNarrow ? 220 : 300;
+    const blobH = fieldBoxH;
+    const blobX = cx - blobW / 2;
+    const overflowAmount = (blobW - fieldBoxW) / 2;
+
+    // Pulsing overflow
+    const pulse = prefersReducedMotion ? 0.5 : 0.3 + 0.2 * Math.sin(pulsePhase);
+
+    drawRoundedRect(blobX, overflowY, blobW, blobH, 4);
+    ctx.fillStyle = `rgba(239,68,68,${0.06 * pulse / 0.5})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(239,68,68,${0.4 * pulse / 0.5})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Label inside blob
+    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.fillStyle = `rgba(239,68,68,${0.7 * pulse / 0.5})`;
+    ctx.textAlign = 'center';
+    ctx.fillText('ML-DSA-65 signature (3293 bytes)', cx, overflowY + blobH / 2 + 3);
+
+    // Overflow indicators on both sides
+    const arrowY = overflowY + blobH / 2;
+
+    // Left overflow marker
+    ctx.strokeStyle = `rgba(239,68,68,${0.6 * pulse / 0.5})`;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(fieldX - 4, arrowY - 8);
+    ctx.lineTo(fieldX - 12, arrowY);
+    ctx.lineTo(fieldX - 4, arrowY + 8);
+    ctx.stroke();
+
+    // Right overflow marker
+    ctx.beginPath();
+    ctx.moveTo(fieldX + fieldBoxW + 4, arrowY - 8);
+    ctx.lineTo(fieldX + fieldBoxW + 12, arrowY);
+    ctx.lineTo(fieldX + fieldBoxW + 4, arrowY + 8);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    // Overflow labels
+    ctx.font = `600 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = `rgba(239,68,68,${0.6 * pulse / 0.5})`;
+    ctx.textAlign = 'center';
+    ctx.fillText('OVERFLOW', cx, overflowY + blobH + (isNarrow ? 14 : 18));
+  }
+
+  function drawAgnosticModel(w: number, h: number, isNarrow: boolean) {
+    const cx = w / 2;
+    const boxW = isNarrow ? 200 : 260;
+    const boxH = isNarrow ? 26 : 30;
+    const gap = isNarrow ? 5 : 6;
+    const startX = cx - boxW / 2;
+
+    const agnosticItems = [
+      { label: 'Variable-length payload', color: GREEN },
+      { label: 'Algorithm identifier in metadata', color: GREEN },
+      { label: 'Detached proof artefact', color: BLUE },
+      { label: 'Content-addressed storage', color: BLUE },
+      { label: 'Anchor: manifest root only', color: VIOLET },
+      { label: 'Verification: routed by metadata', color: VIOLET },
+      { label: 'Migration: no structural change', color: GREEN },
+    ];
+
+    let startY = h * 0.08;
+
+    // Title
+    ctx.font = `600 ${isNarrow ? 10 : 12}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(74,222,128,0.7)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Algorithm-agnostic envelope', cx, startY - 6);
+    startY += isNarrow ? 10 : 14;
+
+    // Draw stacked boxes
+    for (let i = 0; i < agnosticItems.length; i++) {
+      const item = agnosticItems[i];
+      const [r, g, b] = item.color;
+      const y = startY + i * (boxH + gap);
+      const isLast = i === agnosticItems.length - 1;
+
+      drawRoundedRect(startX, y, boxW, boxH, 5);
+      ctx.fillStyle = `rgba(${r},${g},${b},${isLast ? 0.08 : 0.05})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},${isLast ? 0.4 : 0.2})`;
+      ctx.lineWidth = isLast ? 1.5 : 1;
+      ctx.stroke();
+
+      if (isLast) {
+        ctx.shadowColor = `rgba(${r},${g},${b},0.15)`;
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.font = `500 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
+      ctx.textAlign = 'center';
+      ctx.fillText(item.label, cx, y + boxH / 2 + 3);
+    }
+
+    // Draw the expandable field visualization
+    const totalStackH = agnosticItems.length * (boxH + gap) - gap;
+    const expandY = startY + totalStackH + (isNarrow ? 24 : 32);
+
+    ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(74,222,128,0.5)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Variable-length envelope', cx, expandY - 6);
+
+    // Expandable container that fits the signature
+    const blobW = isNarrow ? 220 : 300;
+    const blobH = isNarrow ? 36 : 44;
+    const blobX = cx - blobW / 2;
+
+    drawRoundedRect(blobX, expandY, blobW, blobH, 5);
+    ctx.fillStyle = 'rgba(74,222,128,0.05)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(74,222,128,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.shadowColor = 'rgba(74,222,128,0.12)';
+    ctx.shadowBlur = 8;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // The PQ signature fits inside cleanly
+    const sigW = blobW - (isNarrow ? 16 : 20);
+    const sigH = blobH - (isNarrow ? 10 : 12);
+    const sigX = cx - sigW / 2;
+    const sigY = expandY + (blobH - sigH) / 2;
+
+    drawRoundedRect(sigX, sigY, sigW, sigH, 3);
+    ctx.fillStyle = 'rgba(74,222,128,0.08)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(74,222,128,0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(74,222,128,0.7)';
+    ctx.textAlign = 'center';
+    ctx.fillText('ML-DSA-65 signature (3293 bytes)', cx, sigY + sigH / 2 + 3);
+
+    // Checkmark label
+    ctx.font = `600 ${isNarrow ? 8 : 9}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = 'rgba(74,222,128,0.6)';
+    ctx.fillText('\u2713 FITS', cx, expandY + blobH + (isNarrow ? 14 : 18));
+
+    // Flowing particles along the envelope border
+    if (!prefersReducedMotion) {
+      const perim = 2 * (blobW + blobH);
+      for (let i = 0; i < 8; i++) {
+        const t = ((pulsePhase * 0.15 + i / 8) % 1);
+        const d = t * perim;
+        let px: number, py: number;
+        if (d < blobW) {
+          px = blobX + d; py = expandY;
+        } else if (d < blobW + blobH) {
+          px = blobX + blobW; py = expandY + (d - blobW);
+        } else if (d < 2 * blobW + blobH) {
+          px = blobX + blobW - (d - blobW - blobH); py = expandY + blobH;
+        } else {
+          px = blobX; py = expandY + blobH - (d - 2 * blobW - blobH);
+        }
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(74,222,128,${0.2 + 0.3 * Math.sin(t * Math.PI)})`;
+        ctx.fill();
+      }
+    }
+  }
+
+  function setMode(m: 'fixed' | 'agnostic') {
+    mode = m;
+
+    if (m === 'fixed') {
+      btnFixed.setAttribute('aria-selected', 'true');
+      btnFixed.style.background = 'rgba(239,68,68,0.15)';
+      btnFixed.style.color = 'rgba(239,68,68,0.9)';
+      btnFixed.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnAgnostic.setAttribute('aria-selected', 'false');
+      btnAgnostic.style.background = 'transparent';
+      btnAgnostic.style.color = 'rgba(232,232,240,0.3)';
+      btnAgnostic.style.borderColor = 'rgba(255,255,255,0.06)';
+
+      metricPQ.textContent = 'Requires redesign';
+      metricPQ.style.color = 'rgba(239,68,68,0.8)';
+      metricSize.textContent = 'Hard-coded';
+      metricSize.style.color = 'rgba(239,68,68,0.8)';
+      metricDual.textContent = 'Not supported';
+      metricDual.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      btnAgnostic.setAttribute('aria-selected', 'true');
+      btnAgnostic.style.background = 'rgba(74,222,128,0.12)';
+      btnAgnostic.style.color = 'rgba(74,222,128,0.9)';
+      btnAgnostic.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnFixed.setAttribute('aria-selected', 'false');
+      btnFixed.style.background = 'transparent';
+      btnFixed.style.color = 'rgba(232,232,240,0.3)';
+      btnFixed.style.borderColor = 'rgba(255,255,255,0.06)';
+
+      metricPQ.textContent = 'Already accommodated';
+      metricPQ.style.color = 'rgba(74,222,128,0.8)';
+      metricSize.textContent = 'Variable-length';
+      metricSize.style.color = 'rgba(74,222,128,0.8)';
+      metricDual.textContent = 'Native';
+      metricDual.style.color = 'rgba(74,222,128,0.8)';
+    }
+
+    if (prefersReducedMotion) {
+      render(0);
+    }
+  }
+
+  btnFixed.addEventListener('click', () => setMode('fixed'));
+  btnAgnostic.addEventListener('click', () => setMode('agnostic'));
+
+  resize();
+  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
+
+  if (!prefersReducedMotion) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(0);
+  }
+}
+</script>

@@ -1,0 +1,345 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import AnchorVsFact from '../../components/diagrams/AnchorVsFact.astro';
+import SignatureVsProofPackage from '../../components/diagrams/SignatureVsProofPackage.astro';
+import BoundVsReusableProof from '../../components/diagrams/BoundVsReusableProof.astro';
+import CustodyModelsProofStrength from '../../components/diagrams/CustodyModelsProofStrength.astro';
+import MultiActorTruthChain from '../../components/diagrams/MultiActorTruthChain.astro';
+import VerificationAcrossTime from '../../components/diagrams/VerificationAcrossTime.astro';
+import RigidVsAgnosticProof from '../../components/diagrams/RigidVsAgnosticProof.astro';
+import LocalVsPortableProof from '../../components/diagrams/LocalVsPortableProof.astro';
+import '../../styles/global.css';
+---
+
+<Layout title="Why signatures are not enough — Matt Smithies">
+  <Nav />
+  <main>
+    <article class="px-6">
+
+      {/* ── Header ──────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
+        <div class="reveal">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Cryptographic Architecture</p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
+            Why signatures are not enough
+          </h1>
+          <p class="text-text-tertiary text-base">
+            A system is only trustworthy when proof can survive time, movement, and changing assumptions without relying on the system that created it.
+          </p>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 1: Opening — anchor is not fact
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto pb-8">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Blockchain gives you one useful thing very cheaply.</p>
+
+          <p>It can prove that something was anchored at a given time.</p>
+
+          <p>That matters. But it is not the same thing as proving that the thing anchored was true.</p>
+
+          <p>Anyone can post anything. Any system can emit a hash. Any actor can claim that an anchor settles a fact.</p>
+
+          <p class="text-text-primary font-display font-bold text-xl pt-2">It does not.</p>
+
+          <p>An anchor can strengthen ordering. It can strengthen permanence. It can strengthen public visibility.</p>
+
+          <p>It cannot, on its own, establish truth of origin, truth of authority, truth of evidence, or truth of fact.</p>
+
+          <p>That is the missing layer.</p>
+
+          <p>The real question is not whether something was anchored. The real question is what structure sits behind the anchor, and whether that structure can still be checked later by another system, under different assumptions, <em class="text-signal not-italic font-medium">without trusting the application that created it</em>.</p>
+
+          <p>That is where most systems fail.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 1: Anchor vs fact ─────────────────── */}
+      <div class="max-w-5xl mx-auto">
+        <AnchorVsFact />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 2: A signature is not proof
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">A signature is not proof</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>This is where many systems stop too early.</p>
+
+          <p>They store a signature. Or they store a boolean that says <code class="text-signal/70 text-base">verified: true</code>. Or they keep the current state and assume that is enough.</p>
+
+          <p>It is not enough.</p>
+
+          <p>A signature without context is fragile. A verification result without preserved proof is weaker still.</p>
+
+          <p>What matters is not that verification succeeded once. What matters is whether another verifier can check the claim again later, outside the original system, with enough preserved context to understand what was actually being proven.</p>
+
+          <p>That means <em class="text-signal not-italic font-medium">proof is not a signature. Proof is the package of context that makes the signature meaningful.</em></p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Actor.<br/>
+              Key.<br/>
+              Algorithm.<br/>
+              Bound content.<br/>
+              Unique challenge or nonce.<br/>
+              Timestamp.<br/>
+              Authority context.<br/>
+              Evidence links.<br/>
+              Optional public anchor.
+            </p>
+          </div>
+
+          <p>Without that, the system may remember that verification happened. It will not be able to explain why the claim should still be trusted.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 2: Signature vs proof package ──────── */}
+      <div class="max-w-4xl mx-auto">
+        <SignatureVsProofPackage />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 3: Proof of origin requires context binding
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Proof of origin requires context binding</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>A valid signature is still not enough if it is not bound to a specific action.</p>
+
+          <p>This is where unique challenges, nonces, or single-use context binding matter.</p>
+
+          <p>Without that binding, a valid proof from one context can be reattached to another. The bytes may still verify. The fact claim may still be false.</p>
+
+          <p>That is a serious failure.</p>
+
+          <p>Proof of origin means more than proving that a key once signed something. It means proving that <em class="text-signal not-italic font-medium">this actor signed this exact content for this exact action in this exact context</em>.</p>
+
+          <p>That is what prevents replay at the proof layer.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 3: Bound vs reusable proof ─────────── */}
+      <div class="max-w-5xl mx-auto">
+        <BoundVsReusableProof />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 4: Key custody changes what a signature proves
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Key custody changes what a signature proves</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>A system may say an actor signed something. That claim depends on who controlled the key.</p>
+
+          <p>If the actor controlled the key, the signature may support proof of actor origin. If the platform controlled the key, the signature proves something weaker: that the platform asserted something on the actor's behalf.</p>
+
+          <p>That is a meaningful difference.</p>
+
+          <p>In multi-actor systems, the difference between self-custody, delegated custody, institutional custody, and platform custody changes the strength of the proof.</p>
+
+          <p>This is not just a security detail. It is a <em class="text-signal not-italic font-medium">truth-of-fact detail</em>.</p>
+
+          <p>If the wrong custody assumption is hidden, the system may overstate what its signatures actually prove.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 4: Custody models and proof strength ── */}
+      <div class="max-w-4xl mx-auto">
+        <CustodyModelsProofStrength />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 5: Truth is often formed by many actors
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Truth is often formed by many actors, not one</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Serious systems rarely produce truth from one final signature.</p>
+
+          <p>They produce it cumulatively. One actor submits. Another adds evidence. A reviewer verifies. An authority approves. A public network anchors ordering. A later actor may revoke, supersede, or countersign.</p>
+
+          <p>If the system only preserves the final state or final signature, most of the truth formation process has already been flattened.</p>
+
+          <p>That is why multi-actor proof chains matter. Not because every actor must sign everything. But because systems should preserve the <em class="text-signal not-italic font-medium">structured chain of who asserted what, at what stage, under which proof conditions</em>.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 5: Multi-actor truth chain ─────────── */}
+      <div class="max-w-5xl mx-auto">
+        <MultiActorTruthChain />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 6: Algorithm agility is part of proof survival
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Algorithm agility is part of proof survival</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>This is often misunderstood.</p>
+
+          <p>The problem is not merely whether a signature verified at the time. The problem is whether it can still be <em class="text-signal not-italic font-medium">interpreted correctly later</em>.</p>
+
+          <p>That requires preserved algorithm context. Which algorithm was used. Which key type. Which verification assumptions applied. Whether dual signatures existed. Whether the proof package can survive a world where preferred algorithms have changed.</p>
+
+          <p>A system built only for today's verification assumptions is not really designed for long-lived trust. A record may need to be checked years later. The system may move across stacks. Cryptographic preferences may evolve. Post-quantum migration may become relevant. Verification may need to occur in contexts the original system never anticipated.</p>
+
+          <p>If the proof format is brittle, verification decays with time. If the proof format preserves enough context, verification can adapt without losing origin.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 6: Verification across time ────────── */}
+      <div class="max-w-5xl mx-auto">
+        <VerificationAcrossTime />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 7: Large post-quantum signatures
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Large signatures should not force re-architecture</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>If the system is designed correctly, larger post-quantum signatures should not require re-architecture later.</p>
+
+          <p>The system should treat signatures and proof artefacts as variable-length, algorithm-agnostic payloads inside a proof package.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Do not hard-code assumptions around signature size.<br/>
+              Do not hard-code one algorithm.<br/>
+              Do not require every proof to fit inside one narrow<br/>
+              transport or storage primitive.
+            </p>
+          </div>
+
+          <p>Instead: store proof packages as detached, content-addressed artefacts. Allow variable-length signature blobs. Support chunking or segmented transport where needed. Anchor only the manifest root, content hash, or Merkle root publicly. Keep the proof package self-describing with algorithm identifier, key type, content hash, signature payload, and context metadata. Make verification routing depend on metadata, not on one fixed cryptographic stack.</p>
+
+          <p>Allow dual-signature periods during migration. Treat proof as an envelope that can carry different algorithms over time.</p>
+
+          <p>The correct answer to large post-quantum signatures is not a later redesign. It is a present design that <em class="text-signal not-italic font-medium">never assumes proof artefacts will remain small</em>.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 7: Rigid vs agnostic proof envelope ── */}
+      <div class="max-w-5xl mx-auto">
+        <RigidVsAgnosticProof />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 8: Proof has to survive boundaries
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Proof has to survive boundaries</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Most systems do not live in one place. They cross applications, storage layers, APIs, ledgers, downstream clients, and sometimes chains or trust domains.</p>
+
+          <p>If proof can only be verified inside the original system, the proof is weaker than it appears.</p>
+
+          <p>A stronger design preserves portable proof packages that can survive those boundaries. Not because every part is public. Not because every system must use the same chain. But because the proof remains <em class="text-signal not-italic font-medium">interpretable outside the original application</em>.</p>
+
+          <p>That is the difference between local verification and portable evidence.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 8: Local vs portable proof ─────────── */}
+      <div class="max-w-5xl mx-auto">
+        <LocalVsPortableProof />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 9: Where this fits
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Where this fits in the wider architecture</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p><a href="/thinking/authority-as-time-bound-system" class="text-signal hover:underline">Authority</a> needs proof that survives time. <a href="/thinking/where-workflow-systems-fail" class="text-signal hover:underline">Workflow</a> needs proof that survives state changes and collaboration. <a href="/thinking/assets-need-containers" class="text-signal hover:underline">Containers</a> need proof that survives movement. <a href="/thinking/designing-for-replayability" class="text-signal hover:underline">Replayability</a> needs proof that survives system change.</p>
+
+          <p>The missing layer across all of them is <em class="text-signal not-italic font-medium">preserved proof context</em>.</p>
+
+          <p>Not the anchor. Not the signature. Not the verification result. The structured package behind all of them that lets another system, at another time, under different assumptions, still check whether the claim was valid.</p>
+
+          <p>That is the real frame.</p>
+        </div>
+      </div>
+
+      {/* ── Production bridge ──────────────────────────── */}
+      <div class="max-w-3xl mx-auto">
+        <div class="reveal glass-card p-8 md:p-10">
+          <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-2">In practice</p>
+          <p class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight mb-4">
+            Proof as operating requirement
+          </p>
+          <p class="text-text-tertiary text-sm leading-relaxed mb-6">
+            In my own work, this shows up as a structural requirement: preserving signed proof of origin, handling multiple actors over time, keeping verification context rather than only a success result, and designing proof packages that can survive boundaries between applications, storage layers, and public anchors. The current state is useful, but never sufficient on its own.
+          </p>
+          <a href="https://dovu.ai/how-it-works/" target="_blank" rel="noopener" class="ghost-button magnetic px-6 py-3 rounded-full text-sm">
+            See how DOVU OS models the workflow and evidence layer &rarr;
+          </a>
+        </div>
+      </div>
+
+      {/* ── Closing ─────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16 pb-24">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The anchor is not the fact. The signature is not the proof. The verification result is not the history.</p>
+
+          <p>Truth of fact requires more structure than people want to admit. It requires preserved origin, preserved context, preserved authority, preserved evidence, preserved algorithm information, preserved ordering, and preserved portability across systems and time.</p>
+
+          <p>Without that, the system can say something happened. It cannot still prove what happened when it matters.</p>
+
+          <p class="text-text-primary font-display font-bold text-xl md:text-2xl leading-snug pt-4">That is the difference between truth of anchor and truth of fact.</p>
+        </div>
+
+        {/* ── CTA ────────────────────────────────────────── */}
+        <div class="reveal glass-card p-8 md:p-10 mt-12 text-center">
+          <p class="text-text-secondary text-lg mb-6 font-display">
+            Designing proof systems that need to survive time, movement, and dispute?
+          </p>
+          <a href="/#contact" class="glow-button magnetic inline-flex items-center gap-3 px-10 py-4 rounded-full text-sm tracking-wide">
+            Book a conversation
+            <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 8h10M10 4l4 4-4 4" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="mt-8 pb-8">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors">&larr; Back to essays</a>
+        </div>
+      </div>
+
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { initScrollAnimations } from '../../scripts/scroll-animations';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>

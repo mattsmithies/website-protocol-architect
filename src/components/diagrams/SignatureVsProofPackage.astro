@@ -1,0 +1,254 @@
+---
+// Visual: Signature vs Proof Package
+// Two stacked cards — weak stored result vs strong proof package with hoverable layers
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="max-w-2xl mx-auto">
+
+        <!-- Top card: Weak verification result -->
+        <div class="rounded-xl border p-5 md:p-6 mb-6" style="background: rgba(239,68,68,0.03); border-color: rgba(239,68,68,0.15);">
+          <p class="text-[10px] uppercase tracking-wider font-semibold mb-4" style="color: rgba(239,68,68,0.6);">Verification Result</p>
+          <div class="space-y-2">
+            <div class="flex items-baseline gap-3">
+              <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Verified</span>
+              <span class="text-sm font-mono" style="color: rgba(239,68,68,0.7);">true</span>
+            </div>
+            <div class="flex items-baseline gap-3">
+              <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Signature</span>
+              <span class="text-sm font-mono text-text-tertiary">[bytes]</span>
+            </div>
+            <div class="flex items-baseline gap-3">
+              <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Timestamp</span>
+              <span class="text-sm font-mono text-text-tertiary">2024-05-21 09:23</span>
+            </div>
+          </div>
+          <p class="text-[10px] mt-4 leading-relaxed" style="color: rgba(239,68,68,0.45);">Stored result — cannot re-verify independently</p>
+        </div>
+
+        <!-- Bottom card: Proof package with hoverable layers -->
+        <div class="rounded-xl border p-5 md:p-6" style="background: rgba(56,189,248,0.02); border-color: rgba(74,222,128,0.15);">
+          <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(74,222,128,0.6);">Proof Package</p>
+          <p class="text-text-tertiary text-[10px] uppercase tracking-wider font-semibold mb-4">Select a layer to see what breaks without it</p>
+
+          <div id="svp-layers" class="space-y-0"></div>
+        </div>
+
+        <!-- Detail panel -->
+        <div id="svp-detail" class="mt-6 p-4 rounded-lg border border-border transition-all duration-300" style="background: rgba(11,11,17,0.8);">
+          <div class="flex items-start gap-3">
+            <span id="svp-detail-icon" class="text-text-tertiary text-sm mt-0.5">&#8599;</span>
+            <div>
+              <p id="svp-detail-label" class="text-sm text-text-tertiary font-display font-semibold mb-1">Nine layers. A proof is not a yes/no result — it is preserved context that lets verification happen again later.</p>
+              <p id="svp-detail-text" class="text-sm text-text-tertiary leading-relaxed">Hover or tap any layer above to see what breaks when that element is missing.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    A proof is not a yes or no result. It is a preserved context that lets verification happen again later.
+  </p>
+</div>
+
+<script>
+interface ProofLayer {
+  label: string;
+  description: string;
+  breakage: string;
+  color: string;
+  colorDim: string;
+}
+
+const layers: ProofLayer[] = [
+  {
+    label: 'Actor identity',
+    description: 'Who made the assertion',
+    breakage: 'Origin is ambiguous. The proof cannot be attributed.',
+    color: 'rgba(167,139,250,0.8)',
+    colorDim: 'rgba(167,139,250,0.15)',
+  },
+  {
+    label: 'Key identifier',
+    description: 'Which specific key signed',
+    breakage: 'The signature cannot be matched to a specific actor or device.',
+    color: 'rgba(167,139,250,0.8)',
+    colorDim: 'rgba(167,139,250,0.15)',
+  },
+  {
+    label: 'Algorithm identifier',
+    description: 'How to verify the signature',
+    breakage: 'Later verification becomes brittle. Migration may break replay.',
+    color: 'rgba(56,189,248,0.8)',
+    colorDim: 'rgba(56,189,248,0.15)',
+  },
+  {
+    label: 'Content hash',
+    description: 'What exactly was signed',
+    breakage: 'The signed object is unstable. Signature may not match what was actually approved.',
+    color: 'rgba(56,189,248,0.8)',
+    colorDim: 'rgba(56,189,248,0.15)',
+  },
+  {
+    label: 'Unique challenge',
+    description: 'Binds proof to this specific action',
+    breakage: 'Proof can be reused out of context. A valid signature from one action can be reattached to another.',
+    color: 'rgba(74,222,128,0.8)',
+    colorDim: 'rgba(74,222,128,0.15)',
+  },
+  {
+    label: 'Signature',
+    description: 'The cryptographic proof itself',
+    breakage: 'No cryptographic proof. The record is an assertion, not evidence.',
+    color: 'rgba(74,222,128,0.8)',
+    colorDim: 'rgba(74,222,128,0.15)',
+  },
+  {
+    label: 'Authority context',
+    description: 'Whether the actor was entitled to act',
+    breakage: 'Signature does not settle entitlement. The actor may have signed without authority.',
+    color: 'rgba(245,158,11,0.8)',
+    colorDim: 'rgba(245,158,11,0.15)',
+  },
+  {
+    label: 'Evidence references',
+    description: 'Supporting documents bound to claim',
+    breakage: 'Fact claim weakens. The assertion floats without supporting documents.',
+    color: 'rgba(245,158,11,0.8)',
+    colorDim: 'rgba(245,158,11,0.15)',
+  },
+  {
+    label: 'Anchor reference',
+    description: 'External ordering or attestation (optional)',
+    breakage: 'External ordering absent. Trust depends entirely on the issuing system.',
+    color: 'rgba(245,158,11,0.8)',
+    colorDim: 'rgba(245,158,11,0.15)',
+  },
+];
+
+const container = document.getElementById('svp-layers')!;
+const detail = document.getElementById('svp-detail')!;
+const detailIcon = document.getElementById('svp-detail-icon')!;
+const detailLabel = document.getElementById('svp-detail-label')!;
+const detailText = document.getElementById('svp-detail-text')!;
+
+let activeLayer: HTMLElement | null = null;
+let activeIndex = -1;
+
+const defaultLabel = 'Nine layers. A proof is not a yes/no result — it is preserved context that lets verification happen again later.';
+const defaultText = 'Hover or tap any layer above to see what breaks when that element is missing.';
+
+for (let i = 0; i < layers.length; i++) {
+  const layer = layers[i];
+  const row = document.createElement('div');
+  row.className = 'group cursor-pointer transition-all duration-300';
+  row.setAttribute('tabindex', '0');
+  row.setAttribute('role', 'button');
+  row.setAttribute('aria-label', `${layer.label} \u2014 ${layer.description}. Select to see what breaks without it`);
+
+  const isFirst = i === 0;
+  const isLast = i === layers.length - 1;
+  const borderRadius = isFirst ? 'border-radius: 8px 8px 0 0;' : isLast ? 'border-radius: 0 0 8px 8px;' : '';
+
+  row.innerHTML = `
+    <div class="flex items-center gap-4 px-5 py-3.5 border border-border transition-all duration-300" style="${borderRadius} border-bottom: ${isLast ? '1px' : '0'} solid rgba(255,255,255,0.06); background: ${layer.colorDim};">
+      <span class="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-[10px] font-mono font-bold transition-all duration-300" style="background: ${layer.color}; color: rgba(11,11,17,0.8);">${i + 1}</span>
+      <div class="flex-1 min-w-0">
+        <span class="text-sm font-display font-semibold text-text-primary transition-colors duration-300">${layer.label}</span>
+        <span class="text-xs text-text-tertiary ml-2 hidden sm:inline">${layer.description}</span>
+      </div>
+      <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0">Remove?</span>
+    </div>
+  `;
+
+  function showDetail() {
+    if (activeLayer && activeLayer !== row) {
+      const prevInner = activeLayer.querySelector('div') as HTMLElement;
+      if (prevInner) {
+        prevInner.style.background = layers[activeIndex].colorDim;
+        prevInner.style.borderColor = '';
+      }
+    }
+
+    detail.style.opacity = '1';
+    detail.style.borderColor = layer.color.replace('0.8', '0.3');
+    detailIcon.textContent = '\u2717';
+    detailIcon.style.color = 'rgba(239,68,68,0.8)';
+    detailLabel.textContent = `Without: ${layer.label}`;
+    detailLabel.style.color = layer.color;
+    detailText.textContent = layer.breakage;
+    detailText.style.color = 'rgba(232,232,240,0.6)';
+    activeLayer = row;
+    activeIndex = i;
+
+    const inner = row.querySelector('div') as HTMLElement;
+    if (inner) {
+      inner.style.background = 'rgba(239,68,68,0.06)';
+      inner.style.borderColor = 'rgba(239,68,68,0.2)';
+    }
+  }
+
+  function hideDetail() {
+    if (activeLayer === row) {
+      detail.style.opacity = '1';
+      detail.style.borderColor = 'rgba(255,255,255,0.06)';
+      detailIcon.textContent = '\u2197';
+      detailIcon.style.color = '';
+      detailLabel.textContent = defaultLabel;
+      detailLabel.style.color = '';
+      detailText.textContent = defaultText;
+      detailText.style.color = '';
+      activeLayer = null;
+      activeIndex = -1;
+      const inner = row.querySelector('div') as HTMLElement;
+      if (inner) {
+        inner.style.background = layer.colorDim;
+        inner.style.borderColor = '';
+      }
+    }
+  }
+
+  row.addEventListener('mouseenter', showDetail);
+  row.addEventListener('mouseleave', hideDetail);
+  row.addEventListener('focus', showDetail);
+  row.addEventListener('blur', hideDetail);
+
+  row.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeLayer === row) {
+      hideDetail();
+    } else {
+      showDetail();
+    }
+  });
+
+  container.appendChild(row);
+}
+
+document.addEventListener('click', () => {
+  if (activeLayer) {
+    const prevIdx = activeIndex;
+    const inner = activeLayer.querySelector('div') as HTMLElement;
+    if (inner) {
+      inner.style.background = layers[prevIdx].colorDim;
+      inner.style.borderColor = '';
+    }
+    detail.style.opacity = '1';
+    detail.style.borderColor = 'rgba(255,255,255,0.06)';
+    detailIcon.textContent = '\u2197';
+    detailIcon.style.color = '';
+    detailLabel.textContent = defaultLabel;
+    detailLabel.style.color = '';
+    detailText.textContent = defaultText;
+    detailText.style.color = '';
+    activeLayer = null;
+    activeIndex = -1;
+  }
+});
+</script>
