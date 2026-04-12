@@ -126,9 +126,9 @@ for (let i = 0; i < layers.length; i++) {
       <span class="w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300" style="background: ${layer.color}; opacity: 0.5;"></span>
       <div class="flex-1 min-w-0">
         <span class="text-sm font-display font-semibold text-text-primary transition-colors duration-300">${layer.label}</span>
-        <span class="text-xs text-text-tertiary ml-2 hidden sm:inline">${layer.description}</span>
+        <span class="text-xs text-text-tertiary block sm:inline sm:ml-2 mt-0.5 sm:mt-0">${layer.description}</span>
       </div>
-      <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0">Remove?</span>
+      <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0 hidden sm:block">Remove?</span>
     </div>
   `;
 

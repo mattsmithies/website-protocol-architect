@@ -62,10 +62,10 @@
       <!-- Comparison footer -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-6 border-t border-border pt-4">
         <div>
-          <p class="text-xs font-mono" style="color: rgba(245,158,11,0.75);">Summary only &mdash; path unknown</p>
+          <p class="text-xs font-mono" style="color: rgba(245,158,11,0.75);">Summary only &mdash; how did it get here?</p>
         </div>
         <div>
-          <p id="cvrs-status" class="text-xs font-mono" style="color: rgba(74,222,128,0.75);">Path reconstructable &mdash; 0 of 6 transitions visible</p>
+          <p id="cvrs-status" class="text-xs font-mono" style="color: rgba(239,68,68,0.75);">No replay available &mdash; slide to reconstruct the path</p>
         </div>
       </div>
 
@@ -122,7 +122,16 @@ function renderReplay(visibleCount: number) {
     `;
   }).join('');
 
-  statusEl.textContent = `Path reconstructable \u2014 ${visibleCount} of 6 transitions visible`;
+  if (visibleCount === 0) {
+    statusEl.textContent = 'No replay available \u2014 slide to reconstruct the path';
+    statusEl.style.color = 'rgba(239,68,68,0.75)';
+  } else if (visibleCount < 6) {
+    statusEl.textContent = `Reconstructing \u2014 ${visibleCount} of 6 transitions revealed`;
+    statusEl.style.color = 'rgba(245,158,11,0.75)';
+  } else {
+    statusEl.textContent = 'Full path reconstructed \u2014 current state is now explainable';
+    statusEl.style.color = 'rgba(74,222,128,0.85)';
+  }
 }
 
 if (scrubber) {
