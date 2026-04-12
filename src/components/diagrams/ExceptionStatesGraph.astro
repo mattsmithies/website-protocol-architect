@@ -1,0 +1,363 @@
+---
+// Exception States Graph — interactive state machine showing workflow states and transitions
+// Click/tap a state to see its valid transitions and entry conditions
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <canvas id="es-canvas" class="w-full" style="height: 380px; cursor: pointer;" role="img" aria-label="Interactive state graph showing workflow exception states. Click or tap a state node to explore its transitions and entry conditions."></canvas>
+
+      <div id="es-detail" class="mt-4 border-t border-border pt-4" aria-live="polite">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-6">
+          <div class="flex-shrink-0">
+            <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Selected state</p>
+            <p class="text-base font-display font-bold" id="es-state-name" style="color: rgba(167,139,250,0.9);">Draft</p>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Requires to enter</p>
+            <p class="text-xs text-text-secondary leading-relaxed font-mono" id="es-requires">Initial creation of the workflow item</p>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Can transition to</p>
+            <p class="text-xs text-text-secondary leading-relaxed font-mono" id="es-transitions">Submitted</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    A workflow becomes durable when exceptions are modelled as states, not treated as accidents.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('es-canvas') as HTMLCanvasElement;
+
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  interface State {
+    id: string;
+    label: string;
+    color: [number, number, number];
+    // Position as fraction of canvas (set during layout)
+    fx: number;
+    fy: number;
+    requires: string;
+  }
+
+  interface Transition {
+    from: string;
+    to: string;
+  }
+
+  const states: State[] = [
+    { id: 'draft', label: 'Draft', color: DIM, fx: 0.12, fy: 0.22, requires: 'Initial creation of the workflow item' },
+    { id: 'submitted', label: 'Submitted', color: BLUE, fx: 0.33, fy: 0.14, requires: 'All required fields populated, submitter identified' },
+    { id: 'awaiting_evidence', label: 'Awaiting\nevidence', color: AMBER, fx: 0.55, fy: 0.10, requires: 'Submission accepted, evidence request issued' },
+    { id: 'under_review', label: 'Under\nreview', color: VIOLET, fx: 0.76, fy: 0.18, requires: 'Evidence attached, authority valid, reviewer assigned' },
+    { id: 'returned', label: 'Returned for\ncorrection', color: RED, fx: 0.20, fy: 0.48, requires: 'Reviewer found deficiency, correction note attached' },
+    { id: 'delegated', label: 'Delegated\nreview', color: BLUE, fx: 0.88, fy: 0.42, requires: 'Original reviewer delegates, new authority window valid' },
+    { id: 'partial', label: 'Partially\napproved', color: AMBER, fx: 0.72, fy: 0.55, requires: 'At least one approver signed, others pending' },
+    { id: 'paused', label: 'Paused', color: AMBER, fx: 0.45, fy: 0.52, requires: 'External dependency identified, pause reason recorded' },
+    { id: 'expired', label: 'Expired', color: RED, fx: 0.12, fy: 0.72, requires: 'Authority window closed without completion' },
+    { id: 'approved', label: 'Approved', color: GREEN, fx: 0.58, fy: 0.78, requires: 'All required approvals received, evidence verified' },
+    { id: 'rejected', label: 'Rejected', color: RED, fx: 0.32, fy: 0.85, requires: 'Reviewer issues final rejection with reason' },
+    { id: 'completed', label: 'Completed', color: GREEN, fx: 0.82, fy: 0.82, requires: 'Approved step executed, outcome recorded' },
+  ];
+
+  const transitions: Transition[] = [
+    { from: 'draft', to: 'submitted' },
+    { from: 'submitted', to: 'awaiting_evidence' },
+    { from: 'submitted', to: 'under_review' },
+    { from: 'awaiting_evidence', to: 'under_review' },
+    { from: 'awaiting_evidence', to: 'expired' },
+    { from: 'under_review', to: 'approved' },
+    { from: 'under_review', to: 'rejected' },
+    { from: 'under_review', to: 'returned' },
+    { from: 'under_review', to: 'delegated' },
+    { from: 'under_review', to: 'paused' },
+    { from: 'under_review', to: 'partial' },
+    { from: 'returned', to: 'submitted' },
+    { from: 'returned', to: 'draft' },
+    { from: 'delegated', to: 'approved' },
+    { from: 'delegated', to: 'rejected' },
+    { from: 'delegated', to: 'returned' },
+    { from: 'partial', to: 'approved' },
+    { from: 'partial', to: 'paused' },
+    { from: 'partial', to: 'expired' },
+    { from: 'paused', to: 'under_review' },
+    { from: 'paused', to: 'expired' },
+    { from: 'approved', to: 'completed' },
+    { from: 'expired', to: 'draft' },
+  ];
+
+  let selectedState = 'draft';
+  let hoverState = '';
+
+  function getStateIndex(id: string): number {
+    return states.findIndex(s => s.id === id);
+  }
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getNodePos(state: State, w: number, h: number): { x: number; y: number } {
+    const margin = 40;
+    return {
+      x: margin + state.fx * (w - margin * 2),
+      y: margin + state.fy * (h - margin * 2),
+    };
+  }
+
+  function render() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    const nodeRadius = isNarrow ? 18 : 24;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const outgoing = transitions.filter(t => t.from === selectedState);
+    const incoming = transitions.filter(t => t.to === selectedState);
+    const outIds = new Set(outgoing.map(t => t.to));
+    const inIds = new Set(incoming.map(t => t.from));
+
+    // ── Draw edges ──
+    for (const tr of transitions) {
+      const fromState = states[getStateIndex(tr.from)];
+      const toState = states[getStateIndex(tr.to)];
+      if (!fromState || !toState) continue;
+
+      const fromPos = getNodePos(fromState, w, h);
+      const toPos = getNodePos(toState, w, h);
+
+      const isOutgoing = tr.from === selectedState;
+      const isIncoming = tr.to === selectedState;
+
+      let edgeAlpha: number;
+      let edgeColor: [number, number, number];
+      let lineWidth: number;
+
+      if (isOutgoing) {
+        edgeColor = GREEN;
+        edgeAlpha = 0.4;
+        lineWidth = 1.5;
+      } else if (isIncoming) {
+        edgeColor = VIOLET;
+        edgeAlpha = 0.15;
+        lineWidth = 0.8;
+      } else {
+        edgeColor = DIM;
+        edgeAlpha = 0.04;
+        lineWidth = 0.5;
+      }
+
+      // Draw edge line
+      const dx = toPos.x - fromPos.x;
+      const dy = toPos.y - fromPos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 1) continue;
+      const nx = dx / dist;
+      const ny = dy / dist;
+
+      const startX = fromPos.x + nx * nodeRadius;
+      const startY = fromPos.y + ny * nodeRadius;
+      const endX = toPos.x - nx * nodeRadius;
+      const endY = toPos.y - ny * nodeRadius;
+
+      // Slight curve for parallel edges
+      const midX = (startX + endX) / 2;
+      const midY = (startY + endY) / 2;
+      const perpX = -ny * 12;
+      const perpY = nx * 12;
+
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.quadraticCurveTo(midX + perpX, midY + perpY, endX, endY);
+      ctx.strokeStyle = `rgba(${edgeColor[0]},${edgeColor[1]},${edgeColor[2]},${edgeAlpha})`;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+
+      // Arrowhead
+      if (isOutgoing || isIncoming) {
+        const headLen = 6;
+        const arrowAngle = Math.atan2(endY - (midY + perpY), endX - (midX + perpX));
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - headLen * Math.cos(arrowAngle - 0.35), endY - headLen * Math.sin(arrowAngle - 0.35));
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - headLen * Math.cos(arrowAngle + 0.35), endY - headLen * Math.sin(arrowAngle + 0.35));
+        ctx.strokeStyle = `rgba(${edgeColor[0]},${edgeColor[1]},${edgeColor[2]},${edgeAlpha * 0.8})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    // ── Draw nodes ──
+    for (const state of states) {
+      const pos = getNodePos(state, w, h);
+      const isSelected = state.id === selectedState;
+      const isOutTarget = outIds.has(state.id);
+      const isInSource = inIds.has(state.id);
+      const isHover = state.id === hoverState;
+      const [r, g, b] = state.color;
+
+      let nodeAlpha: number;
+      if (isSelected) nodeAlpha = 1.0;
+      else if (isOutTarget) nodeAlpha = 0.8;
+      else if (isInSource) nodeAlpha = 0.5;
+      else nodeAlpha = 0.25;
+
+      // Glow for selected/hover
+      if (isSelected || isHover) {
+        const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, nodeRadius * 3);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${isSelected ? 0.15 : 0.08})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, nodeRadius * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Circle
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, nodeRadius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${nodeAlpha * 0.08})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},${nodeAlpha * 0.55})`;
+      ctx.lineWidth = isSelected ? 2 : 1.2;
+      ctx.stroke();
+
+      if (isSelected) {
+        ctx.shadowColor = `rgba(${r},${g},${b},0.3)`;
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      // Label
+      ctx.font = `${isSelected ? '600' : '500'} ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${nodeAlpha * 0.85})`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const lines = state.label.split('\n');
+      lines.forEach((line, i) => {
+        ctx.fillText(line, pos.x, pos.y + (i - (lines.length - 1) / 2) * (isNarrow ? 9 : 10));
+      });
+      ctx.textBaseline = 'alphabetic';
+    }
+  }
+
+  function updateDetailPanel() {
+    const state = states.find(s => s.id === selectedState);
+    if (!state) return;
+
+    const nameEl = document.getElementById('es-state-name')!;
+    const requiresEl = document.getElementById('es-requires')!;
+    const transitionsEl = document.getElementById('es-transitions')!;
+
+    const [r, g, b] = state.color;
+    nameEl.textContent = state.label.replace('\n', ' ');
+    nameEl.style.color = `rgba(${r},${g},${b},0.9)`;
+
+    requiresEl.textContent = state.requires;
+
+    const outgoing = transitions.filter(t => t.from === selectedState);
+    const targetNames = outgoing.map(t => {
+      const target = states.find(s => s.id === t.to);
+      return target ? target.label.replace('\n', ' ') : t.to;
+    });
+    transitionsEl.textContent = targetNames.length > 0 ? targetNames.join(', ') : 'None (terminal state)';
+  }
+
+  function findState(clientX: number, clientY: number): string {
+    const rect = canvas.getBoundingClientRect();
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    const nodeRadius = isNarrow ? 18 : 24;
+    const hitRadius = nodeRadius + 6;
+
+    for (const state of states) {
+      const pos = getNodePos(state, w, h);
+      const dx = pos.x - mx;
+      const dy = pos.y - my;
+      if (dx * dx + dy * dy < hitRadius * hitRadius) {
+        return state.id;
+      }
+    }
+    return '';
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    const found = findState(e.clientX, e.clientY);
+    if (found !== hoverState) {
+      hoverState = found;
+      canvas.style.cursor = found ? 'pointer' : 'default';
+      render();
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    hoverState = '';
+    render();
+  });
+
+  canvas.addEventListener('click', (e) => {
+    const found = findState(e.clientX, e.clientY);
+    if (found && found !== selectedState) {
+      selectedState = found;
+      updateDetailPanel();
+      render();
+    }
+  });
+
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const found = findState(e.touches[0].clientX, e.touches[0].clientY);
+    if (found && found !== selectedState) {
+      selectedState = found;
+      updateDetailPanel();
+      render();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const found = findState(e.touches[0].clientX, e.touches[0].clientY);
+    if (found !== hoverState) {
+      hoverState = found;
+      render();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => {
+    hoverState = '';
+    render();
+  });
+
+  resize();
+  updateDetailPanel();
+  window.addEventListener('resize', () => { resize(); render(); });
+
+  render();
+}
+</script>

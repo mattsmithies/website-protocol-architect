@@ -1,0 +1,400 @@
+---
+// Happy Path vs Real Path — slider reveals how process pressure transforms a clean 3-step flow
+// into a branching, exception-laden reality
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <canvas id="hp-canvas" class="w-full" style="height: 360px;" role="img" aria-label="Two process lanes comparing a clean happy path workflow against a real-world workflow that accumulates exceptions as process pressure increases"></canvas>
+
+      <div class="mt-4">
+        <div class="flex items-center justify-between mb-2">
+          <label for="hp-slider" class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold">Process pressure</label>
+          <span class="text-xs font-mono" id="hp-pressure-label" style="color: rgba(74,222,128,0.7);">None</span>
+        </div>
+        <input
+          id="hp-slider"
+          type="range" min="0" max="100" value="0"
+          aria-label="Process pressure — slide to increase real-world complexity"
+          class="w-full accent-signal h-1 bg-border rounded-full appearance-none cursor-pointer"
+        />
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 mt-4 border-t border-border pt-4" aria-live="polite">
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Steps</p>
+          <div class="flex items-center justify-center gap-3 mt-1">
+            <span class="text-sm font-display font-bold" id="hp-steps-left" style="color: rgba(74,222,128,0.7);">3</span>
+            <span class="text-text-tertiary text-[10px]">vs</span>
+            <span class="text-sm font-display font-bold" id="hp-steps-right" style="color: rgba(74,222,128,0.7);">3</span>
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Branches</p>
+          <div class="flex items-center justify-center gap-3 mt-1">
+            <span class="text-sm font-display font-bold" id="hp-branches-left" style="color: rgba(74,222,128,0.7);">0</span>
+            <span class="text-text-tertiary text-[10px]">vs</span>
+            <span class="text-sm font-display font-bold" id="hp-branches-right" style="color: rgba(74,222,128,0.7);">0</span>
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Exceptions</p>
+          <div class="flex items-center justify-center gap-3 mt-1">
+            <span class="text-sm font-display font-bold" id="hp-exceptions-left" style="color: rgba(74,222,128,0.7);">0</span>
+            <span class="text-text-tertiary text-[10px]">vs</span>
+            <span class="text-sm font-display font-bold" id="hp-exceptions-right" style="color: rgba(74,222,128,0.7);">0</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    The happy path is not the workflow. It is the least interesting version of the workflow.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('hp-canvas') as HTMLCanvasElement;
+const slider = document.getElementById('hp-slider') as HTMLInputElement;
+
+if (canvas && slider) {
+  const ctx = canvas.getContext('2d')!;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  // Exception events keyed by threshold (slider value 0-100 when they appear)
+  interface ExceptionEvent {
+    threshold: number;
+    label: string;
+    shortLabel: string;
+    color: [number, number, number];
+    type: 'warning' | 'branch' | 'addition';
+    fromStep: number; // which main step it branches from (0-indexed)
+  }
+
+  const exceptions: ExceptionEvent[] = [
+    { threshold: 12, label: 'Evidence missing', shortLabel: 'Evidence?', color: AMBER, type: 'warning', fromStep: 1 },
+    { threshold: 25, label: 'Authority expired', shortLabel: 'Auth expired', color: RED, type: 'warning', fromStep: 1 },
+    { threshold: 38, label: 'Returned for correction', shortLabel: 'Return', color: RED, type: 'branch', fromStep: 1 },
+    { threshold: 50, label: 'Temporary approver added', shortLabel: 'Temp approver', color: AMBER, type: 'addition', fromStep: 1 },
+    { threshold: 62, label: 'Partial approval', shortLabel: 'Partial', color: AMBER, type: 'addition', fromStep: 1 },
+    { threshold: 75, label: 'Pause for external input', shortLabel: 'Paused', color: BLUE, type: 'branch', fromStep: 2 },
+    { threshold: 88, label: 'Resume and complete', shortLabel: 'Resume', color: GREEN, type: 'addition', fromStep: 2 },
+  ];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function drawNode(x: number, y: number, radius: number, label: string, color: [number, number, number], alpha: number, filled: boolean) {
+    const [r, g, b] = color;
+
+    // Glow
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, radius * 2.5);
+    grad.addColorStop(0, `rgba(${r},${g},${b},${alpha * 0.15})`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(x, y, radius * 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ring
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.6})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    if (filled) {
+      ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.1})`;
+      ctx.fill();
+    }
+
+    // Label
+    ctx.font = `600 ${radius > 14 ? 9 : 7}px "Syne", system-ui`;
+    ctx.fillStyle = `rgba(232,232,240,${alpha * 0.85})`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const lines = label.split('\n');
+    lines.forEach((line, i) => {
+      ctx.fillText(line, x, y + (i - (lines.length - 1) / 2) * 11);
+    });
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  function drawEdge(x1: number, y1: number, x2: number, y2: number, color: [number, number, number], alpha: number, dashed: boolean) {
+    const [r, g, b] = color;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+    ctx.lineWidth = 1.2;
+    if (dashed) ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Arrowhead
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const headLen = 6;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - 0.4), y2 - headLen * Math.sin(angle - 0.4));
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle + 0.4), y2 - headLen * Math.sin(angle + 0.4));
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.8})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  function render() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const pressure = parseInt(slider.value);
+    const isNarrow = w < 500;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const laneWidth = (w - 40) / 2;
+    const leftCenterX = 20 + laneWidth / 2;
+    const rightCenterX = w - 20 - laneWidth / 2;
+    const dividerX = w / 2;
+
+    // Lane labels
+    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(74,222,128,0.5)';
+    ctx.fillText('HAPPY PATH', leftCenterX, 18);
+    ctx.fillStyle = pressure > 30 ? 'rgba(239,68,68,0.5)' : 'rgba(56,189,248,0.5)';
+    ctx.fillText('REAL PATH', rightCenterX, 18);
+
+    // Divider
+    ctx.beginPath();
+    ctx.moveTo(dividerX, 28);
+    ctx.lineTo(dividerX, h - 10);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // ── Left lane: always 3 clean steps ──
+    const leftSteps = ['Submit', 'Approve', 'Complete'];
+    const nodeRadius = isNarrow ? 16 : 20;
+    const leftTopY = 55;
+    const leftStepSpacing = (h - 80 - leftTopY) / 2;
+
+    for (let i = 0; i < 3; i++) {
+      const y = leftTopY + i * leftStepSpacing;
+      drawNode(leftCenterX, y, nodeRadius, leftSteps[i], GREEN, 0.9, true);
+      if (i < 2) {
+        drawEdge(leftCenterX, y + nodeRadius, leftCenterX, y + leftStepSpacing - nodeRadius, GREEN, 0.3, false);
+      }
+    }
+
+    // ── Right lane: accumulates complexity ──
+    const activeExceptions = exceptions.filter(e => pressure >= e.threshold);
+    const numBranches = activeExceptions.filter(e => e.type === 'branch').length;
+    const numWarnings = activeExceptions.filter(e => e.type === 'warning').length;
+    const numAdditions = activeExceptions.filter(e => e.type === 'addition').length;
+
+    // Base right lane nodes
+    const rightBaseSteps = ['Submit', 'Approve', 'Complete'];
+    const rightBaseColor: [number, number, number] = pressure > 60 ? AMBER : pressure > 30 ? BLUE : GREEN;
+
+    // Calculate right lane node positions — main spine
+    const rightTopY = 55;
+    const rightNodes: { x: number; y: number; label: string; color: [number, number, number]; radius: number }[] = [];
+
+    // Build the right-lane nodes
+    const totalRightSteps = 3 + numAdditions;
+    const rightStepSpacing = Math.min(leftStepSpacing, (h - 80 - rightTopY) / Math.max(totalRightSteps - 1, 2));
+
+    // Main spine nodes
+    let rightIdx = 0;
+    for (let i = 0; i < 3; i++) {
+      const y = rightTopY + rightIdx * rightStepSpacing;
+      rightNodes.push({ x: rightCenterX, y, label: rightBaseSteps[i], color: rightBaseColor, radius: nodeRadius });
+      rightIdx++;
+
+      // Insert additions after the appropriate step
+      if (i === 1) {
+        // After Approve: temp approver, partial approval
+        if (pressure >= 50) {
+          const y2 = rightTopY + rightIdx * rightStepSpacing;
+          rightNodes.push({ x: rightCenterX, y: y2, label: isNarrow ? 'Temp\napprover' : 'Temp approver', color: AMBER, radius: nodeRadius - 3 });
+          rightIdx++;
+        }
+        if (pressure >= 62) {
+          const y2 = rightTopY + rightIdx * rightStepSpacing;
+          rightNodes.push({ x: rightCenterX, y: y2, label: isNarrow ? 'Partial\napproval' : 'Partial approval', color: AMBER, radius: nodeRadius - 3 });
+          rightIdx++;
+        }
+      }
+      if (i === 2 && pressure >= 88) {
+        // Resume node before Complete (actually push Complete further down)
+        // Insert resume before the last node
+        const lastNode = rightNodes[rightNodes.length - 1];
+        lastNode.y = rightTopY + rightIdx * rightStepSpacing;
+        rightNodes.splice(rightNodes.length - 1, 0, {
+          x: rightCenterX,
+          y: rightTopY + (rightIdx - 1) * rightStepSpacing,
+          label: 'Resume',
+          color: GREEN,
+          radius: nodeRadius - 3,
+        });
+        rightIdx++;
+      }
+    }
+
+    // Draw right lane edges (spine)
+    for (let i = 0; i < rightNodes.length - 1; i++) {
+      const a = rightNodes[i];
+      const b = rightNodes[i + 1];
+      drawEdge(a.x, a.y + a.radius, b.x, b.y - b.radius, rightBaseColor, 0.25, false);
+    }
+
+    // Draw right lane nodes
+    for (const node of rightNodes) {
+      drawNode(node.x, node.y, node.radius, node.label, node.color, 0.9, true);
+    }
+
+    // ── Side branches and warnings ──
+    const branchOffsetX = isNarrow ? laneWidth * 0.32 : laneWidth * 0.35;
+    const smallRadius = isNarrow ? 11 : 13;
+
+    // Warning: Evidence missing (from step 1 / Approve)
+    if (pressure >= 12) {
+      const approveNode = rightNodes[1]; // Approve
+      const wx = approveNode.x - branchOffsetX;
+      const wy = approveNode.y - 20;
+      drawEdge(approveNode.x - approveNode.radius, approveNode.y - 5, wx + smallRadius, wy + 3, AMBER, 0.35, true);
+      drawNode(wx, wy, smallRadius, isNarrow ? 'Evid?' : 'Evidence?', AMBER, 0.75, false);
+
+      // Warning icon
+      ctx.font = '400 7px "JetBrains Mono", monospace';
+      ctx.fillStyle = 'rgba(245,158,11,0.6)';
+      ctx.textAlign = 'center';
+      ctx.fillText('!', wx, wy - smallRadius - 5);
+    }
+
+    // Warning: Authority expired
+    if (pressure >= 25) {
+      const approveNode = rightNodes[1];
+      const wx = approveNode.x + branchOffsetX;
+      const wy = approveNode.y - 20;
+      drawEdge(approveNode.x + approveNode.radius, approveNode.y - 5, wx - smallRadius, wy + 3, RED, 0.35, true);
+      drawNode(wx, wy, smallRadius, isNarrow ? 'Auth\nexpired' : 'Auth expired', RED, 0.75, false);
+
+      ctx.font = '400 7px "JetBrains Mono", monospace';
+      ctx.fillStyle = 'rgba(239,68,68,0.6)';
+      ctx.textAlign = 'center';
+      ctx.fillText('!', wx, wy - smallRadius - 5);
+    }
+
+    // Branch: Return for correction (loops back from Approve to Submit)
+    if (pressure >= 38) {
+      const submitNode = rightNodes[0];
+      const approveNode = rightNodes[1];
+      const returnX = approveNode.x - branchOffsetX * 0.7;
+      const midY = (submitNode.y + approveNode.y) / 2;
+
+      ctx.beginPath();
+      ctx.moveTo(approveNode.x - approveNode.radius, approveNode.y);
+      ctx.quadraticCurveTo(returnX, midY, submitNode.x - submitNode.radius, submitNode.y);
+      ctx.strokeStyle = 'rgba(239,68,68,0.3)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Return label
+      ctx.font = `500 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = 'rgba(239,68,68,0.55)';
+      ctx.textAlign = 'center';
+      ctx.fillText('RETURN', returnX - 6, midY - 3);
+
+      // Arrow on return
+      const headLen = 5;
+      ctx.beginPath();
+      ctx.moveTo(submitNode.x - submitNode.radius, submitNode.y);
+      ctx.lineTo(submitNode.x - submitNode.radius + headLen, submitNode.y - headLen);
+      ctx.moveTo(submitNode.x - submitNode.radius, submitNode.y);
+      ctx.lineTo(submitNode.x - submitNode.radius + headLen, submitNode.y + headLen);
+      ctx.strokeStyle = 'rgba(239,68,68,0.35)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Branch: Pause for external input (from step before Complete)
+    if (pressure >= 75) {
+      const completeIdx = rightNodes.length - 1;
+      const preCompleteNode = rightNodes[completeIdx - 1] || rightNodes[completeIdx];
+      const bx = preCompleteNode.x + branchOffsetX;
+      const by = preCompleteNode.y + 15;
+      drawEdge(preCompleteNode.x + preCompleteNode.radius, preCompleteNode.y + 3, bx - smallRadius, by, BLUE, 0.35, true);
+      drawNode(bx, by, smallRadius, 'Paused', BLUE, 0.75, false);
+
+      ctx.font = '400 7px "JetBrains Mono", monospace';
+      ctx.fillStyle = 'rgba(56,189,248,0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText('EXTERNAL', bx, by + smallRadius + 10);
+    }
+
+    // ── Update metrics ──
+    const totalStepsRight = rightNodes.length;
+    const totalBranches = numBranches;
+    const totalExceptions = numWarnings;
+
+    const el = (id: string) => document.getElementById(id)!;
+
+    el('hp-steps-left').textContent = '3';
+    el('hp-steps-left').style.color = 'rgba(74,222,128,0.7)';
+    el('hp-steps-right').textContent = String(totalStepsRight);
+    el('hp-steps-right').style.color = totalStepsRight > 3 ? 'rgba(245,158,11,0.8)' : 'rgba(74,222,128,0.7)';
+
+    el('hp-branches-left').textContent = '0';
+    el('hp-branches-left').style.color = 'rgba(74,222,128,0.7)';
+    el('hp-branches-right').textContent = String(totalBranches);
+    el('hp-branches-right').style.color = totalBranches > 0 ? 'rgba(239,68,68,0.8)' : 'rgba(74,222,128,0.7)';
+
+    el('hp-exceptions-left').textContent = '0';
+    el('hp-exceptions-left').style.color = 'rgba(74,222,128,0.7)';
+    el('hp-exceptions-right').textContent = String(totalExceptions);
+    el('hp-exceptions-right').style.color = totalExceptions > 0 ? 'rgba(245,158,11,0.8)' : 'rgba(74,222,128,0.7)';
+
+    // Pressure label
+    const pressureLabel = el('hp-pressure-label');
+    if (pressure < 15) {
+      pressureLabel.textContent = 'None';
+      pressureLabel.style.color = 'rgba(74,222,128,0.7)';
+    } else if (pressure < 40) {
+      pressureLabel.textContent = 'Low';
+      pressureLabel.style.color = 'rgba(56,189,248,0.7)';
+    } else if (pressure < 65) {
+      pressureLabel.textContent = 'Moderate';
+      pressureLabel.style.color = 'rgba(245,158,11,0.7)';
+    } else if (pressure < 85) {
+      pressureLabel.textContent = 'High';
+      pressureLabel.style.color = 'rgba(239,68,68,0.7)';
+    } else {
+      pressureLabel.textContent = 'Severe';
+      pressureLabel.style.color = 'rgba(239,68,68,0.9)';
+    }
+  }
+
+  slider.addEventListener('input', render);
+
+  resize();
+  window.addEventListener('resize', () => { resize(); render(); });
+  render();
+}
+</script>

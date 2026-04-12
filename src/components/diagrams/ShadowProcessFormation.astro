@@ -1,0 +1,341 @@
+---
+// Shadow Process Formation — shows how rigid workflows spawn unofficial side channels
+// Slider increases "process rigidity" causing shadow paths to emerge from the official line
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <label for="sp-slider" class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold">Process rigidity</label>
+          <span class="text-xs font-mono" id="sp-rigidity-label" style="color: rgba(74,222,128,0.7);">Flexible</span>
+        </div>
+        <input
+          id="sp-slider"
+          type="range" min="0" max="100" value="0"
+          aria-label="Process rigidity — slide to increase rigidity and see shadow processes emerge"
+          class="w-full accent-signal h-1 bg-border rounded-full appearance-none cursor-pointer"
+        />
+      </div>
+
+      <canvas id="sp-canvas" class="w-full" style="height: 340px;" role="img" aria-label="Visualisation of an official workflow line with shadow processes emerging as rigidity increases. Hover or tap side paths for details."></canvas>
+
+      <div id="sp-tooltip" class="mt-3 min-h-[24px]" aria-live="polite">
+        <p class="text-xs text-text-secondary italic" id="sp-tooltip-text">Hover or tap a shadow path to see why it emerged.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mt-3 border-t border-border pt-4" aria-live="polite">
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">System truth</p>
+          <p class="text-sm font-display font-bold" id="sp-truth">High</p>
+        </div>
+        <div class="text-center">
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Audit confidence</p>
+          <p class="text-sm font-display font-bold" id="sp-audit">High</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Workflow systems fail when the real process finds a way to continue without them.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('sp-canvas') as HTMLCanvasElement;
+const slider = document.getElementById('sp-slider') as HTMLInputElement;
+
+if (canvas && slider) {
+  const ctx = canvas.getContext('2d')!;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+
+  interface ShadowPath {
+    threshold: number;         // slider value (0-100) when it appears
+    fromStep: number;          // which main step it branches from (0-4)
+    label: string;
+    direction: 'up' | 'down';
+    color: [number, number, number];
+    reason: string;
+  }
+
+  const shadowPaths: ShadowPath[] = [
+    { threshold: 15, fromStep: 1, label: 'Email approval', direction: 'up', color: AMBER, reason: 'Step cannot be paused' },
+    { threshold: 30, fromStep: 2, label: 'Spreadsheet evidence', direction: 'down', color: AMBER, reason: 'Evidence cannot be attached here' },
+    { threshold: 45, fromStep: 1, label: 'Slack confirmation', direction: 'down', color: RED, reason: 'No support for temporary delegation' },
+    { threshold: 65, fromStep: 3, label: 'Manual override', direction: 'up', color: RED, reason: 'State cannot be partially completed' },
+    { threshold: 82, fromStep: 4, label: 'Backfilled record', direction: 'down', color: RED, reason: 'Rollback not modelled' },
+  ];
+
+  let hoveredShadow = -1;
+
+  // Hit regions for shadow nodes
+  interface HitRegion {
+    x: number;
+    y: number;
+    radius: number;
+    index: number;
+  }
+  let hitRegions: HitRegion[] = [];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function render() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const rigidity = parseInt(slider.value);
+    const isNarrow = w < 500;
+    hitRegions = [];
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Main line
+    const marginX = isNarrow ? 30 : 50;
+    const mainY = h / 2;
+    const lineStartX = marginX;
+    const lineEndX = w - marginX;
+    const lineWidth = lineEndX - lineStartX;
+
+    // Count active shadows for opacity dimming
+    const activeShadows = shadowPaths.filter(s => rigidity >= s.threshold).length;
+    const mainAlpha = Math.max(0.15, 0.7 - activeShadows * 0.11);
+
+    // Main line
+    ctx.beginPath();
+    ctx.moveTo(lineStartX, mainY);
+    ctx.lineTo(lineEndX, mainY);
+    ctx.strokeStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Main steps
+    const stepLabels = ['Initiate', 'Review', 'Evidence', 'Approve', 'Complete'];
+    const stepPositions: { x: number; y: number }[] = [];
+    const stepRadius = isNarrow ? 16 : 20;
+
+    for (let i = 0; i < 5; i++) {
+      const x = lineStartX + (lineWidth / 4) * i;
+      const y = mainY;
+      stepPositions.push({ x, y });
+
+      // Node glow
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, stepRadius * 2.5);
+      grad.addColorStop(0, `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha * 0.15})`);
+      grad.addColorStop(1, `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, stepRadius * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Node circle
+      ctx.beginPath();
+      ctx.arc(x, y, stepRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha * 0.7})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha * 0.08})`;
+      ctx.fill();
+
+      // Step number
+      ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${mainAlpha * 0.85})`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(i + 1), x, y);
+      ctx.textBaseline = 'alphabetic';
+
+      // Step label
+      ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${mainAlpha * 0.5})`;
+      ctx.textAlign = 'center';
+      ctx.fillText(stepLabels[i], x, y + stepRadius + 14);
+    }
+
+    // "System tracked" label
+    ctx.font = `500 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha * 0.5})`;
+    ctx.textAlign = 'left';
+    ctx.fillText('SYSTEM TRACKED', lineStartX, mainY - stepRadius - 20);
+
+    // ── Shadow paths ──
+    const shadowNodeRadius = isNarrow ? 11 : 14;
+    const shadowArmLength = isNarrow ? 55 : 75;
+
+    for (let i = 0; i < shadowPaths.length; i++) {
+      const sp = shadowPaths[i];
+      if (rigidity < sp.threshold) continue;
+
+      const step = stepPositions[sp.fromStep];
+      const direction = sp.direction === 'up' ? -1 : 1;
+      const targetY = step.y + direction * shadowArmLength;
+
+      // Slight horizontal offset to avoid overlaps
+      const offsetMultiplier = sp.direction === 'up' ? -1 : 1;
+      const targetX = step.x + (i % 2 === 0 ? 15 : -15) * offsetMultiplier;
+
+      const isHovered = hoveredShadow === i;
+      const [sr, sg, sb] = sp.color;
+      const shadowAlpha = isHovered ? 0.9 : 0.6;
+
+      // Dashed line from main to shadow node
+      ctx.beginPath();
+      ctx.moveTo(step.x, step.y + direction * stepRadius);
+      ctx.lineTo(targetX, targetY - direction * shadowNodeRadius);
+      ctx.strokeStyle = `rgba(${sr},${sg},${sb},${shadowAlpha * 0.4})`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Shadow node glow
+      if (isHovered) {
+        const grad = ctx.createRadialGradient(targetX, targetY, 0, targetX, targetY, shadowNodeRadius * 3);
+        grad.addColorStop(0, `rgba(${sr},${sg},${sb},0.15)`);
+        grad.addColorStop(1, `rgba(${sr},${sg},${sb},0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(targetX, targetY, shadowNodeRadius * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Shadow node
+      ctx.beginPath();
+      ctx.arc(targetX, targetY, shadowNodeRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${sr},${sg},${sb},${shadowAlpha * 0.55})`;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = `rgba(${sr},${sg},${sb},${shadowAlpha * 0.06})`;
+      ctx.fill();
+
+      // Shadow label
+      ctx.font = `500 ${isNarrow ? 6 : 7}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${sr},${sg},${sb},${shadowAlpha * 0.8})`;
+      ctx.textAlign = 'center';
+      const labelY = sp.direction === 'up' ? targetY - shadowNodeRadius - 7 : targetY + shadowNodeRadius + 11;
+      ctx.fillText(sp.label, targetX, labelY);
+
+      // Store hit region
+      hitRegions.push({ x: targetX, y: targetY, radius: shadowNodeRadius + 8, index: i });
+    }
+
+    // "Shadow process" label (appears when paths exist)
+    if (activeShadows > 0) {
+      ctx.font = `500 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = 'rgba(239,68,68,0.4)';
+      ctx.textAlign = 'left';
+      ctx.fillText('SHADOW PROCESS', lineStartX, mainY + stepRadius + 30 + shadowArmLength);
+    }
+
+    // ── Update metrics ──
+    const el = (id: string) => document.getElementById(id)!;
+
+    const truthEl = el('sp-truth');
+    const auditEl = el('sp-audit');
+
+    if (activeShadows === 0) {
+      truthEl.textContent = 'High'; truthEl.style.color = 'rgba(74,222,128,0.8)';
+      auditEl.textContent = 'High'; auditEl.style.color = 'rgba(74,222,128,0.8)';
+    } else if (activeShadows <= 2) {
+      truthEl.textContent = 'Weakening'; truthEl.style.color = 'rgba(245,158,11,0.8)';
+      auditEl.textContent = 'Weakening'; auditEl.style.color = 'rgba(245,158,11,0.8)';
+    } else {
+      truthEl.textContent = 'Eroded'; truthEl.style.color = 'rgba(239,68,68,0.8)';
+      auditEl.textContent = 'Eroded'; auditEl.style.color = 'rgba(239,68,68,0.8)';
+    }
+
+    // Rigidity label
+    const rigidityLabel = el('sp-rigidity-label');
+    if (rigidity < 20) {
+      rigidityLabel.textContent = 'Flexible';
+      rigidityLabel.style.color = 'rgba(74,222,128,0.7)';
+    } else if (rigidity < 50) {
+      rigidityLabel.textContent = 'Moderate';
+      rigidityLabel.style.color = 'rgba(245,158,11,0.7)';
+    } else if (rigidity < 80) {
+      rigidityLabel.textContent = 'Rigid';
+      rigidityLabel.style.color = 'rgba(239,68,68,0.7)';
+    } else {
+      rigidityLabel.textContent = 'Brittle';
+      rigidityLabel.style.color = 'rgba(239,68,68,0.9)';
+    }
+  }
+
+  function handlePointer(clientX: number, clientY: number) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+    let found = -1;
+
+    for (const hr of hitRegions) {
+      const dx = hr.x - mx;
+      const dy = hr.y - my;
+      if (dx * dx + dy * dy < hr.radius * hr.radius) {
+        found = hr.index;
+        break;
+      }
+    }
+
+    if (found !== hoveredShadow) {
+      hoveredShadow = found;
+      const tooltipText = document.getElementById('sp-tooltip-text')!;
+      if (found >= 0) {
+        const sp = shadowPaths[found];
+        tooltipText.textContent = `${sp.label}: ${sp.reason}`;
+        tooltipText.style.color = `rgba(${sp.color[0]},${sp.color[1]},${sp.color[2]},0.8)`;
+      } else {
+        tooltipText.textContent = 'Hover or tap a shadow path to see why it emerged.';
+        tooltipText.style.color = '';
+      }
+      render();
+    }
+  }
+
+  canvas.addEventListener('mousemove', (e) => handlePointer(e.clientX, e.clientY));
+  canvas.addEventListener('mouseleave', () => {
+    hoveredShadow = -1;
+    const tooltipText = document.getElementById('sp-tooltip-text')!;
+    tooltipText.textContent = 'Hover or tap a shadow path to see why it emerged.';
+    tooltipText.style.color = '';
+    render();
+  });
+
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    handlePointer(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    handlePointer(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => {
+    hoveredShadow = -1;
+    const tooltipText = document.getElementById('sp-tooltip-text')!;
+    tooltipText.textContent = 'Hover or tap a shadow path to see why it emerged.';
+    tooltipText.style.color = '';
+    render();
+  });
+
+  slider.addEventListener('input', render);
+
+  resize();
+  window.addEventListener('resize', () => { resize(); render(); });
+  render();
+}
+</script>

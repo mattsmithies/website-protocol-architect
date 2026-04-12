@@ -1,0 +1,368 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import HappyPathVsRealPath from '../../components/diagrams/HappyPathVsRealPath.astro';
+import ShadowProcessFormation from '../../components/diagrams/ShadowProcessFormation.astro';
+import ExceptionStatesGraph from '../../components/diagrams/ExceptionStatesGraph.astro';
+import WorkflowValidityTriangle from '../../components/diagrams/WorkflowValidityTriangle.astro';
+import LinearVsCollaborativeGraph from '../../components/diagrams/LinearVsCollaborativeGraph.astro';
+import EventLogVsReplayable from '../../components/diagrams/EventLogVsReplayable.astro';
+import RecordVsView from '../../components/diagrams/RecordVsView.astro';
+import WorkflowDesignStack from '../../components/diagrams/WorkflowDesignStack.astro';
+import BespokeVsConfigured from '../../components/diagrams/BespokeVsConfigured.astro';
+import '../../styles/global.css';
+---
+
+<Layout title="Where workflow systems fail — Matt Smithies">
+  <Nav />
+  <main>
+    <article class="px-6">
+
+      {/* ── Header ──────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
+        <div class="reveal">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Workflow</p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
+            Where workflow systems fail
+          </h1>
+          <p class="text-text-tertiary text-base">
+            Workflow systems fail when they model sequence instead of the truth conditions that make a process valid under pressure.
+          </p>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 1: Opening
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto pb-8">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Most workflow systems fail in the same way.</p>
+
+          <p>They model sequence, not reality.</p>
+
+          <div class="border-l-2 border-red-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Step one.<br/>
+              Step two.<br/>
+              Step three.<br/>
+              Complete.
+            </p>
+          </div>
+
+          <p>That is enough for a diagram. It is not enough for a real process.</p>
+
+          <p>Real workflows involve partial completion, delegated authority, missing evidence, rework, rollback, pause states, branching conditions, expiry windows, and exceptions that only become visible once the process is already under pressure.</p>
+
+          <p>Most workflow tools handle the happy path well because the happy path is easy to draw.</p>
+
+          <p>The failure begins when the system meets the process it claims to represent.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 1: Happy path vs real path ─────────── */}
+      <div class="max-w-5xl mx-auto">
+        <HappyPathVsRealPath />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 2: Reality moves outside the model
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">The system fails when reality moves outside the model</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>The immediate failure mode is not technical. It is behavioural.</p>
+
+          <p>The workflow engine cannot express what actually needs to happen, so people route around it.</p>
+
+          <div class="border-l-2 border-amber-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              They email approvals.<br/>
+              They collect evidence somewhere else.<br/>
+              They skip a blocked step and promise to backfill later.<br/>
+              They ask someone with the wrong authority to move it forward<br/>
+              because the right person is unavailable.<br/>
+              They create a parallel process the system never records.
+            </p>
+          </div>
+
+          <p>At that point, the workflow system is not controlling the process. It is documenting a fantasy while the real process happens elsewhere.</p>
+
+          <p>That is where trust starts to decay. Not because the process stopped. Because the system stopped being the place where the truth of the process lives.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 2: Shadow process formation ────────── */}
+      <div class="max-w-5xl mx-auto">
+        <ShadowProcessFormation />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 3: Exceptions are not edge cases
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Exceptions are not edge cases</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>This is where most teams make the same mistake. They treat exceptions as error conditions.</p>
+
+          <p>But in serious workflows, exceptions are not rare. They are part of the operating model.</p>
+
+          <p>A process that crosses teams, organisations, jurisdictions, or time windows will always encounter missing inputs, ambiguous states, substitutions, returns, and conditional branches. That does not make the workflow messy. It makes it real.</p>
+
+          <p>If exceptions are forced outside the model, the system becomes brittle. If exceptions are treated as first-class states, the workflow becomes usable under pressure.</p>
+
+          <p>A strong workflow engine does not ask whether something went wrong. It asks <em class="text-signal not-italic font-medium">what state the process is actually in now</em>.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 3: Exception states as first class ──── */}
+      <div class="max-w-5xl mx-auto">
+        <ExceptionStatesGraph />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 4: Workflow is state, authority, and evidence
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Workflow is state, authority, and evidence</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>A workflow is not just a sequence of actions. It is a moving relationship between state, authority, and evidence.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              State answers: what is happening now.<br/>
+              Authority answers: who is entitled to move this forward.<br/>
+              Evidence answers: what must exist for that movement to be valid.
+            </p>
+          </div>
+
+          <p>If any one of those is implicit, the workflow becomes guesswork.</p>
+
+          <p>A step can be complete in sequence and still be invalid in reality. The evidence may be missing. The actor may no longer have authority. The state may have changed while the record stayed still.</p>
+
+          <p>That is why workflow systems fail. <em class="text-signal not-italic font-medium">They confuse movement with validity.</em></p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 4: Workflow validity triangle ──────── */}
+      <div class="max-w-4xl mx-auto">
+        <WorkflowValidityTriangle />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 5: Workflow is graph shaped
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Workflow is graph shaped more often than teams admit</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Linear flows are easy to demo. But many real workflows are graph structures.</p>
+
+          <p>Multiple actors may submit inputs in parallel, respond to each other, branch into different review paths, converge back into one state, or revisit prior decisions based on new evidence. This does not mean the workflow is broken. It means the workflow is collaborative and conditional.</p>
+
+          <p>A system that only models straight-line movement will force these realities outside the model. Collaboration ends up in comments, email, or unstructured side channels. Decisions end up as free text that no downstream system can reliably interpret.</p>
+
+          <p>Free text captures expression. <em class="text-signal not-italic font-medium">It does not create comparable process truth.</em></p>
+
+          <p>If two users can describe the same decision in completely different words, the system cannot reliably compare outcomes, trigger rules, or build consistent downstream logic. The workflow should prefer structured choices, bounded enums, and normalised fields wherever comparison or automation matters.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Approve, reject, return, escalate.<br/>
+              Methodology selected.<br/>
+              Evidence type provided.<br/>
+              Exception reason.<br/>
+              Risk tier.<br/>
+              Verification outcome.
+            </p>
+          </div>
+
+          <p>When choices are modelled as structured fields rather than free text, the workflow becomes reusable. Downstream clients — search, analytics, dashboards, compliance checks — can consume the decision without rebuilding interpretation logic for every domain.</p>
+
+          <p>A workflow becomes reusable when choices are modelled once and consumed many times.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 5: Linear vs collaborative graph ───── */}
+      <div class="max-w-5xl mx-auto">
+        <LinearVsCollaborativeGraph />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 6: Most systems record actions, not truth
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Most systems record actions, not process truth</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Many systems can tell you that a button was pressed. Far fewer can tell you whether the process was actually in a valid state when that happened.</p>
+
+          <p>This is the deeper failure. The workflow record becomes a list of events. What it does not preserve is the truth condition around those events.</p>
+
+          <div class="border-l-2 border-amber-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Who had authority at that moment.<br/>
+              What evidence was attached at that moment.<br/>
+              What state the process was actually in.<br/>
+              What was returned. What was paused.<br/>
+              What was overridden. What was delegated.
+            </p>
+          </div>
+
+          <p>Without that, the history looks complete but is not replayable. And if it is not replayable, it is not really auditable.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 6: Event log vs replayable process ─── */}
+      <div class="max-w-5xl mx-auto">
+        <EventLogVsReplayable />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 7: Record versus view
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Record versus view</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>This is why workflow architecture matters more than workflow UI.</p>
+
+          <p>The visible interface is only a view onto the process. It is not the process itself. A serious workflow system separates the system of record from the views that different actors use to interact with it.</p>
+
+          <p>That matters because views change. Products evolve. Teams reorganise. Interfaces improve. But if the underlying record is sound, the workflow remains intelligible.</p>
+
+          <p>If the record is weak, every new interface simply puts a cleaner face on the same ambiguity.</p>
+
+          <p>Many workflow products go wrong here. They design around screens. <em class="text-signal not-italic font-medium">They do not design around the truth model beneath the screens.</em></p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 7: Record vs view ─────────────────── */}
+      <div class="max-w-4xl mx-auto">
+        <RecordVsView />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 8: Where serious workflow systems start
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Where serious workflow systems actually start</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>They do not start with forms. They do not start with lanes. They do not start with a visual builder. They do not start with a happy path demo.</p>
+
+          <p>They start with the process truth.</p>
+
+          <div class="border-l-2 border-signal/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              What states exist.<br/>
+              What evidence binds to each state.<br/>
+              Who has authority to move between them.<br/>
+              What structured choices actors must make.<br/>
+              What exceptions must remain in model.<br/>
+              What has to be replayable later.<br/>
+              What can pause, branch, return, expire, or delegate.<br/>
+              What must remain true even when the interface changes.
+            </p>
+          </div>
+
+          <p>That is the starting point. Everything else is presentation.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 8: Workflow design stack ───────────── */}
+      <div class="max-w-4xl mx-auto">
+        <WorkflowDesignStack />
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 9: Configuration, not rebuild
+          ══════════════════════════════════════════════════ */}
+      <div class="max-w-3xl mx-auto py-16">
+        <div class="reveal">
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Configuration should be appended, not rebuilt</h2>
+        </div>
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>When teams face a new domain or a new client, the wrong instinct is often to build a separate bespoke application. That creates fragmentation, breaks comparability, and forces every downstream client, dashboard, search layer, and reporting system to be reworked.</p>
+
+          <p>The better approach is to append configuration to the underlying workflow system: roles, schemas, states, choices, evidence requirements, and hooks. That preserves the shared meta structure while allowing domain-specific variation.</p>
+
+          <p>The goal is not to build a new vertical product every time a workflow changes. The goal is to extend the underlying system through configuration so new domains inherit the same structure for state, authority, evidence, choice, and replay. <em class="text-signal not-italic font-medium">That is what keeps downstream clients stable.</em></p>
+
+          <p>The system should preserve enough normalised structure that different workflows remain comparable without flattening their domain-specific logic.</p>
+        </div>
+      </div>
+
+      {/* ── VISUAL 9: Bespoke vs configured ──────────── */}
+      <div class="max-w-5xl mx-auto">
+        <BespokeVsConfigured />
+      </div>
+
+      {/* ── Closing ─────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16 pb-24">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Workflow systems do not usually fail because they are missing features.</p>
+
+          <p>They fail because they model sequence instead of truth. They record movement without preserving validity. They treat exceptions as accidents. They bury authority. They attach evidence loosely. They force collaboration into side channels. They leave choice as free text. They confuse the interface with the process.</p>
+
+          <p>That works until the process comes under pressure. Then the real workflow appears. And if the system cannot hold it, people route around it.</p>
+
+          <p>The question is not whether a workflow can move from one step to the next. The question is whether the system still knows what is true while it does.</p>
+        </div>
+
+        {/* ── Production bridge ──────────────────────────── */}
+        <div class="reveal glass-card p-8 md:p-10 mt-16">
+          <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-2">In practice</p>
+          <p class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight mb-4">
+            Workflow under real pressure
+          </p>
+          <p class="text-text-tertiary text-sm leading-relaxed mb-6">
+            In my own work, this shows up repeatedly in systems where workflows touch money, compliance, issuance, approvals, provenance, or multiple actors across time. The visible process is never the whole process. There is always authority behind it, evidence behind it, state changes behind it, and pressure that exposes whether the workflow model reflects reality or only the neat version of it.
+          </p>
+          <a href="https://dovu.ai/how-it-works/" target="_blank" rel="noopener" class="ghost-button magnetic px-6 py-3 rounded-full text-sm">
+            See how DOVU OS models the workflow and evidence layer &rarr;
+          </a>
+        </div>
+
+        {/* ── CTA ────────────────────────────────────────── */}
+        <div class="reveal glass-card p-8 md:p-10 mt-6 text-center">
+          <p class="text-text-secondary text-lg mb-6 font-display">
+            Designing workflow systems that need to survive real operational pressure?
+          </p>
+          <a href="/#contact" class="glow-button magnetic inline-flex items-center gap-3 px-10 py-4 rounded-full text-sm tracking-wide">
+            Book a conversation
+            <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 8h10M10 4l4 4-4 4" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="mt-8 pb-8">
+          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors">&larr; Back to essays</a>
+        </div>
+      </div>
+
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { initScrollAnimations } from '../../scripts/scroll-animations';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>

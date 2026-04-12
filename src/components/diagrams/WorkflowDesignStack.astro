@@ -1,0 +1,218 @@
+---
+// Visual 7: Workflow design stack
+// Three layers — base is truth model, top is presentation. Design from the bottom.
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="max-w-2xl mx-auto relative">
+
+        <!-- Design direction indicator -->
+        <div class="absolute right-0 top-0 bottom-0 hidden sm:flex flex-col items-center justify-between py-4" style="width: 80px;">
+          <div class="text-center">
+            <p class="text-[9px] font-mono uppercase tracking-wider" style="color: rgba(239,68,68,0.5);">Most teams</p>
+            <p class="text-[9px] font-mono uppercase tracking-wider" style="color: rgba(239,68,68,0.5);">start here</p>
+          </div>
+          <div class="flex-1 flex flex-col items-center justify-center gap-1">
+            <span class="text-[10px] font-display font-semibold" style="color: rgba(167,139,250,0.4);">Design</span>
+            <span class="text-[10px] font-display font-semibold" style="color: rgba(167,139,250,0.4);">direction</span>
+            <span style="color: rgba(167,139,250,0.5); font-size: 16px;">&#8595;</span>
+          </div>
+          <div class="text-center">
+            <span style="color: rgba(74,222,128,0.6); font-size: 16px;">&#8595;</span>
+            <p class="text-[9px] font-mono uppercase tracking-wider" style="color: rgba(74,222,128,0.6);">Start here</p>
+          </div>
+        </div>
+
+        <!-- Stack layers -->
+        <div class="space-y-3 sm:pr-24" id="wds-stack">
+
+          <!-- Top layer: PRESENTATION -->
+          <div
+            id="wds-presentation"
+            class="group cursor-pointer transition-all duration-300"
+            tabindex="0"
+            role="button"
+            aria-label="Presentation layer — the most visible and least important to get right first"
+          >
+            <div class="rounded-xl border transition-all duration-300 px-5 py-4" style="background: rgba(100,100,120,0.04); border-color: rgba(100,100,120,0.15); max-width: 65%;" id="wds-presentation-inner">
+              <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(100,100,120,0.5);">Presentation</p>
+              <p class="text-xs text-text-tertiary leading-relaxed">UI &middot; Forms &middot; Dashboards &middot; Notifications</p>
+            </div>
+          </div>
+
+          <!-- Middle layer: ORCHESTRATION -->
+          <div
+            id="wds-orchestration"
+            class="group cursor-pointer transition-all duration-300"
+            tabindex="0"
+            role="button"
+            aria-label="Orchestration layer — interprets the truth model and presents it to actors"
+          >
+            <div class="rounded-xl border transition-all duration-300 px-5 py-5" style="background: rgba(56,189,248,0.04); border-color: rgba(56,189,248,0.15); max-width: 82%;" id="wds-orchestration-inner">
+              <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(56,189,248,0.5);">Orchestration</p>
+              <p class="text-xs text-text-tertiary leading-relaxed">Workflow engine &middot; Views &middot; Automation rules &middot; Configuration</p>
+            </div>
+          </div>
+
+          <!-- Base layer: TRUTH MODEL -->
+          <div
+            id="wds-truth"
+            class="group cursor-pointer transition-all duration-300"
+            tabindex="0"
+            role="button"
+            aria-label="Truth model — the load-bearing layer that everything else depends on"
+          >
+            <div class="rounded-xl border transition-all duration-300 px-5 py-6" style="background: rgba(167,139,250,0.06); border-color: rgba(167,139,250,0.2); max-width: 100%;" id="wds-truth-inner">
+              <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(167,139,250,0.6);">Truth Model</p>
+              <p class="text-xs text-text-secondary leading-relaxed">State model &middot; Authority model &middot; Evidence model &middot; Replayable history &middot; Structured choice</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Mobile design direction indicator -->
+        <div class="flex sm:hidden items-center justify-between mt-4 px-2">
+          <div>
+            <p class="text-[9px] font-mono uppercase tracking-wider" style="color: rgba(74,222,128,0.6);">&#8593; Start here</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-mono uppercase tracking-wider" style="color: rgba(239,68,68,0.5);">Most teams start at top &#8593;</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Detail panel -->
+      <div id="wds-detail" class="mt-6 p-4 rounded-lg border border-border transition-all duration-300 max-w-2xl mx-auto" style="opacity: 0; background: rgba(11,11,17,0.8);">
+        <div class="flex items-start gap-3">
+          <span id="wds-detail-icon" class="text-text-tertiary text-sm mt-0.5">&#8599;</span>
+          <p id="wds-detail-text" class="text-sm text-text-secondary leading-relaxed"></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Workflow systems fail when teams design the surface before the truth model underneath it.
+  </p>
+</div>
+
+<script>
+interface LayerConfig {
+  id: string;
+  innerId: string;
+  detail: string;
+  color: [number, number, number];
+}
+
+const layers: LayerConfig[] = [
+  {
+    id: 'wds-presentation',
+    innerId: 'wds-presentation-inner',
+    detail: 'This is the most visible layer and the least important to get right first.',
+    color: [100, 100, 120],
+  },
+  {
+    id: 'wds-orchestration',
+    innerId: 'wds-orchestration-inner',
+    detail: 'This layer interprets the truth model and presents it to actors. It can change without breaking the record.',
+    color: [56, 189, 248],
+  },
+  {
+    id: 'wds-truth',
+    innerId: 'wds-truth-inner',
+    detail: 'This is the load-bearing layer. If this is wrong, nothing above it can compensate.',
+    color: [167, 139, 250],
+  },
+];
+
+const detail = document.getElementById('wds-detail')!;
+const detailIcon = document.getElementById('wds-detail-icon')!;
+const detailText = document.getElementById('wds-detail-text')!;
+
+let activeLayer: string | null = null;
+
+for (const layer of layers) {
+  const el = document.getElementById(layer.id);
+  const inner = document.getElementById(layer.innerId);
+  if (!el || !inner) continue;
+
+  const [r, g, b] = layer.color;
+
+  function showDetail() {
+    detail.style.opacity = '1';
+    detail.style.borderColor = `rgba(${r},${g},${b},0.3)`;
+    detailIcon.style.color = `rgba(${r},${g},${b},0.7)`;
+    detailText.textContent = layer.detail;
+    detailText.style.color = `rgba(${r},${g},${b},0.8)`;
+    activeLayer = layer.id;
+
+    // Highlight this layer
+    inner.style.borderColor = `rgba(${r},${g},${b},0.5)`;
+    inner.style.background = `rgba(${r},${g},${b},0.1)`;
+    inner.style.transform = 'scale(1.02)';
+  }
+
+  function hideDetail() {
+    if (activeLayer !== layer.id) return;
+    detail.style.opacity = '0';
+    activeLayer = null;
+
+    // Reset layer
+    const defaultBorder = layer.id === 'wds-truth' ? `rgba(${r},${g},${b},0.2)` : `rgba(${r},${g},${b},0.15)`;
+    const defaultBg = layer.id === 'wds-truth' ? `rgba(${r},${g},${b},0.06)` : `rgba(${r},${g},${b},0.04)`;
+    inner.style.borderColor = defaultBorder;
+    inner.style.background = defaultBg;
+    inner.style.transform = 'scale(1)';
+  }
+
+  el.addEventListener('mouseenter', showDetail);
+  el.addEventListener('mouseleave', hideDetail);
+  el.addEventListener('focus', showDetail);
+  el.addEventListener('blur', hideDetail);
+
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeLayer === layer.id) {
+      hideDetail();
+    } else {
+      // Reset previous
+      for (const other of layers) {
+        if (other.id !== layer.id) {
+          const otherInner = document.getElementById(other.innerId);
+          if (otherInner) {
+            const [or, og, ob] = other.color;
+            const dBorder = other.id === 'wds-truth' ? `rgba(${or},${og},${ob},0.2)` : `rgba(${or},${og},${ob},0.15)`;
+            const dBg = other.id === 'wds-truth' ? `rgba(${or},${og},${ob},0.06)` : `rgba(${or},${og},${ob},0.04)`;
+            otherInner.style.borderColor = dBorder;
+            otherInner.style.background = dBg;
+            otherInner.style.transform = 'scale(1)';
+          }
+        }
+      }
+      showDetail();
+    }
+  });
+}
+
+document.addEventListener('click', () => {
+  if (activeLayer) {
+    detail.style.opacity = '0';
+    for (const layer of layers) {
+      const inner = document.getElementById(layer.innerId);
+      if (inner) {
+        const [r, g, b] = layer.color;
+        const dBorder = layer.id === 'wds-truth' ? `rgba(${r},${g},${b},0.2)` : `rgba(${r},${g},${b},0.15)`;
+        const dBg = layer.id === 'wds-truth' ? `rgba(${r},${g},${b},0.06)` : `rgba(${r},${g},${b},0.04)`;
+        inner.style.borderColor = dBorder;
+        inner.style.background = dBg;
+        inner.style.transform = 'scale(1)';
+      }
+    }
+    activeLayer = null;
+  }
+});
+</script>

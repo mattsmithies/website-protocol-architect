@@ -1,0 +1,325 @@
+---
+// Workflow Validity Triangle — State, Authority, Evidence must all agree for a step to be valid
+// Toggle between scenarios to see how different failures affect the triangle
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <p class="text-text-tertiary text-[10px] uppercase tracking-wider font-semibold mb-4">
+        Select a validity scenario
+      </p>
+      <div class="flex flex-wrap gap-2 mb-5" id="wv-scenarios" role="group" aria-label="Select a workflow validity scenario">
+        <button data-scenario="all_valid" class="wv-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">All valid</button>
+        <button data-scenario="authority_expired" class="wv-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Authority expired</button>
+        <button data-scenario="evidence_missing" class="wv-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Evidence missing</button>
+        <button data-scenario="state_stale" class="wv-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">State stale</button>
+        <button data-scenario="partial_completion" class="wv-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Partial completion</button>
+        <button data-scenario="delegated_approver" class="wv-scenario-btn px-3 py-1.5 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab">Delegated approver</button>
+      </div>
+
+      <canvas id="wv-canvas" class="w-full" style="height: 320px;" role="img" aria-label="Triangle diagram with State, Authority, and Evidence at each vertex. A centre node represents the workflow action. Vertices change colour based on the selected validity scenario."></canvas>
+
+      <div class="mt-4 border-t border-border pt-4" aria-live="polite">
+        <p class="text-sm text-text-secondary leading-relaxed" id="wv-status">Step valid — state, authority, and evidence aligned</p>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Progress is not enough. A workflow step is only valid when state, authority, and evidence still agree.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('wv-canvas') as HTMLCanvasElement;
+
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  type VertexStatus = 'valid' | 'invalid' | 'warning';
+
+  interface Scenario {
+    state: VertexStatus;
+    authority: VertexStatus;
+    evidence: VertexStatus;
+    centreStatus: 'valid' | 'invalid' | 'warning';
+    statusText: string;
+    statusColor: [number, number, number];
+  }
+
+  const scenarios: Record<string, Scenario> = {
+    all_valid: {
+      state: 'valid', authority: 'valid', evidence: 'valid',
+      centreStatus: 'valid',
+      statusText: 'Step valid — state, authority, and evidence aligned',
+      statusColor: GREEN,
+    },
+    authority_expired: {
+      state: 'valid', authority: 'invalid', evidence: 'valid',
+      centreStatus: 'invalid',
+      statusText: 'Step invalid — actor no longer entitled to proceed',
+      statusColor: RED,
+    },
+    evidence_missing: {
+      state: 'valid', authority: 'valid', evidence: 'invalid',
+      centreStatus: 'invalid',
+      statusText: 'Step invalid — required evidence not attached or verified',
+      statusColor: RED,
+    },
+    state_stale: {
+      state: 'warning', authority: 'valid', evidence: 'valid',
+      centreStatus: 'warning',
+      statusText: 'Step uncertain — state may have changed since last check',
+      statusColor: AMBER,
+    },
+    partial_completion: {
+      state: 'warning', authority: 'valid', evidence: 'warning',
+      centreStatus: 'warning',
+      statusText: 'Step incomplete — state and evidence only partially satisfied',
+      statusColor: AMBER,
+    },
+    delegated_approver: {
+      state: 'valid', authority: 'warning', evidence: 'valid',
+      centreStatus: 'warning',
+      statusText: 'Step conditional — authority delegated but valid within window',
+      statusColor: AMBER,
+    },
+  };
+
+  let currentScenario = 'all_valid';
+  let animId = 0;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function statusColor(status: VertexStatus): [number, number, number] {
+    if (status === 'valid') return GREEN;
+    if (status === 'invalid') return RED;
+    return AMBER;
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    const t = now * 0.001;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const scenario = scenarios[currentScenario];
+    if (!scenario) return;
+
+    const cx = w / 2;
+    const cy = h / 2 + 10;
+    const triRadius = Math.min(w * 0.32, h * 0.38, 140);
+    const vertexRadius = isNarrow ? 24 : 32;
+    const centreRadius = isNarrow ? 18 : 24;
+
+    // Triangle vertices — top, bottom-left, bottom-right
+    // State at top, Authority at bottom-left, Evidence at bottom-right
+    const vertices = [
+      { x: cx, y: cy - triRadius, label: 'State', status: scenario.state },
+      { x: cx - triRadius * 0.9, y: cy + triRadius * 0.6, label: 'Authority', status: scenario.authority },
+      { x: cx + triRadius * 0.9, y: cy + triRadius * 0.6, label: 'Evidence', status: scenario.evidence },
+    ];
+
+    // ── Draw edges (vertex to vertex) ──
+    for (let i = 0; i < 3; i++) {
+      const a = vertices[i];
+      const b = vertices[(i + 1) % 3];
+      const bothValid = a.status === 'valid' && b.status === 'valid';
+      const anyInvalid = a.status === 'invalid' || b.status === 'invalid';
+      const edgeColor = anyInvalid ? RED : bothValid ? GREEN : AMBER;
+      const [er, eg, eb] = edgeColor;
+      const edgeAlpha = anyInvalid ? 0.15 : bothValid ? 0.25 : 0.18;
+
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = `rgba(${er},${eg},${eb},${edgeAlpha})`;
+      ctx.lineWidth = 1.2;
+      if (anyInvalid) ctx.setLineDash([5, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // ── Draw edges (vertex to centre) ──
+    for (const v of vertices) {
+      const color = statusColor(v.status);
+      const [r, g, b] = color;
+      const isInvalid = v.status === 'invalid';
+      const alpha = isInvalid ? 0.12 : v.status === 'valid' ? 0.25 : 0.18;
+
+      ctx.beginPath();
+      ctx.moveTo(v.x, v.y);
+      ctx.lineTo(cx, cy);
+      ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+      ctx.lineWidth = 1;
+      if (isInvalid) ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // ── Centre node ──
+    const centreColor = statusColor(scenario.centreStatus);
+    const [ccr, ccg, ccb] = centreColor;
+    const pulseScale = scenario.centreStatus === 'valid'
+      ? 1 + Math.sin(t * 2) * 0.08
+      : 1;
+
+    // Centre glow
+    const centreGlowRadius = centreRadius * 3 * pulseScale;
+    const centreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, centreGlowRadius);
+    const glowAlpha = scenario.centreStatus === 'valid' ? 0.18 : scenario.centreStatus === 'warning' ? 0.1 : 0.06;
+    centreGrad.addColorStop(0, `rgba(${ccr},${ccg},${ccb},${glowAlpha})`);
+    centreGrad.addColorStop(1, `rgba(${ccr},${ccg},${ccb},0)`);
+    ctx.fillStyle = centreGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, centreGlowRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Centre circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, centreRadius * pulseScale, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${ccr},${ccg},${ccb},0.08)`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${ccr},${ccg},${ccb},0.5)`;
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    if (scenario.centreStatus === 'valid') {
+      ctx.shadowColor = `rgba(${ccr},${ccg},${ccb},0.35)`;
+      ctx.shadowBlur = 15;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // Centre label
+    ctx.font = `600 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+    ctx.fillStyle = `rgba(${ccr},${ccg},${ccb},0.85)`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Action', cx, cy);
+    ctx.textBaseline = 'alphabetic';
+
+    // ── Vertex nodes ──
+    for (const v of vertices) {
+      const color = statusColor(v.status);
+      const [r, g, b] = color;
+      const alpha = v.status === 'invalid' ? 0.7 : 0.9;
+
+      // Vertex glow
+      const vGrad = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, vertexRadius * 2.5);
+      vGrad.addColorStop(0, `rgba(${r},${g},${b},${alpha * 0.12})`);
+      vGrad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      ctx.fillStyle = vGrad;
+      ctx.beginPath();
+      ctx.arc(v.x, v.y, vertexRadius * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Vertex circle
+      ctx.beginPath();
+      ctx.arc(v.x, v.y, vertexRadius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.08})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.55})`;
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      // Vertex label
+      ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${alpha * 0.9})`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(v.label, v.x, v.y);
+      ctx.textBaseline = 'alphabetic';
+
+      // Status badge below vertex
+      const badgeY = v.y + vertexRadius + 14;
+      ctx.font = `500 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = `rgba(${r},${g},${b},0.6)`;
+      ctx.textAlign = 'center';
+      if (v.status === 'valid') ctx.fillText('VALID', v.x, badgeY);
+      else if (v.status === 'invalid') ctx.fillText('INVALID', v.x, badgeY);
+      else ctx.fillText('CONDITIONAL', v.x, badgeY);
+    }
+
+    // ── Animated particles on valid edges ──
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      for (let i = 0; i < 3; i++) {
+        const v = vertices[i];
+        if (v.status === 'invalid') continue;
+        const color = statusColor(v.status);
+        const [r, g, b] = color;
+        const particleT = ((t * 0.3 + i * 0.33) % 1);
+        const px = v.x + (cx - v.x) * particleT;
+        const py = v.y + (cy - v.y) * particleT;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},0.4)`;
+        ctx.fill();
+      }
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function applyScenario(name: string) {
+    const scenario = scenarios[name];
+    if (!scenario) return;
+    currentScenario = name;
+
+    // Update button states
+    document.querySelectorAll('.wv-scenario-btn').forEach(btn => {
+      const b = btn as HTMLElement;
+      if (b.dataset.scenario === name) {
+        const [r, g, b2] = scenario.statusColor;
+        (b as HTMLElement).style.background = `rgba(${r},${g},${b2},0.12)`;
+        (b as HTMLElement).style.color = `rgba(${r},${g},${b2},0.9)`;
+        (b as HTMLElement).style.border = `1px solid rgba(${r},${g},${b2},0.3)`;
+      } else {
+        b.style.background = 'transparent';
+        b.style.color = 'rgba(232,232,240,0.3)';
+        b.style.border = '1px solid rgba(255,255,255,0.06)';
+      }
+    });
+
+    // Update status text
+    const statusEl = document.getElementById('wv-status')!;
+    const [sr, sg, sb] = scenario.statusColor;
+    statusEl.textContent = scenario.statusText;
+    statusEl.style.color = `rgba(${sr},${sg},${sb},0.8)`;
+  }
+
+  // Scenario click handlers
+  document.querySelectorAll('.wv-scenario-btn').forEach(btn => {
+    (btn as HTMLElement).addEventListener('click', () => {
+      applyScenario((btn as HTMLElement).dataset.scenario || '');
+    });
+  });
+
+  resize();
+  applyScenario('all_valid');
+  window.addEventListener('resize', resize);
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(5000);
+  }
+}
+</script>

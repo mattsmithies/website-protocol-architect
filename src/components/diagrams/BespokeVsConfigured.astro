@@ -1,0 +1,395 @@
+---
+// Visual 8: Bespoke apps versus configured workflow system
+// Toggle between fragmented app sprawl and a unified configured core
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <!-- Toggle buttons -->
+      <div class="flex items-center justify-center gap-3 sm:gap-4 mb-6" role="group" aria-label="Toggle between bespoke apps and configured system">
+        <button id="bvc-bespoke" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          Bespoke apps
+        </button>
+        <button id="bvc-configured" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Configured system
+        </button>
+      </div>
+
+      <canvas id="bvc-canvas" class="w-full" style="height: 380px;" role="img" aria-label="Visualisation comparing bespoke workflow applications with a configured workflow system sharing a reusable core"></canvas>
+
+      <!-- Bottom metrics -->
+      <div id="bvc-summary" class="mt-4 border-t border-border pt-4" aria-live="polite">
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Shared structure</p>
+            <p class="text-sm font-display font-bold" id="bvc-structure">—</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Downstream stability</p>
+            <p class="text-sm font-display font-bold" id="bvc-stability">—</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">New domain cost</p>
+            <p class="text-sm font-display font-bold" id="bvc-cost">—</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Bespoke workflow apps create fragmentation. Configured workflow systems preserve a reusable core.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('bvc-canvas') as HTMLCanvasElement;
+const btnBespoke = document.getElementById('bvc-bespoke') as HTMLButtonElement;
+const btnConfigured = document.getElementById('bvc-configured') as HTMLButtonElement;
+
+if (canvas && btnBespoke && btnConfigured) {
+  const ctx = canvas.getContext('2d')!;
+  let mode: 'bespoke' | 'configured' = 'bespoke';
+  let animId = 0;
+
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+
+  const appNames = ['Carbon app', 'Licence app', 'Audit app', 'Compliance app'];
+  const configNames = ['Carbon config', 'Licence config', 'Audit config', 'Compliance config'];
+  const appColors: [number, number, number][] = [RED, AMBER, BLUE, VIOLET];
+  const innerLabels = ['Forms', 'Logic', 'Reporting', 'Integration'];
+  const coreLabels = ['State', 'Authority', 'Evidence', 'Choice', 'Replay'];
+  const downstreamLabels = ['Search', 'Analytics', 'API', 'Dashboard'];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function roundRect(x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const t = now * 0.001;
+    const isNarrow = w < 500;
+
+    ctx.clearRect(0, 0, w, h);
+
+    if (mode === 'bespoke') {
+      renderBespoke(w, h, t, isNarrow);
+    } else {
+      renderConfigured(w, h, t, isNarrow);
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function renderBespoke(w: number, h: number, t: number, isNarrow: boolean) {
+    const cols = isNarrow ? 2 : 4;
+    const rows = isNarrow ? 2 : 1;
+    const margin = isNarrow ? 16 : 30;
+    const gap = isNarrow ? 12 : 20;
+    const totalW = w - margin * 2;
+    const boxW = (totalW - gap * (cols - 1)) / cols;
+    const boxH = isNarrow ? (h - 60) / rows - gap : h * 0.75;
+    const topY = 20;
+
+    for (let i = 0; i < 4; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = margin + col * (boxW + gap);
+      const y = topY + row * (boxH + gap);
+      const [r, g, b] = appColors[i];
+
+      // App box
+      roundRect(x, y, boxW, boxH, 8);
+      ctx.fillStyle = `rgba(${r},${g},${b},0.04)`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},0.25)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // App name
+      ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
+      ctx.textAlign = 'center';
+      ctx.fillText(appNames[i], x + boxW / 2, y + (isNarrow ? 20 : 26));
+
+      // Inner labels — each app has its own copy
+      const innerY = y + (isNarrow ? 32 : 44);
+      const innerGap = isNarrow ? 14 : 18;
+      ctx.font = `400 ${isNarrow ? 7 : 9}px "JetBrains Mono", monospace`;
+      for (let j = 0; j < innerLabels.length; j++) {
+        ctx.fillStyle = `rgba(${r},${g},${b},0.4)`;
+        ctx.fillText(innerLabels[j], x + boxW / 2, innerY + j * innerGap);
+      }
+
+      // Dashed connections between adjacent boxes (same row)
+      if (col < cols - 1 && (i + 1) < 4) {
+        const nextX = margin + (col + 1) * (boxW + gap);
+        const lineY = y + boxH / 2 + Math.sin(t * 0.8 + i) * 4;
+        ctx.beginPath();
+        ctx.moveTo(x + boxW, lineY);
+        ctx.lineTo(nextX, lineY);
+        ctx.setLineDash([4, 6]);
+        ctx.strokeStyle = 'rgba(239,68,68,0.15)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Fragile connection indicator
+        ctx.beginPath();
+        const midLineX = (x + boxW + nextX) / 2;
+        ctx.arc(midLineX, lineY, 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(239,68,68,0.08)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(239,68,68,0.3)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        ctx.font = '400 5px "JetBrains Mono", monospace';
+        ctx.fillStyle = 'rgba(239,68,68,0.5)';
+        ctx.textAlign = 'center';
+        ctx.fillText('?', midLineX, lineY + 2);
+      }
+
+      // Dashed connection between rows (narrow mode)
+      if (isNarrow && row === 0 && i + cols < 4) {
+        const belowY = topY + (row + 1) * (boxH + gap);
+        ctx.beginPath();
+        ctx.moveTo(x + boxW / 2, y + boxH);
+        ctx.lineTo(x + boxW / 2, belowY);
+        ctx.setLineDash([4, 6]);
+        ctx.strokeStyle = 'rgba(239,68,68,0.15)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // Bottom label
+    ctx.setLineDash([]);
+    ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(239,68,68,0.5)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Each app duplicates structure. Nothing is shared.', w / 2, h - 10);
+  }
+
+  function renderConfigured(w: number, h: number, t: number, isNarrow: boolean) {
+    const margin = isNarrow ? 16 : 40;
+    const centerX = w / 2;
+
+    // Core workflow system — large central rectangle
+    const coreW = isNarrow ? w - margin * 2 : w * 0.5;
+    const coreH = isNarrow ? 80 : 100;
+    const coreX = centerX - coreW / 2;
+    const coreY = h * 0.35;
+
+    roundRect(coreX, coreY, coreW, coreH, 10);
+    ctx.fillStyle = 'rgba(167,139,250,0.06)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(167,139,250,0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Core label
+    ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(167,139,250,0.7)';
+    ctx.textAlign = 'center';
+    ctx.fillText('WORKFLOW SYSTEM', centerX, coreY + (isNarrow ? 18 : 22));
+
+    // Core inner labels
+    ctx.font = `400 ${isNarrow ? 7 : 9}px "JetBrains Mono", monospace`;
+    const labelY = coreY + (isNarrow ? 36 : 42);
+    if (isNarrow) {
+      // Two rows on narrow
+      const row1 = coreLabels.slice(0, 3);
+      const row2 = coreLabels.slice(3);
+      const row1Str = row1.join('  \u00b7  ');
+      const row2Str = row2.join('  \u00b7  ');
+      ctx.fillStyle = 'rgba(167,139,250,0.4)';
+      ctx.fillText(row1Str, centerX, labelY);
+      ctx.fillText(row2Str, centerX, labelY + 16);
+    } else {
+      const coreStr = coreLabels.join('  \u00b7  ');
+      ctx.fillStyle = 'rgba(167,139,250,0.4)';
+      ctx.fillText(coreStr, centerX, labelY);
+
+      // Second descriptive line
+      ctx.font = `400 ${isNarrow ? 6 : 8}px "Inter", system-ui`;
+      ctx.fillStyle = 'rgba(167,139,250,0.25)';
+      ctx.fillText('Shared structure across all domains', centerX, labelY + 18);
+    }
+
+    // Config modules — above the core
+    const configY = isNarrow ? 20 : coreY - 70;
+    const configW = isNarrow ? (w - margin * 2 - 6) / 2 : (coreW - 30) / 4;
+    const configH = isNarrow ? 36 : 42;
+    const configGap = isNarrow ? 6 : 10;
+    const configTotalW = configW * (isNarrow ? 2 : 4) + configGap * (isNarrow ? 1 : 3);
+    const configStartX = centerX - configTotalW / 2;
+
+    for (let i = 0; i < 4; i++) {
+      const col = isNarrow ? i % 2 : i;
+      const row = isNarrow ? Math.floor(i / 2) : 0;
+      const x = configStartX + col * (configW + configGap);
+      const y = configY + row * (configH + configGap);
+      const [r, g, b] = [74, 222, 128];
+
+      roundRect(x, y, configW, configH, 6);
+      ctx.fillStyle = `rgba(${r},${g},${b},0.04)`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},0.2)`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      ctx.font = `500 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${r},${g},${b},0.7)`;
+      ctx.textAlign = 'center';
+      ctx.fillText(configNames[i], x + configW / 2, y + configH / 2 + 3);
+
+      // Connection line from config to core
+      const lineStartY = y + configH;
+      const lineEndY = coreY;
+      const lineX = x + configW / 2;
+      ctx.beginPath();
+      ctx.moveTo(lineX, lineStartY);
+      ctx.lineTo(lineX, lineEndY);
+      ctx.strokeStyle = 'rgba(74,222,128,0.2)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Flowing particle
+      const pt = ((t * 0.2 + i * 0.25) % 1);
+      const py = lineStartY + (lineEndY - lineStartY) * pt;
+      ctx.beginPath();
+      ctx.arc(lineX, py, 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(74,222,128,0.5)';
+      ctx.fill();
+    }
+
+    // Downstream clients — below the core
+    const downY = coreY + coreH + (isNarrow ? 30 : 45);
+    const downW = isNarrow ? (w - margin * 2 - 6) / 2 : (coreW - 30) / 4;
+    const downH = isNarrow ? 30 : 34;
+    const downGap = isNarrow ? 6 : 10;
+    const downTotalW = downW * (isNarrow ? 2 : 4) + downGap * (isNarrow ? 1 : 3);
+    const downStartX = centerX - downTotalW / 2;
+
+    // Downstream label
+    ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(56,189,248,0.4)';
+    ctx.textAlign = 'center';
+    ctx.fillText('SHARED DOWNSTREAM', centerX, downY - (isNarrow ? 10 : 14));
+
+    for (let i = 0; i < 4; i++) {
+      const col = isNarrow ? i % 2 : i;
+      const row = isNarrow ? Math.floor(i / 2) : 0;
+      const x = downStartX + col * (downW + downGap);
+      const y = downY + row * (downH + downGap);
+      const [r, g, b] = BLUE;
+
+      roundRect(x, y, downW, downH, 6);
+      ctx.fillStyle = `rgba(${r},${g},${b},0.04)`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},0.15)`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.font = `500 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(${r},${g},${b},0.6)`;
+      ctx.textAlign = 'center';
+      ctx.fillText(downstreamLabels[i], x + downW / 2, y + downH / 2 + 3);
+
+      // Connection line from core to downstream
+      const lineStartY = coreY + coreH;
+      const lineEndY = y;
+      const lineX = x + downW / 2;
+      ctx.beginPath();
+      ctx.moveTo(lineX, lineStartY);
+      ctx.lineTo(lineX, lineEndY);
+      ctx.strokeStyle = 'rgba(56,189,248,0.15)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Flowing particle
+      const pt = ((t * 0.15 + i * 0.25) % 1);
+      const py = lineStartY + (lineEndY - lineStartY) * pt;
+      ctx.beginPath();
+      ctx.arc(lineX, py, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(56,189,248,0.4)';
+      ctx.fill();
+    }
+
+    // Bottom label
+    ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.fillStyle = 'rgba(74,222,128,0.5)';
+    ctx.textAlign = 'center';
+    ctx.fillText('One core. Configured per domain.', centerX, h - 10);
+  }
+
+  function updateMetrics(m: 'bespoke' | 'configured') {
+    const s = document.getElementById('bvc-structure')!;
+    const st = document.getElementById('bvc-stability')!;
+    const c = document.getElementById('bvc-cost')!;
+    if (m === 'bespoke') {
+      s.textContent = 'None'; s.style.color = 'rgba(239,68,68,0.8)';
+      st.textContent = 'Fragile'; st.style.color = 'rgba(239,68,68,0.8)';
+      c.textContent = 'Rebuild'; c.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      s.textContent = 'Preserved'; s.style.color = 'rgba(74,222,128,0.8)';
+      st.textContent = 'Strong'; st.style.color = 'rgba(74,222,128,0.8)';
+      c.textContent = 'Configuration'; c.style.color = 'rgba(74,222,128,0.8)';
+    }
+  }
+
+  function setMode(m: 'bespoke' | 'configured') {
+    mode = m;
+    updateMetrics(m);
+    btnBespoke.setAttribute('aria-selected', String(m === 'bespoke'));
+    btnConfigured.setAttribute('aria-selected', String(m === 'configured'));
+    if (m === 'bespoke') {
+      btnBespoke.style.background = 'rgba(239,68,68,0.12)';
+      btnBespoke.style.color = 'rgba(239,68,68,0.9)';
+      btnBespoke.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnConfigured.style.background = 'transparent';
+      btnConfigured.style.color = 'rgba(232,232,240,0.3)';
+      btnConfigured.style.borderColor = 'rgba(255,255,255,0.06)';
+    } else {
+      btnConfigured.style.background = 'rgba(74,222,128,0.12)';
+      btnConfigured.style.color = 'rgba(74,222,128,0.9)';
+      btnConfigured.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnBespoke.style.background = 'transparent';
+      btnBespoke.style.color = 'rgba(232,232,240,0.3)';
+      btnBespoke.style.borderColor = 'rgba(255,255,255,0.06)';
+    }
+  }
+
+  // Touch support
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
+
+  btnBespoke.addEventListener('click', () => setMode('bespoke'));
+  btnConfigured.addEventListener('click', () => setMode('configured'));
+
+  resize();
+  updateMetrics('bespoke');
+  window.addEventListener('resize', resize);
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else { render(5000); }
+}
+</script>

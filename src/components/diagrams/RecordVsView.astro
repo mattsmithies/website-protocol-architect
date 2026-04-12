@@ -1,0 +1,189 @@
+---
+// Visual 6: Record versus view
+// One stable record, multiple views — the record never changes
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <!-- View selector buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6" role="tablist" aria-label="Select a view to see how the same record appears to different consumers">
+        <button id="rvv-operator" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(167,139,250,0.15); color: rgba(167,139,250,0.9); border: 1px solid rgba(167,139,250,0.3);">
+          Operator
+        </button>
+        <button id="rvv-auditor" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Auditor
+        </button>
+        <button id="rvv-approver" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Approver
+        </button>
+        <button id="rvv-dashboard" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Dashboard
+        </button>
+        <button id="rvv-api" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          API
+        </button>
+      </div>
+
+      <!-- View card (changes per selection) -->
+      <div id="rvv-view-card" class="glass-card p-5 sm:p-6 mb-6 max-w-2xl mx-auto transition-all duration-400" role="tabpanel" aria-label="Selected view output" aria-live="polite">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-2 h-2 rounded-full flex-shrink-0" id="rvv-view-dot" style="background: rgba(167,139,250,0.8);"></span>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold" id="rvv-view-label">Operator view</p>
+        </div>
+        <p class="text-sm text-text-secondary leading-relaxed" id="rvv-view-text">Current step: awaiting final approval. Next action required: countersignature.</p>
+      </div>
+
+      <!-- Connection indicator -->
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="w-px h-6" style="background: rgba(167,139,250,0.2);"></div>
+      </div>
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <span class="text-[10px] font-mono uppercase tracking-wider" style="color: rgba(74,222,128,0.5);" id="rvv-unchanged-label">Record unchanged</span>
+      </div>
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="w-px h-6" style="background: rgba(167,139,250,0.2);"></div>
+      </div>
+
+      <!-- Record card (never changes) -->
+      <div class="glass-card p-5 sm:p-6 max-w-2xl mx-auto" id="rvv-record" style="border: 1px solid rgba(167,139,250,0.15);">
+        <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold mb-4">Workflow Record</p>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 80px;">State</span>
+            <span class="text-text-secondary">Partially approved</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 80px;">Authority</span>
+            <span class="text-text-secondary">Delegated to Actor B (valid until 22 June)</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 80px;">Evidence</span>
+            <span class="text-text-secondary">3 documents attached</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 80px;">History</span>
+            <span class="text-text-secondary">7 state transitions recorded</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-text-tertiary flex-shrink-0" style="min-width: 80px;">Last action</span>
+            <span class="text-text-secondary">Partial approval at 09:31</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    A workflow system becomes durable when the record survives changes in the view.
+  </p>
+</div>
+
+<script>
+interface ViewConfig {
+  id: string;
+  label: string;
+  text: string;
+  color: [number, number, number];
+  isCode?: boolean;
+}
+
+const views: ViewConfig[] = [
+  {
+    id: 'operator',
+    label: 'Operator view',
+    text: 'Current step: awaiting final approval. Next action required: countersignature.',
+    color: [167, 139, 250],
+  },
+  {
+    id: 'auditor',
+    label: 'Auditor view',
+    text: '7 transitions. 2 delegation events. 1 return for correction. Full provenance chain attached.',
+    color: [56, 189, 248],
+  },
+  {
+    id: 'approver',
+    label: 'Approver view',
+    text: 'Pending your approval. Delegated from Actor A on 21 May. Authority valid until 22 June.',
+    color: [74, 222, 128],
+  },
+  {
+    id: 'dashboard',
+    label: 'Dashboard view',
+    text: 'Status: In progress. Completion: 85%. SLA: On track.',
+    color: [245, 158, 11],
+  },
+  {
+    id: 'api',
+    label: 'API view',
+    text: '{ "state": "partially_approved", "authority": { "actor": "B", "delegated": true, "expires": "2024-06-22" } }',
+    color: [167, 139, 250],
+    isCode: true,
+  },
+];
+
+const buttons = views.map(v => document.getElementById(`rvv-${v.id}`) as HTMLButtonElement);
+const viewDot = document.getElementById('rvv-view-dot')!;
+const viewLabel = document.getElementById('rvv-view-label')!;
+const viewText = document.getElementById('rvv-view-text')!;
+const viewCard = document.getElementById('rvv-view-card')!;
+const unchangedLabel = document.getElementById('rvv-unchanged-label')!;
+
+let activeView = 0;
+
+function setView(index: number) {
+  activeView = index;
+  const v = views[index];
+  const [r, g, b] = v.color;
+
+  // Update buttons
+  for (let i = 0; i < buttons.length; i++) {
+    const btn = buttons[i];
+    if (!btn) continue;
+    btn.setAttribute('aria-selected', String(i === index));
+    if (i === index) {
+      btn.style.background = `rgba(${r},${g},${b},0.15)`;
+      btn.style.color = `rgba(${r},${g},${b},0.9)`;
+      btn.style.borderColor = `rgba(${r},${g},${b},0.3)`;
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'rgba(232,232,240,0.3)';
+      btn.style.borderColor = 'rgba(255,255,255,0.06)';
+    }
+  }
+
+  // Update view card
+  viewDot.style.background = `rgba(${r},${g},${b},0.8)`;
+  viewLabel.textContent = v.label;
+  viewLabel.style.color = `rgba(${r},${g},${b},0.6)`;
+
+  // Fade transition
+  viewCard.style.opacity = '0';
+  viewCard.style.transform = 'translateY(4px)';
+
+  setTimeout(() => {
+    if (v.isCode) {
+      viewText.innerHTML = `<code class="font-mono text-xs leading-relaxed" style="color: rgba(${r},${g},${b},0.7);">${v.text}</code>`;
+    } else {
+      viewText.textContent = v.text;
+      viewText.style.color = '';
+    }
+    viewCard.style.opacity = '1';
+    viewCard.style.transform = 'translateY(0)';
+  }, 150);
+
+  // Flash the unchanged label
+  unchangedLabel.style.color = 'rgba(74,222,128,0.8)';
+  setTimeout(() => {
+    unchangedLabel.style.color = 'rgba(74,222,128,0.5)';
+  }, 600);
+}
+
+for (let i = 0; i < buttons.length; i++) {
+  const btn = buttons[i];
+  if (btn) {
+    btn.addEventListener('click', () => setView(i));
+  }
+}
+</script>

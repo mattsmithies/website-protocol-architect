@@ -1,0 +1,259 @@
+---
+// Visual: Linear approval chain versus collaborative graph
+// Toggle between clean lane-based flow and a graph with parallel inputs and structured choices
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="flex items-center justify-center gap-3 sm:gap-4 mb-6" role="group" aria-label="Toggle between linear and collaborative workflow views">
+        <button id="lcg-linear" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(239,68,68,0.12); color: rgba(239,68,68,0.9); border: 1px solid rgba(239,68,68,0.3);">
+          Linear approval chain
+        </button>
+        <button id="lcg-graph" class="px-3 sm:px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Collaborative graph
+        </button>
+      </div>
+
+      <canvas id="lcg-canvas" class="w-full" style="height: 360px;" role="img" aria-label="Comparison of a linear approval chain versus a collaborative graph-shaped workflow with parallel inputs and structured choices"></canvas>
+
+      <div class="grid grid-cols-3 gap-4 mt-4 border-t border-border pt-4 text-center" aria-live="polite">
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Parallel input</p>
+          <p class="text-sm font-display font-bold" id="lcg-parallel">—</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Structured choice</p>
+          <p class="text-sm font-display font-bold" id="lcg-choice">—</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Downstream reuse</p>
+          <p class="text-sm font-display font-bold" id="lcg-reuse">—</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Real workflows are often graph shaped. The system should model that directly rather than forcing collaboration into side channels.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('lcg-canvas') as HTMLCanvasElement;
+const btnLinear = document.getElementById('lcg-linear') as HTMLButtonElement;
+const btnGraph = document.getElementById('lcg-graph') as HTMLButtonElement;
+
+if (canvas && btnLinear && btnGraph) {
+  const ctx = canvas.getContext('2d')!;
+  let mode: 'linear' | 'graph' = 'linear';
+  let animId = 0;
+
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const DIM: [number, number, number] = [100, 100, 120];
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function drawNode(x: number, y: number, label: string, sublabel: string, color: [number, number, number], alpha: number, r: number) {
+    const [cr, cg, cb] = color;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha * 0.08})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${alpha * 0.5})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    const isNarrow = canvas.clientWidth < 500;
+    ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.fillStyle = `rgba(232,232,240,${alpha * 0.8})`;
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, y - r - 7);
+
+    if (sublabel) {
+      ctx.font = `400 ${isNarrow ? 6 : 7}px "Inter", system-ui`;
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha * 0.5})`;
+      ctx.fillText(sublabel, x, y + r + 11);
+    }
+  }
+
+  function drawEdge(x1: number, y1: number, x2: number, y2: number, color: [number, number, number], alpha: number, t: number, particles: boolean) {
+    const [cr, cg, cb] = color;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${alpha * 0.2})`;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    if (particles) {
+      for (let p = 0; p < 2; p++) {
+        const pt = ((t * 0.15 + p * 0.5) % 1);
+        const px = x1 + (x2 - x1) * pt;
+        const py = y1 + (y2 - y1) * pt;
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha * 0.5})`;
+        ctx.fill();
+      }
+    }
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const t = now * 0.001;
+    const isNarrow = w < 500;
+    ctx.clearRect(0, 0, w, h);
+
+    const nr = isNarrow ? 12 : 16;
+
+    if (mode === 'linear') {
+      // Simple 5-step linear chain
+      const steps = ['Submit', 'Review', 'Approve', 'Sign', 'Complete'];
+      const sublabels = ['Actor A', 'Actor B', 'Actor C', 'Actor D', ''];
+      const margin = isNarrow ? 30 : 60;
+      const lineW = w - margin * 2;
+      const cy = h / 2;
+
+      for (let i = 0; i < steps.length; i++) {
+        const x = margin + (lineW / (steps.length - 1)) * i;
+
+        if (i < steps.length - 1) {
+          const nx = margin + (lineW / (steps.length - 1)) * (i + 1);
+          drawEdge(x + nr, cy, nx - nr, cy, DIM, 0.6, t + i * 0.3, true);
+        }
+
+        drawNode(x, cy, steps[i], sublabels[i], DIM, 0.6, nr);
+      }
+
+      // Label
+      ctx.font = `400 ${isNarrow ? 8 : 9}px "Inter", system-ui`;
+      ctx.fillStyle = 'rgba(239,68,68,0.4)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Single lane. Single path. No parallel input.', w / 2, h - 20);
+
+      // Choice labels on edges
+      if (!isNarrow) {
+        ctx.font = '400 7px "JetBrains Mono", monospace';
+        ctx.fillStyle = 'rgba(100,100,120,0.35)';
+        for (let i = 0; i < steps.length - 1; i++) {
+          const x = margin + (lineW / (steps.length - 1)) * (i + 0.5);
+          ctx.fillText('free text', x, cy - 22);
+        }
+      }
+
+    } else {
+      // Collaborative graph
+      const cx = w / 2;
+      const cy = h / 2;
+      const spread = isNarrow ? w * 0.32 : w * 0.35;
+      const vSpread = h * 0.28;
+
+      // Node positions
+      const nodes: { x: number; y: number; label: string; sublabel: string; color: [number, number, number] }[] = [
+        { x: cx, y: cy - vSpread, label: 'Submit', sublabel: 'Actor A', color: VIOLET },
+        { x: cx - spread * 0.7, y: cy - vSpread * 0.3, label: 'Technical review', sublabel: 'Actor B', color: BLUE },
+        { x: cx + spread * 0.7, y: cy - vSpread * 0.3, label: 'Evidence upload', sublabel: 'Actor C', color: BLUE },
+        { x: cx - spread * 0.4, y: cy + vSpread * 0.2, label: 'Methodology check', sublabel: 'Enum choice', color: GREEN },
+        { x: cx + spread * 0.4, y: cy + vSpread * 0.2, label: 'Risk assessment', sublabel: 'Structured choice', color: GREEN },
+        { x: cx, y: cy + vSpread * 0.55, label: 'Converge', sublabel: 'All inputs', color: VIOLET },
+        { x: cx, y: cy + vSpread, label: 'Approve', sublabel: 'Structured decision', color: GREEN },
+      ];
+
+      // Edges (from, to)
+      const edges: [number, number][] = [
+        [0, 1], [0, 2],  // parallel split
+        [1, 3],           // tech review → methodology
+        [2, 4],           // evidence → risk
+        [3, 5], [4, 5],   // converge
+        [5, 6],           // final
+      ];
+
+      for (const [from, to] of edges) {
+        const a = nodes[from];
+        const b = nodes[to];
+        drawEdge(a.x, a.y + nr, b.x, b.y - nr, b.color, 0.7, t + from * 0.2, true);
+      }
+
+      for (const n of nodes) {
+        drawNode(n.x, n.y, n.label, n.sublabel, n.color, 0.8, nr);
+      }
+
+      // Choice annotations
+      if (!isNarrow) {
+        ctx.font = '400 7px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(74,222,128,0.4)';
+        ctx.fillText('approve | reject | escalate', nodes[3].x + nr + 8, nodes[3].y + 3);
+        ctx.fillText('low | medium | high | critical', nodes[4].x + nr + 8, nodes[4].y + 3);
+      }
+
+      ctx.font = `400 ${isNarrow ? 8 : 9}px "Inter", system-ui`;
+      ctx.fillStyle = 'rgba(74,222,128,0.4)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Parallel inputs. Structured choices. Convergent outcome.', w / 2, h - 20);
+    }
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function updateMetrics(m: 'linear' | 'graph') {
+    const par = document.getElementById('lcg-parallel')!;
+    const cho = document.getElementById('lcg-choice')!;
+    const reu = document.getElementById('lcg-reuse')!;
+    if (m === 'linear') {
+      par.textContent = 'Not supported'; par.style.color = 'rgba(239,68,68,0.8)';
+      cho.textContent = 'Free text only'; cho.style.color = 'rgba(239,68,68,0.8)';
+      reu.textContent = 'Rebuild per domain'; reu.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      par.textContent = 'Native'; par.style.color = 'rgba(74,222,128,0.8)';
+      cho.textContent = 'Bounded enums'; cho.style.color = 'rgba(74,222,128,0.8)';
+      reu.textContent = 'Consumed by downstream'; reu.style.color = 'rgba(74,222,128,0.8)';
+    }
+  }
+
+  function setMode(m: 'linear' | 'graph') {
+    mode = m;
+    updateMetrics(m);
+    btnLinear.setAttribute('aria-selected', String(m === 'linear'));
+    btnGraph.setAttribute('aria-selected', String(m === 'graph'));
+    if (m === 'linear') {
+      btnLinear.style.background = 'rgba(239,68,68,0.12)';
+      btnLinear.style.color = 'rgba(239,68,68,0.9)';
+      btnLinear.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnGraph.style.background = 'transparent';
+      btnGraph.style.color = 'rgba(232,232,240,0.3)';
+      btnGraph.style.borderColor = 'rgba(255,255,255,0.06)';
+    } else {
+      btnGraph.style.background = 'rgba(74,222,128,0.12)';
+      btnGraph.style.color = 'rgba(74,222,128,0.9)';
+      btnGraph.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnLinear.style.background = 'transparent';
+      btnLinear.style.color = 'rgba(232,232,240,0.3)';
+      btnLinear.style.borderColor = 'rgba(255,255,255,0.06)';
+    }
+  }
+
+  btnLinear.addEventListener('click', () => setMode('linear'));
+  btnGraph.addEventListener('click', () => setMode('graph'));
+
+  resize();
+  updateMetrics('linear');
+  window.addEventListener('resize', resize);
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    animId = requestAnimationFrame(render);
+  } else { render(5000); }
+}
+</script>
