@@ -6,11 +6,11 @@ const principles = [
   },
   {
     title: "Make authority explicit",
-    description: "If a system has roles, permissions, or decisions, those should be first-class objects — not buried in application logic.",
+    description: "If a system has roles, permissions, or approvals, those should be first class objects, not buried in application logic.",
   },
   {
     title: "Make time first class",
-    description: "Most system failures involve time: expiration, ordering, validity windows, temporal authority. Treat time as a primitive.",
+    description: "Many system failures are temporal: expiry, ordering, validity windows, stale permissions, and delegated authority. Time is part of the model.",
   },
   {
     title: "Separate record from view",
@@ -18,19 +18,19 @@ const principles = [
   },
   {
     title: "Design for replayability",
-    description: "If you cannot replay how a state was reached, you cannot audit, debug, or trust it. Events are evidence.",
+    description: "If a state cannot be replayed, it cannot be properly audited, debugged, or trusted.",
   },
   {
     title: "Design economics as architecture",
-    description: "Token economies and incentive structures are not marketing layers. They are system architecture. If usage, coordination, and incentives do not reinforce each other, the system erodes.",
+    description: "Token economies and incentive structures are not marketing layers. If usage, coordination, and incentives do not reinforce each other, the system weakens.",
   },
   {
     title: "Prefer clear primitives",
-    description: "Complexity should be composed from simple, well-defined pieces. Fragile abstraction is worse than deliberate repetition.",
+    description: "Complex systems should be composed from simple, explicit pieces. Fragile abstraction is worse than deliberate clarity.",
   },
   {
     title: "Build for consequence",
-    description: "Architecture decisions compound. Optimise for the decisions that are hardest to reverse and most consequential to get wrong.",
+    description: "Architecture decisions compound. Optimise for the choices that are hardest to reverse and most expensive to get wrong.",
   },
 ];
 ---
