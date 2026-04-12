@@ -120,6 +120,19 @@ import '../../styles/global.css';
         </div>
       </div>
 
+      {/* ── Concrete example ─────────────────────────────── */}
+      <div class="max-w-3xl mx-auto pb-12">
+        <div class="reveal glass-card p-8 md:p-10">
+          <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-4">Example: carbon credit verification</p>
+          <div class="space-y-4 text-text-secondary text-base leading-relaxed">
+            <p>A verification body is reviewing a batch of carbon credits for issuance. The lead verifier submits the assessment on 14 May. A methodology review is delegated to a specialist, who has authority until 21 May.</p>
+            <p>On 19 May, the specialist requests additional evidence from the project developer. The evidence arrives on 22 May — one day after the delegation window has closed. The specialist's authority has lapsed. The evidence is valid, but the actor who received it is no longer entitled to act on it.</p>
+            <p>In a system that models exceptions as first-class states, this is a known condition: delegation expired, evidence pending, process paused until authority is re-granted or reassigned. In a system that only models the happy path, the specialist approves anyway, the approval is recorded, and three months later an audit discovers the gap.</p>
+            <p class="text-text-tertiary text-sm">The exception was not an edge case. It was a foreseeable interaction between evidence timing and authority windows. The system should have modelled it.</p>
+          </div>
+        </div>
+      </div>
+
       {/* ── VISUAL 3: Exception states as first class ──── */}
       <div class="max-w-5xl mx-auto">
         <ExceptionStatesGraph />
@@ -197,26 +210,16 @@ import '../../styles/global.css';
       </div>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 6: Most systems record actions, not truth
+          SECTION 6: The surface is not the truth
           ══════════════════════════════════════════════════ */}
       <div class="max-w-3xl mx-auto py-16">
         <div class="reveal">
-          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Most systems record actions, not process truth</h2>
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">The surface is not the truth</h2>
         </div>
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
           <p>Many systems can tell you that a button was pressed. Far fewer can tell you whether the process was actually in a valid state when that happened.</p>
 
-          <p>This is the deeper failure. The workflow record becomes a list of events. What it does not preserve is the truth condition around those events.</p>
-
-          <div class="border-l-2 border-amber-400/20 pl-6 my-8">
-            <p class="text-text-tertiary text-base font-mono leading-loose">
-              Who had authority at that moment.<br/>
-              What evidence was attached at that moment.<br/>
-              What state the process was actually in.<br/>
-              What was returned. What was paused.<br/>
-              What was overridden. What was delegated.
-            </p>
-          </div>
+          <p>The workflow record becomes a list of events. What it does not preserve is the truth condition around those events: who had authority at that moment, what evidence was attached, what state the process was actually in, what was returned, paused, overridden, or delegated.</p>
 
           <p>Without that, the history looks complete but is not replayable. And if it is not replayable, it is not really auditable.</p>
         </div>
@@ -227,21 +230,11 @@ import '../../styles/global.css';
         <EventLogVsReplayable />
       </div>
 
-      {/* ══════════════════════════════════════════════════
-          SECTION 7: Record versus view
-          ══════════════════════════════════════════════════ */}
       <div class="max-w-3xl mx-auto py-16">
-        <div class="reveal">
-          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Record versus view</h2>
-        </div>
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>This is why workflow architecture matters more than workflow UI.</p>
+          <p>This is why workflow architecture matters more than workflow UI. The visible interface is only a view onto the process. It is not the process itself.</p>
 
-          <p>The visible interface is only a view onto the process. It is not the process itself. A serious workflow system separates the system of record from the views that different actors use to interact with it.</p>
-
-          <p>That matters because views change. Products evolve. Teams reorganise. Interfaces improve. But if the underlying record is sound, the workflow remains intelligible.</p>
-
-          <p>If the record is weak, every new interface simply puts a cleaner face on the same ambiguity.</p>
+          <p>A serious workflow system separates the system of record from the views that different actors use to interact with it. Views change. Products evolve. Teams reorganise. But if the underlying record is sound, the workflow remains intelligible. If the record is weak, every new interface simply puts a cleaner face on the same ambiguity.</p>
 
           <p>Many workflow products go wrong here. They design around screens. <em class="text-signal not-italic font-medium">They do not design around the truth model beneath the screens.</em></p>
         </div>
@@ -309,20 +302,9 @@ import '../../styles/global.css';
         <BespokeVsConfigured />
       </div>
 
-      {/* ── Closing ─────────────────────────────────────── */}
-      <div class="max-w-3xl mx-auto py-16 pb-24">
-        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>Workflow systems do not usually fail because they are missing features.</p>
-
-          <p>They fail because they model sequence instead of truth. They record movement without preserving validity. They treat exceptions as accidents. They bury authority. They attach evidence loosely. They force collaboration into side channels. They leave choice as free text. They confuse the interface with the process.</p>
-
-          <p>That works until the process comes under pressure. Then the real workflow appears. And if the system cannot hold it, people route around it.</p>
-
-          <p>The question is not whether a workflow can move from one step to the next. The question is whether the system still knows what is true while it does.</p>
-        </div>
-
-        {/* ── Production bridge ──────────────────────────── */}
-        <div class="reveal glass-card p-8 md:p-10 mt-16">
+      {/* ── Production bridge ──────────────────────────── */}
+      <div class="max-w-3xl mx-auto pt-16">
+        <div class="reveal glass-card p-8 md:p-10">
           <p class="text-signal text-xs font-semibold tracking-[0.2em] uppercase mb-2">In practice</p>
           <p class="text-text-primary font-display font-bold text-lg md:text-xl tracking-tight mb-4">
             Workflow under real pressure
@@ -346,6 +328,19 @@ import '../../styles/global.css';
               <path d="M3 8h10M10 4l4 4-4 4" />
             </svg>
           </a>
+        </div>
+      </div>
+
+      {/* ── Closing ─────────────────────────────────────── */}
+      <div class="max-w-3xl mx-auto py-16 pb-24">
+        <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
+          <p>Workflow systems do not usually fail because they are missing features.</p>
+
+          <p>They fail because they model sequence instead of truth. They record movement without preserving validity. They treat exceptions as accidents. They bury authority. They attach evidence loosely. They force collaboration into side channels. They leave choice as free text. They confuse the interface with the process.</p>
+
+          <p>That works until the process comes under pressure. Then the real workflow appears. And if the system cannot hold it, people route around it.</p>
+
+          <p class="text-text-primary font-display font-bold text-xl md:text-2xl leading-snug pt-4">The question is not whether a workflow can move from one step to the next. The question is whether the system still knows what is true while it does.</p>
         </div>
 
         <div class="mt-8 pb-8">

@@ -346,13 +346,13 @@ if (canvas && btnBespoke && btnConfigured) {
     const st = document.getElementById('bvc-stability')!;
     const c = document.getElementById('bvc-cost')!;
     if (m === 'bespoke') {
-      s.textContent = 'None'; s.style.color = 'rgba(239,68,68,0.8)';
-      st.textContent = 'Fragile'; st.style.color = 'rgba(239,68,68,0.8)';
-      c.textContent = 'Rebuild'; c.style.color = 'rgba(239,68,68,0.8)';
+      s.textContent = 'Siloed per app'; s.style.color = 'rgba(239,68,68,0.8)';
+      st.textContent = 'Breaks on new domain'; st.style.color = 'rgba(239,68,68,0.8)';
+      c.textContent = 'Full rebuild each time'; c.style.color = 'rgba(239,68,68,0.8)';
     } else {
-      s.textContent = 'Preserved'; s.style.color = 'rgba(74,222,128,0.8)';
-      st.textContent = 'Strong'; st.style.color = 'rgba(74,222,128,0.8)';
-      c.textContent = 'Configuration'; c.style.color = 'rgba(74,222,128,0.8)';
+      s.textContent = 'Inherited from core'; s.style.color = 'rgba(74,222,128,0.8)';
+      st.textContent = 'Clients remain stable'; st.style.color = 'rgba(74,222,128,0.8)';
+      c.textContent = 'Append configuration'; c.style.color = 'rgba(74,222,128,0.8)';
     }
   }
 

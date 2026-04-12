@@ -214,13 +214,13 @@ if (canvas && btnLinear && btnGraph) {
     const cho = document.getElementById('lcg-choice')!;
     const reu = document.getElementById('lcg-reuse')!;
     if (m === 'linear') {
-      par.textContent = 'Not supported'; par.style.color = 'rgba(239,68,68,0.8)';
-      cho.textContent = 'Free text only'; cho.style.color = 'rgba(239,68,68,0.8)';
-      reu.textContent = 'Rebuild per domain'; reu.style.color = 'rgba(239,68,68,0.8)';
+      par.textContent = 'Forced into side channels'; par.style.color = 'rgba(239,68,68,0.8)';
+      cho.textContent = 'Free text — not comparable'; cho.style.color = 'rgba(239,68,68,0.8)';
+      reu.textContent = 'Each client rebuilds logic'; reu.style.color = 'rgba(239,68,68,0.8)';
     } else {
-      par.textContent = 'Native'; par.style.color = 'rgba(74,222,128,0.8)';
-      cho.textContent = 'Bounded enums'; cho.style.color = 'rgba(74,222,128,0.8)';
-      reu.textContent = 'Consumed by downstream'; reu.style.color = 'rgba(74,222,128,0.8)';
+      par.textContent = 'Multiple actors, native'; par.style.color = 'rgba(74,222,128,0.8)';
+      cho.textContent = 'Bounded enums — comparable'; cho.style.color = 'rgba(74,222,128,0.8)';
+      reu.textContent = 'Modelled once, consumed many'; reu.style.color = 'rgba(74,222,128,0.8)';
     }
   }
 
