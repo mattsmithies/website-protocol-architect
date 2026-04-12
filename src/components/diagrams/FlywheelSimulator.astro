@@ -1,51 +1,108 @@
 ---
-// Visual 3: Internal demand flywheel — the centrepiece
-// Circular flow with adjustable sliders that strengthen or weaken the loop
+// Flywheel Simulator — Single token economy model
+// Protocol split (must sum to 100) → recipient behaviour → derived leakage → loop score
+// Illustration only. Shows directional dynamics, not price predictions.
 ---
 
 <div class="reveal my-12 md:my-16">
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
-    <canvas id="flywheel-canvas" class="w-full" style="height: 380px;"></canvas>
+    <canvas id="flywheel-canvas" class="w-full" style="height: 340px;"></canvas>
 
-    {/* Sliders */}
     <div class="p-6 border-t border-border">
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4 max-w-2xl mx-auto">
+      {/* Protocol allocation — must sum to 100 */}
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold">Protocol spend allocation</p>
+        <p class="text-xs font-mono" id="fw-total">100%</p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3 mb-6">
         <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Burned %</label>
-          <input type="range" min="0" max="40" value="10" id="fw-burn" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-burn-val">10%</span>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Burn</label>
+          <input type="range" min="0" max="40" value="5" id="fw-burn" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-burn-val">5%</span>
         </div>
         <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">To treasury</label>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury</label>
           <input type="range" min="0" max="50" value="20" id="fw-treasury" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
           <span class="text-xs text-text-tertiary font-mono" id="fw-treasury-val">20%</span>
         </div>
         <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">To contributors</label>
-          <input type="range" min="0" max="80" value="50" id="fw-contrib" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-contrib-val">50%</span>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributors</label>
+          <input type="range" min="0" max="80" value="55" id="fw-contrib" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-contrib-val">55%</span>
         </div>
         <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">To passive holders</label>
-          <input type="range" min="0" max="50" value="10" id="fw-passive" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-passive-val">10%</span>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Operators</label>
+          <input type="range" min="0" max="50" value="20" id="fw-ops" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-ops-val">20%</span>
+        </div>
+      </div>
+
+      {/* Behaviour + Demand quality */}
+      <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold mb-3">Recipient behaviour &amp; demand quality</p>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 mb-6">
+        <div>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor sell-through</label>
+          <input type="range" min="5" max="90" value="30" id="fw-csell" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-csell-val">30%</span>
         </div>
         <div>
-          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Exchange leakage</label>
-          <input type="range" min="0" max="60" value="10" id="fw-leak" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
-          <span class="text-xs text-text-tertiary font-mono" id="fw-leak-val">10%</span>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Treasury redeployment</label>
+          <input type="range" min="0" max="100" value="60" id="fw-tredeploy" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-tredeploy-val">60%</span>
         </div>
-        <div class="flex items-end">
-          <div id="fw-verdict" class="text-sm font-display font-bold" style="color: rgba(74,222,128,0.8);">
-            Loop strengthening
-          </div>
+        <div>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Required spend ratio</label>
+          <input type="range" min="10" max="100" value="70" id="fw-reqspend" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-reqspend-val">70%</span>
+        </div>
+        <div>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Recurrence rate</label>
+          <input type="range" min="10" max="100" value="60" id="fw-recurrence" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-recurrence-val">60%</span>
+        </div>
+        <div>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Bypassability</label>
+          <input type="range" min="0" max="80" value="15" id="fw-bypass" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-bypass-val">15%</span>
+        </div>
+        <div>
+          <label class="text-[10px] text-text-tertiary uppercase tracking-wider block mb-1">Contributor effectiveness</label>
+          <input type="range" min="10" max="100" value="65" id="fw-ceffect" class="w-full accent-signal h-1 appearance-none cursor-pointer" />
+          <span class="text-xs text-text-tertiary font-mono" id="fw-ceffect-val">65%</span>
+        </div>
+      </div>
+
+      {/* Derived outputs + verdict */}
+      <div class="flex flex-wrap items-center gap-6 border-t border-border pt-4">
+        <div>
+          <span class="text-[10px] text-text-tertiary uppercase tracking-wider block">Derived leakage</span>
+          <span class="text-sm font-display font-bold" id="fw-leakage">—</span>
+        </div>
+        <div>
+          <span class="text-[10px] text-text-tertiary uppercase tracking-wider block">Reinforcement</span>
+          <span class="text-sm font-display font-bold" id="fw-reinforce">—</span>
+        </div>
+        <div>
+          <span class="text-[10px] text-text-tertiary uppercase tracking-wider block">Demand strength</span>
+          <span class="text-sm font-display font-bold" id="fw-demand">—</span>
+        </div>
+        <div class="ml-auto">
+          <span class="text-[10px] text-text-tertiary uppercase tracking-wider block">Loop state</span>
+          <span class="text-base font-display font-bold" id="fw-verdict">—</span>
         </div>
       </div>
     </div>
   </div>
-  <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    A token becomes durable when spend strengthens the people who make future spend worth paying.
-  </p>
+  <div class="mt-3 space-y-1">
+    <p class="text-text-tertiary text-xs text-center italic">
+      A token becomes durable when spend strengthens the people who make future spend worth paying.
+    </p>
+    <p class="text-text-tertiary text-[10px] text-center">
+      Illustration only. This is a simplified model of token flow. It shows directional pressure, not exact market behaviour. Negative settings tend to produce worse value and market outcomes because more token value escapes the network than returns to strengthen it.
+    </p>
+  </div>
 </div>
 
 <script>
@@ -59,37 +116,119 @@ if (canvas) {
   const RED = [239, 68, 68];
   const AMBER = [245, 158, 11];
 
+  // Slider refs
+  const sl = (id: string) => document.getElementById(id) as HTMLInputElement;
+  const el = (id: string) => document.getElementById(id)!;
+
   const sliders = {
-    burn: document.getElementById('fw-burn') as HTMLInputElement,
-    treasury: document.getElementById('fw-treasury') as HTMLInputElement,
-    contrib: document.getElementById('fw-contrib') as HTMLInputElement,
-    passive: document.getElementById('fw-passive') as HTMLInputElement,
-    leak: document.getElementById('fw-leak') as HTMLInputElement,
+    burn: sl('fw-burn'), treasury: sl('fw-treasury'),
+    contrib: sl('fw-contrib'), ops: sl('fw-ops'),
+    csell: sl('fw-csell'), tredeploy: sl('fw-tredeploy'),
+    reqspend: sl('fw-reqspend'), recurrence: sl('fw-recurrence'),
+    bypass: sl('fw-bypass'), ceffect: sl('fw-ceffect'),
   };
 
-  const vals = {
-    burn: document.getElementById('fw-burn-val')!,
-    treasury: document.getElementById('fw-treasury-val')!,
-    contrib: document.getElementById('fw-contrib-val')!,
-    passive: document.getElementById('fw-passive-val')!,
-    leak: document.getElementById('fw-leak-val')!,
-  };
+  function v(s: HTMLInputElement): number { return parseInt(s.value); }
 
-  const verdict = document.getElementById('fw-verdict')!;
+  function compute() {
+    // Protocol split (normalize to 100)
+    const rawBurn = v(sliders.burn);
+    const rawTreasury = v(sliders.treasury);
+    const rawContrib = v(sliders.contrib);
+    const rawOps = v(sliders.ops);
+    const rawTotal = rawBurn + rawTreasury + rawContrib + rawOps;
 
-  function getValues() {
-    const b = parseInt(sliders.burn.value);
-    const t = parseInt(sliders.treasury.value);
-    const c = parseInt(sliders.contrib.value);
-    const p = parseInt(sliders.passive.value);
-    const l = parseInt(sliders.leak.value);
-    vals.burn.textContent = b + '%';
-    vals.treasury.textContent = t + '%';
-    vals.contrib.textContent = c + '%';
-    vals.passive.textContent = p + '%';
-    vals.leak.textContent = l + '%';
-    return { burn: b, treasury: t, contrib: c, passive: p, leak: l };
+    // Display raw total
+    const totalEl = el('fw-total');
+    if (rawTotal !== 100) {
+      totalEl.textContent = `${rawTotal}% — should be 100`;
+      totalEl.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      totalEl.textContent = '100%';
+      totalEl.style.color = 'rgba(74,222,128,0.6)';
+    }
+
+    // Normalize
+    const norm = rawTotal > 0 ? 100 / rawTotal : 1;
+    const burn = rawBurn * norm;
+    const treasury = rawTreasury * norm;
+    const contrib = rawContrib * norm;
+    const ops = rawOps * norm;
+
+    // Behaviour
+    const cSellThrough = v(sliders.csell) / 100;
+    const tRedeploy = v(sliders.tredeploy) / 100;
+    const reqSpend = v(sliders.reqspend) / 100;
+    const recurrence = v(sliders.recurrence) / 100;
+    const bypass = v(sliders.bypass) / 100;
+    const cEffect = v(sliders.ceffect) / 100;
+
+    // Step 1: Derived leakage (what gets sold)
+    const contribLeakage = contrib * cSellThrough;
+    const opsLeakage = ops * 0.4; // operators sell ~40% (fixed assumption)
+    const treasuryLeakage = treasury * (1 - tRedeploy) * 0.5; // idle treasury partially exits
+    const totalLeakage = contribLeakage + opsLeakage + treasuryLeakage;
+
+    // Step 2: Reinforcement (value that strengthens the network)
+    const contribReinforce = contrib * (1 - cSellThrough) * cEffect;
+    const opsReinforce = ops * 0.6 * 0.7; // ops hold 60%, effectiveness 70%
+    const treasuryReinforce = treasury * tRedeploy * 0.6; // redeployed treasury, 60% effective
+    const totalReinforce = contribReinforce + opsReinforce + treasuryReinforce;
+
+    // Step 3: Demand strength
+    const demandBase = reqSpend * recurrence * 100;
+    const bypassPenalty = bypass * 40;
+    const burnBonus = Math.min(burn * 0.3, 8); // burn helps but can't carry the model
+    const demandStrength = Math.max(0, demandBase + burnBonus - bypassPenalty);
+
+    // Step 4: Loop score (0-100)
+    const loopScore = Math.min(100, Math.max(0,
+      (demandStrength * 0.4) + (totalReinforce * 0.5) - (totalLeakage * 0.3) - (bypass * 15)
+    ));
+
+    // Update value labels
+    el('fw-burn-val').textContent = rawBurn + '%';
+    el('fw-treasury-val').textContent = rawTreasury + '%';
+    el('fw-contrib-val').textContent = rawContrib + '%';
+    el('fw-ops-val').textContent = rawOps + '%';
+    el('fw-csell-val').textContent = v(sliders.csell) + '%';
+    el('fw-tredeploy-val').textContent = v(sliders.tredeploy) + '%';
+    el('fw-reqspend-val').textContent = v(sliders.reqspend) + '%';
+    el('fw-recurrence-val').textContent = v(sliders.recurrence) + '%';
+    el('fw-bypass-val').textContent = v(sliders.bypass) + '%';
+    el('fw-ceffect-val').textContent = v(sliders.ceffect) + '%';
+
+    // Update derived outputs
+    el('fw-leakage').textContent = Math.round(totalLeakage) + '%';
+    el('fw-leakage').style.color = totalLeakage > 25 ? 'rgba(239,68,68,0.8)' : totalLeakage > 15 ? 'rgba(245,158,11,0.8)' : 'rgba(74,222,128,0.7)';
+
+    el('fw-reinforce').textContent = Math.round(totalReinforce) + '%';
+    el('fw-reinforce').style.color = totalReinforce > 20 ? 'rgba(74,222,128,0.8)' : totalReinforce > 10 ? 'rgba(245,158,11,0.8)' : 'rgba(239,68,68,0.7)';
+
+    el('fw-demand').textContent = Math.round(demandStrength) + '';
+    el('fw-demand').style.color = demandStrength > 40 ? 'rgba(74,222,128,0.8)' : demandStrength > 20 ? 'rgba(245,158,11,0.8)' : 'rgba(239,68,68,0.7)';
+
+    // Verdict
+    const verdict = el('fw-verdict');
+    if (loopScore >= 60) {
+      verdict.textContent = 'Loop strengthening';
+      verdict.style.color = 'rgba(74,222,128,0.9)';
+    } else if (loopScore >= 40) {
+      verdict.textContent = 'Fragile equilibrium';
+      verdict.style.color = 'rgba(245,158,11,0.9)';
+    } else if (loopScore >= 20) {
+      verdict.textContent = 'Loop weakening';
+      verdict.style.color = 'rgba(239,68,68,0.8)';
+    } else {
+      verdict.textContent = 'Loop failing';
+      verdict.style.color = 'rgba(239,68,68,0.9)';
+    }
+
+    return { loopScore, totalLeakage, totalReinforce, demandStrength, burn, treasury, contrib, ops };
   }
+
+  // Canvas rendering
+  let animId = 0;
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -104,11 +243,11 @@ if (canvas) {
   function getStages(w: number, h: number): Stage[] {
     const cx = w / 2;
     const cy = h / 2;
-    const rx = Math.min(w * 0.32, 150);
-    const ry = Math.min(h * 0.34, 130);
+    const rx = Math.min(w * 0.3, 140);
+    const ry = Math.min(h * 0.32, 120);
     const angles = [-Math.PI / 2, -Math.PI / 10, Math.PI / 3, Math.PI * 0.8, Math.PI * 1.3];
-    const labels = ['Acquire token', 'Spend for\nnetwork action', 'Redistribute to\ncontributors', 'Network quality\nimproves', 'More usage\nattracts buyers'];
-    const sublabels = ['Demand enters', 'Required action', 'Value routing', 'Supply strengthens', 'Loop closes'];
+    const labels = ['Acquire', 'Spend', 'Redistribute', 'Network\nimproves', 'More\nusage'];
+    const sublabels = ['Required', 'Metered action', 'To contributors', 'Quality rises', 'Demand deepens'];
     return angles.map((a, i) => ({
       x: cx + Math.cos(a) * rx,
       y: cy + Math.sin(a) * ry,
@@ -117,69 +256,61 @@ if (canvas) {
     }));
   }
 
-  let animId = 0;
-
   function render(now: number) {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
-    const t = now * 0.001;
-    const v = getValues();
-
-    // Health score: contributors vs leakage/passive
-    const health = (v.contrib * 1.5 - v.leak * 2 - v.passive * 0.8 - v.burn * 0.3) / 100;
-    const clamped = Math.max(-1, Math.min(1, health));
-
-    // Verdict
-    if (clamped > 0.2) {
-      verdict.textContent = 'Loop strengthening';
-      verdict.style.color = 'rgba(74,222,128,0.8)';
-    } else if (clamped > -0.1) {
-      verdict.textContent = 'Loop stalling';
-      verdict.style.color = 'rgba(245,158,11,0.8)';
-    } else {
-      verdict.textContent = 'Loop failing';
-      verdict.style.color = 'rgba(239,68,68,0.8)';
-    }
+    const t = now * 0.0015;
+    const state = compute();
 
     ctx.clearRect(0, 0, w, h);
     const stages = getStages(w, h);
 
-    // Health-based colors
-    const loopR = clamped > 0 ? GREEN : clamped > -0.3 ? AMBER : RED;
+    // Health colour
+    const health = state.loopScore / 100;
+    const loopColor = health > 0.6 ? GREEN : health > 0.4 ? AMBER : RED;
+    const [lr, lg, lb] = loopColor;
 
-    // Draw edges (circle)
+    // Edges
     for (let i = 0; i < stages.length; i++) {
       const a = stages[i];
       const b = stages[(i + 1) % stages.length];
-      const [r, g, bl] = loopR;
-      const alpha = 0.12 + Math.max(0, clamped) * 0.15;
+      const alpha = 0.08 + health * 0.18;
+      const width = 1 + health * 2;
 
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.lineTo(b.x, b.y);
-      ctx.strokeStyle = `rgba(${r},${g},${bl},${alpha})`;
-      ctx.lineWidth = 1.5 + Math.max(0, clamped) * 1.5;
+      ctx.strokeStyle = `rgba(${lr},${lg},${lb},${alpha})`;
+      ctx.lineWidth = width;
       ctx.stroke();
 
-      // Particles
-      const speed = 0.15 + Math.max(0, clamped) * 0.2;
+      // Particles (speed varies with health)
+      const speed = 0.1 + health * 0.25;
       for (let p = 0; p < 2; p++) {
         const pt = ((t * speed + i * 0.2 + p * 0.5) % 1);
-        const px = a.x + (b.x - a.x) * pt;
-        const py = a.y + (b.y - a.y) * pt;
         ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${g},${bl},${0.3 + Math.max(0, clamped) * 0.4})`;
+        ctx.arc(a.x + (b.x - a.x) * pt, a.y + (b.y - a.y) * pt, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${lr},${lg},${lb},${0.2 + health * 0.5})`;
         ctx.fill();
       }
     }
 
+    // Leakage indicator (red exit arrow from bottom)
+    if (state.totalLeakage > 10) {
+      const leakAlpha = Math.min(state.totalLeakage / 50, 0.5);
+      const cx = w / 2 + 80;
+      const cy = h - 20;
+      ctx.font = '400 8px "Inter", system-ui';
+      ctx.fillStyle = `rgba(239,68,68,${leakAlpha})`;
+      ctx.textAlign = 'center';
+      ctx.fillText(`${Math.round(state.totalLeakage)}% leaks to exchanges`, cx, cy);
+    }
+
     // Nodes
     for (const stage of stages) {
-      const [r, g, bl] = loopR;
       const grad = ctx.createRadialGradient(stage.x, stage.y, 0, stage.x, stage.y, 35);
-      grad.addColorStop(0, `rgba(${r},${g},${bl},0.08)`);
-      grad.addColorStop(1, `rgba(${r},${g},${bl},0)`);
+      grad.addColorStop(0, `rgba(${lr},${lg},${lb},0.08)`);
+      grad.addColorStop(1, `rgba(${lr},${lg},${lb},0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(stage.x, stage.y, 35, 0, Math.PI * 2);
@@ -187,11 +318,10 @@ if (canvas) {
 
       ctx.beginPath();
       ctx.arc(stage.x, stage.y, 14, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${r},${g},${bl},0.35)`;
+      ctx.strokeStyle = `rgba(${lr},${lg},${lb},0.3)`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Multi-line label
       ctx.font = '600 9px "Syne", system-ui';
       ctx.fillStyle = 'rgba(232,232,240,0.7)';
       ctx.textAlign = 'center';
@@ -201,7 +331,7 @@ if (canvas) {
       });
 
       ctx.font = '400 8px "Inter", system-ui';
-      ctx.fillStyle = `rgba(${r},${g},${bl},0.4)`;
+      ctx.fillStyle = `rgba(${lr},${lg},${lb},0.35)`;
       ctx.fillText(stage.sublabel, stage.x, stage.y + 24);
     }
 
