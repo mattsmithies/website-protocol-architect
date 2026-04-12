@@ -240,21 +240,27 @@ if (canvas && slider) {
     const statusTop = document.getElementById('pum-status-top')!;
     const statusBot = document.getElementById('pum-status-bot')!;
 
+    const lost = metadataLayers.length - topLayersVisible;
+    const lostNames = metadataLayers.slice(topLayersVisible).slice(0, 3).join(', ');
+
     if (topLayersVisible === metadataLayers.length) {
-      statusTop.textContent = 'Intact';
+      statusTop.textContent = 'Intact at origin — not yet tested by movement';
       statusTop.style.color = 'rgba(245,158,11,0.8)';
-    } else if (topLayersVisible > 4) {
-      statusTop.textContent = `Degrading — ${metadataLayers.length - topLayersVisible} fields lost`;
+    } else if (topLayersVisible > 5) {
+      statusTop.textContent = `Degrading — lost ${lostNames}`;
       statusTop.style.color = 'rgba(245,158,11,0.8)';
-    } else if (topLayersVisible > 0) {
-      statusTop.textContent = `Under-specified — ${metadataLayers.length - topLayersVisible} fields lost`;
+    } else if (topLayersVisible > 2) {
+      statusTop.textContent = `Search and comparison failing — lost ${lostNames}`;
       statusTop.style.color = 'rgba(239,68,68,0.8)';
+    } else if (topLayersVisible > 0) {
+      statusTop.textContent = `Asset uninterpretable — ${lost} of ${metadataLayers.length} fields stripped`;
+      statusTop.style.color = 'rgba(239,68,68,0.9)';
     } else {
-      statusTop.textContent = 'Meaning lost in transit';
+      statusTop.textContent = 'Bare token — identity, provenance, and meaning lost in transit';
       statusTop.style.color = 'rgba(239,68,68,0.9)';
     }
 
-    statusBot.textContent = 'Container intact — all fields preserved';
+    statusBot.textContent = 'Container intact — identity, provenance, and comparable fields preserved';
     statusBot.style.color = 'rgba(74,222,128,0.8)';
   }
 

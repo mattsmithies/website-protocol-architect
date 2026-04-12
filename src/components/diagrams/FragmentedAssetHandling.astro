@@ -289,13 +289,13 @@ if (canvas && btnFrag && btnCont) {
     const c = document.getElementById('fah-comparability')!;
     const a = document.getElementById('fah-audit')!;
     if (m === 'fragmented') {
-      p.textContent = 'None'; p.style.color = 'rgba(239,68,68,0.8)';
-      c.textContent = 'None'; c.style.color = 'rgba(239,68,68,0.8)';
-      a.textContent = 'High'; a.style.color = 'rgba(239,68,68,0.8)';
+      p.textContent = 'Breaks on transfer'; p.style.color = 'rgba(239,68,68,0.8)';
+      c.textContent = 'Not possible'; c.style.color = 'rgba(239,68,68,0.8)';
+      a.textContent = 'Reconstruction required'; a.style.color = 'rgba(239,68,68,0.8)';
     } else {
-      p.textContent = 'Full'; p.style.color = 'rgba(74,222,128,0.8)';
-      c.textContent = 'Full'; c.style.color = 'rgba(74,222,128,0.8)';
-      a.textContent = 'Low'; a.style.color = 'rgba(74,222,128,0.8)';
+      p.textContent = 'Preserved across systems'; p.style.color = 'rgba(74,222,128,0.8)';
+      c.textContent = 'Like with like'; c.style.color = 'rgba(74,222,128,0.8)';
+      a.textContent = 'Provenance attached'; a.style.color = 'rgba(74,222,128,0.8)';
     }
   }
 
