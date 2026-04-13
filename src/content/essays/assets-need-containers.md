@@ -2,6 +2,7 @@
 title: "Assets need containers before they need markets"
 category: "Meta Structures"
 order: 1
+video: "/videos/Assets_Need_Containers.mp4"
 ---
 
 Before the shipping container, global trade existed but it was slow, fragile, and expensive. Every port had its own loading process, its own dimensions, its own handling assumptions. The shipping container did not change what was being shipped. It changed the meta structure around it — and unlocked an entirely different scale of coordination.

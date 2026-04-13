@@ -35,6 +35,19 @@ const { Content } = await render(essay);
           </h1>
         </div>
 
+        {essay.data.video ? (
+          <div class="reveal mb-12 glass-card overflow-hidden">
+            <video
+              controls
+              preload="none"
+              class="w-full aspect-video bg-black"
+            >
+              <source src={essay.data.video} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        ) : null}
+
         <div class="reveal prose-custom space-y-6 text-text-secondary text-lg leading-relaxed">
           <Content />
         </div>
