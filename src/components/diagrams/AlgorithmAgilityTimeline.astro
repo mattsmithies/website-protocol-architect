@@ -28,15 +28,15 @@
       <!-- Metrics -->
       <div class="grid grid-cols-3 gap-4 mt-4 border-t border-border pt-4" aria-live="polite">
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">At issuance</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">At issuance</p>
           <p class="text-sm font-display font-bold" id="aat-metric-issue" style="color: rgba(74,222,128,0.8);">Verified</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">After migration</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">After migration</p>
           <p class="text-sm font-display font-bold" id="aat-metric-migrate" style="color: rgba(239,68,68,0.8);">Context lost</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Preserved context</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Preserved context</p>
           <p class="text-sm font-display font-bold" id="aat-metric-context" style="color: rgba(239,68,68,0.8);">Signature bytes only</p>
         </div>
       </div>
@@ -255,14 +255,14 @@ if (canvas && btnSig && btnFull) {
       drawIcon(x, timelineY, icon, color, iconR);
 
       // Checkpoint label above
-      ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+      ctx.font = `600 ${isNarrow ? 12 : 14}px "Syne", system-ui`;
       ctx.fillStyle = 'rgba(232,232,240,0.6)';
       ctx.textAlign = 'center';
       ctx.fillText(cp.label, x, timelineY - iconR - 14);
 
       // Status text below icon
       const [sr, sg, sb] = color;
-      ctx.font = `500 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(${sr},${sg},${sb},0.75)`;
       ctx.textAlign = 'center';
 
@@ -290,7 +290,7 @@ if (canvas && btnSig && btnFull) {
 
       // Preserved fields below status
       const preservedY = statusStartY + statusLines.length * (isNarrow ? 12 : 14) + (isNarrow ? 12 : 16);
-      ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+      ctx.font = `400 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
       ctx.fillStyle = `rgba(${sr},${sg},${sb},0.4)`;
 
       if (mode === 'sig') {

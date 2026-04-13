@@ -21,13 +21,13 @@
 
       <!-- Detail area for selected node -->
       <div id="matc-detail" class="p-4 rounded-lg border border-border mb-4 transition-all duration-300" style="background: rgba(11,11,17,0.8); border-color: rgba(167,139,250,0.25);">
-        <p class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold mb-2">Proof package detail — click any node to inspect</p>
+        <p class="text-[13px] text-text-tertiary uppercase tracking-wider font-semibold mb-2">Proof package detail — click any node to inspect</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
-          <div><span class="text-[10px] text-text-tertiary font-mono">Actor:</span> <span id="matc-d-actor" class="text-[10px] font-mono text-text-secondary">alice@org.example</span></div>
-          <div><span class="text-[10px] text-text-tertiary font-mono">Key:</span> <span id="matc-d-key" class="text-[10px] font-mono text-text-secondary">ed25519:abc1...f4</span></div>
-          <div><span class="text-[10px] text-text-tertiary font-mono">Algorithm:</span> <span id="matc-d-algo" class="text-[10px] font-mono text-text-secondary">Ed25519</span></div>
-          <div><span class="text-[10px] text-text-tertiary font-mono">Signed:</span> <span id="matc-d-signed" class="text-[10px] font-mono text-text-secondary">submission manifest hash</span></div>
-          <div><span class="text-[10px] text-text-tertiary font-mono">Authority:</span> <span id="matc-d-auth" class="text-[10px] font-mono text-text-secondary">Self-attested origin</span></div>
+          <div><span class="text-[13px] text-text-tertiary font-mono">Actor:</span> <span id="matc-d-actor" class="text-[13px] font-mono text-text-secondary">alice@org.example</span></div>
+          <div><span class="text-[13px] text-text-tertiary font-mono">Key:</span> <span id="matc-d-key" class="text-[13px] font-mono text-text-secondary">ed25519:abc1...f4</span></div>
+          <div><span class="text-[13px] text-text-tertiary font-mono">Algorithm:</span> <span id="matc-d-algo" class="text-[13px] font-mono text-text-secondary">Ed25519</span></div>
+          <div><span class="text-[13px] text-text-tertiary font-mono">Signed:</span> <span id="matc-d-signed" class="text-[13px] font-mono text-text-secondary">submission manifest hash</span></div>
+          <div><span class="text-[13px] text-text-tertiary font-mono">Authority:</span> <span id="matc-d-auth" class="text-[13px] font-mono text-text-secondary">Self-attested origin</span></div>
         </div>
       </div>
 
@@ -346,32 +346,32 @@ if (canvas) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if (stage.removed) {
-        ctx.font = `600 ${isNarrow ? 14 : 16}px system-ui`;
+        ctx.font = `600 ${isNarrow ? 16 : 18}px system-ui`;
         ctx.fillStyle = 'rgba(239,68,68,0.8)';
         ctx.fillText('\u2717', stage.x, stage.y);
       } else {
         // Small shield/lock icon
-        ctx.font = `400 ${isNarrow ? 12 : 14}px system-ui`;
+        ctx.font = `400 ${isNarrow ? 15 : 16}px system-ui`;
         ctx.fillStyle = `rgba(${r},${g},${b},0.7)`;
         ctx.fillText('\u26BF', stage.x, stage.y);
       }
 
       // Role label above
-      ctx.font = `400 ${isNarrow ? 8 : 9}px 'Inter', system-ui`;
+      ctx.font = `400 ${isNarrow ? 11 : 12}px 'Inter', system-ui`;
       ctx.fillStyle = `rgba(${r},${g},${b},${0.55 * alpha})`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       ctx.fillText(stage.role, stage.x, stage.y - stage.radius - 18);
 
       // Stage label below
-      ctx.font = `600 ${isNarrow ? 9 : 10}px 'Syne', system-ui`;
+      ctx.font = `600 ${isNarrow ? 12 : 13}px 'Syne', system-ui`;
       ctx.fillStyle = `rgba(232,232,240,${0.8 * alpha})`;
       ctx.textAlign = 'center';
       ctx.fillText(stage.label, stage.x, stage.y + stage.radius + 16);
 
       // "Removed" label for removed stages
       if (stage.removed) {
-        ctx.font = `600 ${isNarrow ? 7 : 8}px 'JetBrains Mono', monospace`;
+        ctx.font = `600 ${isNarrow ? 10 : 11}px 'JetBrains Mono', monospace`;
         ctx.fillStyle = 'rgba(239,68,68,0.6)';
         ctx.fillText('REMOVED', stage.x, stage.y + stage.radius + 28);
       }

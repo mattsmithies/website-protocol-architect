@@ -15,20 +15,20 @@
           aria-label="Transfer progress — slide to move the asset through three systems"
           class="w-full accent-signal h-1 bg-border rounded-full appearance-none cursor-pointer"
         />
-        <div class="flex justify-between text-[9px] text-text-tertiary font-mono mt-1">
+        <div class="flex justify-between text-[12px] text-text-tertiary font-mono mt-1">
           <span>Origin</span><span>System A</span><span>System B</span><span>System C</span>
         </div>
       </div>
 
-      <canvas id="pum-canvas" class="w-full" style="height: 340px;" role="img" aria-label="Two transfer chains showing how assets with and without containers survive movement across systems"></canvas>
+      <canvas id="pum-canvas" class="w-full" style="height: 580px;" role="img" aria-label="Two transfer chains showing how assets with and without containers survive movement across systems"></canvas>
 
       <div class="grid grid-cols-2 gap-4 mt-4 border-t border-border pt-4" aria-live="polite">
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Without container</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Without container</p>
           <p class="text-sm font-display font-bold" id="pum-status-top" style="color: rgba(239,68,68,0.8);">Intact</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">With container</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">With container</p>
           <p class="text-sm font-display font-bold" id="pum-status-bot" style="color: rgba(74,222,128,0.8);">Intact</p>
         </div>
       </div>
@@ -72,10 +72,12 @@ if (canvas && slider) {
     const isNarrow = w < 500;
     ctx.clearRect(0, 0, w, h);
 
-    const topY = h * 0.25;
-    const botY = h * 0.72;
+    const topY = h * 0.22;
+    const botY = h * 0.78;
     const margin = isNarrow ? 30 : 60;
     const lineW = w - margin * 2;
+    const blockW = isNarrow ? 75 : 95;
+    const blockH = isNarrow ? 90 : 110;
 
     // System markers
     for (let i = 0; i < 4; i++) {
@@ -88,19 +90,19 @@ if (canvas && slider) {
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
       ctx.fillStyle = 'rgba(232,232,240,0.2)';
       ctx.textAlign = 'center';
       ctx.fillText(systems[i], x, 12);
     }
 
     // Labels
-    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 12 : 13}px "Syne", system-ui`;
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(239,68,68,0.4)';
-    ctx.fillText('WITHOUT CONTAINER', margin, topY - 30);
+    ctx.fillText('WITHOUT CONTAINER', margin, topY - blockH / 2 - 20);
     ctx.fillStyle = 'rgba(74,222,128,0.4)';
-    ctx.fillText('WITH CONTAINER', margin, botY - 30);
+    ctx.fillText('WITH CONTAINER', margin, botY - blockH / 2 - 36);
 
     // Current position
     const assetX = margin + progress * lineW;
@@ -121,8 +123,6 @@ if (canvas && slider) {
     const topLayersVisible = Math.max(0, metadataLayers.length - layersLost * 2 - (partialLoss > 0.5 ? 1 : 0));
 
     // Draw asset block (top)
-    const blockW = isNarrow ? 50 : 70;
-    const blockH = isNarrow ? 40 : 55;
     const topBlockColor = topLayersVisible > 5 ? AMBER : topLayersVisible > 2 ? RED : DIM;
     const [tr, tg, tb] = topBlockColor;
 
@@ -135,8 +135,8 @@ if (canvas && slider) {
     ctx.stroke();
 
     // Draw remaining metadata bars inside the block
-    const barH = 3;
-    const barSpacing = 5;
+    const barH = 5;
+    const barSpacing = isNarrow ? 10 : 12;
     const startBarY = topY - ((metadataLayers.length * barSpacing) / 2) + 2;
     for (let i = 0; i < metadataLayers.length; i++) {
       const barY = startBarY + i * barSpacing;
@@ -152,28 +152,28 @@ if (canvas && slider) {
     }
 
     // Named field labels to the right of the top block
-    if (!isNarrow && assetX < w - 130) {
-      const labelX = assetX + blockW / 2 + 12;
-      ctx.font = '400 7px "JetBrains Mono", monospace';
+    if (!isNarrow && assetX < w - 150) {
+      const labelX = assetX + blockW / 2 + 16;
+      ctx.font = '400 10px "JetBrains Mono", monospace';
       ctx.textAlign = 'left';
       for (let i = 0; i < metadataLayers.length; i++) {
         const barY = startBarY + i * barSpacing;
         const present = i < topLayersVisible;
         if (present) {
           ctx.fillStyle = `rgba(${tr},${tg},${tb},0.4)`;
-          ctx.fillText(metadataLayers[i], labelX, barY + 3);
+          ctx.fillText(metadataLayers[i], labelX, barY + 4);
         } else {
           ctx.fillStyle = 'rgba(239,68,68,0.35)';
-          ctx.fillText(metadataLayers[i] + ' \u2717', labelX, barY + 3);
+          ctx.fillText(metadataLayers[i] + ' \u2717', labelX, barY + 4);
         }
       }
     }
 
     // Layer count label
-    ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+    ctx.font = `400 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
     ctx.fillStyle = `rgba(${tr},${tg},${tb},0.6)`;
     ctx.textAlign = 'center';
-    ctx.fillText(`${topLayersVisible}/${metadataLayers.length} fields`, assetX, topY + blockH / 2 + 14);
+    ctx.fillText(`${topLayersVisible}/${metadataLayers.length} fields`, assetX, topY + blockH / 2 + 20);
 
     // === BOTTOM CHAIN: container preserves everything ===
     ctx.beginPath();
@@ -215,26 +215,26 @@ if (canvas && slider) {
     }
 
     // Named field labels for bottom chain
-    if (!isNarrow && assetX < w - 130) {
-      const labelX = assetX + blockW / 2 + 16;
-      ctx.font = '400 7px "JetBrains Mono", monospace';
+    if (!isNarrow && assetX < w - 150) {
+      const labelX = assetX + blockW / 2 + 20;
+      ctx.font = '400 10px "JetBrains Mono", monospace';
       ctx.textAlign = 'left';
       for (let i = 0; i < metadataLayers.length; i++) {
         const barY = botStartBarY + i * barSpacing;
         ctx.fillStyle = 'rgba(74,222,128,0.4)';
-        ctx.fillText(metadataLayers[i] + ' \u2713', labelX, barY + 3);
+        ctx.fillText(metadataLayers[i] + ' \u2713', labelX, barY + 4);
       }
     }
 
-    ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+    ctx.font = `400 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
     ctx.fillStyle = 'rgba(74,222,128,0.6)';
     ctx.textAlign = 'center';
-    ctx.fillText(`${metadataLayers.length}/${metadataLayers.length} fields`, assetX, botY + blockH / 2 + 18);
+    ctx.fillText(`${metadataLayers.length}/${metadataLayers.length} fields`, assetX, botY + blockH / 2 + 20);
 
     // Container label
-    ctx.font = `400 ${isNarrow ? 6 : 7}px "Syne", system-ui`;
+    ctx.font = `400 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(${br},${bg},${bb},0.4)`;
-    ctx.fillText('Container', assetX, botY - blockH / 2 - 10);
+    ctx.fillText('Container', assetX, botY - blockH / 2 - 16);
 
     // Update status text
     const statusTop = document.getElementById('pum-status-top')!;

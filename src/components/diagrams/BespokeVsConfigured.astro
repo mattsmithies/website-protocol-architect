@@ -23,15 +23,15 @@
       <div id="bvc-summary" class="mt-4 border-t border-border pt-4" aria-live="polite">
         <div class="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Shared structure</p>
+            <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Shared structure</p>
             <p class="text-sm font-display font-bold" id="bvc-structure" style="color: rgba(239,68,68,0.8);">Siloed per app</p>
           </div>
           <div>
-            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Downstream stability</p>
+            <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Downstream stability</p>
             <p class="text-sm font-display font-bold" id="bvc-stability" style="color: rgba(239,68,68,0.8);">Breaks on new domain</p>
           </div>
           <div>
-            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">New domain cost</p>
+            <p class="text-[13px] text-text-tertiary uppercase tracking-wider">New domain cost</p>
             <p class="text-sm font-display font-bold" id="bvc-cost" style="color: rgba(239,68,68,0.8);">Full rebuild each time</p>
           </div>
         </div>
@@ -123,7 +123,7 @@ if (canvas && btnBespoke && btnConfigured) {
       ctx.stroke();
 
       // App name
-      ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+      ctx.font = `600 ${isNarrow ? 12 : 14}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
       ctx.textAlign = 'center';
       ctx.fillText(appNames[i], x + boxW / 2, y + (isNarrow ? 20 : 26));
@@ -131,7 +131,7 @@ if (canvas && btnBespoke && btnConfigured) {
       // Inner labels — each app has its own copy
       const innerY = y + (isNarrow ? 32 : 44);
       const innerGap = isNarrow ? 14 : 18;
-      ctx.font = `400 ${isNarrow ? 7 : 9}px "JetBrains Mono", monospace`;
+      ctx.font = `400 ${isNarrow ? 10 : 12}px "JetBrains Mono", monospace`;
       for (let j = 0; j < innerLabels.length; j++) {
         ctx.fillStyle = `rgba(${r},${g},${b},0.4)`;
         ctx.fillText(innerLabels[j], x + boxW / 2, innerY + j * innerGap);
@@ -160,7 +160,7 @@ if (canvas && btnBespoke && btnConfigured) {
         ctx.lineWidth = 0.8;
         ctx.stroke();
 
-        ctx.font = '400 5px "JetBrains Mono", monospace';
+        ctx.font = '400 8px "JetBrains Mono", monospace';
         ctx.fillStyle = 'rgba(239,68,68,0.5)';
         ctx.textAlign = 'center';
         ctx.fillText('?', midLineX, lineY + 2);
@@ -182,7 +182,7 @@ if (canvas && btnBespoke && btnConfigured) {
 
     // Bottom label
     ctx.setLineDash([]);
-    ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.font = `500 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(239,68,68,0.5)';
     ctx.textAlign = 'center';
     ctx.fillText('Each app duplicates structure. Nothing is shared.', w / 2, h - 10);
@@ -206,13 +206,13 @@ if (canvas && btnBespoke && btnConfigured) {
     ctx.stroke();
 
     // Core label
-    ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 12 : 14}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(167,139,250,0.7)';
     ctx.textAlign = 'center';
     ctx.fillText('WORKFLOW SYSTEM', centerX, coreY + (isNarrow ? 18 : 22));
 
     // Core inner labels
-    ctx.font = `400 ${isNarrow ? 7 : 9}px "JetBrains Mono", monospace`;
+    ctx.font = `400 ${isNarrow ? 10 : 12}px "JetBrains Mono", monospace`;
     const labelY = coreY + (isNarrow ? 36 : 42);
     if (isNarrow) {
       // Two rows on narrow
@@ -229,7 +229,7 @@ if (canvas && btnBespoke && btnConfigured) {
       ctx.fillText(coreStr, centerX, labelY);
 
       // Second descriptive line
-      ctx.font = `400 ${isNarrow ? 6 : 8}px "Inter", system-ui`;
+      ctx.font = `400 ${isNarrow ? 9 : 11}px "Inter", system-ui`;
       ctx.fillStyle = 'rgba(167,139,250,0.25)';
       ctx.fillText('Shared structure across all domains', centerX, labelY + 18);
     }
@@ -256,7 +256,7 @@ if (canvas && btnBespoke && btnConfigured) {
       ctx.lineWidth = 1.2;
       ctx.stroke();
 
-      ctx.font = `500 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 10 : 11}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(${r},${g},${b},0.7)`;
       ctx.textAlign = 'center';
       ctx.fillText(configNames[i], x + configW / 2, y + configH / 2 + 3);
@@ -290,7 +290,7 @@ if (canvas && btnBespoke && btnConfigured) {
     const downStartX = centerX - downTotalW / 2;
 
     // Downstream label
-    ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(56,189,248,0.4)';
     ctx.textAlign = 'center';
     ctx.fillText('SHARED DOWNSTREAM', centerX, downY - (isNarrow ? 10 : 14));
@@ -309,7 +309,7 @@ if (canvas && btnBespoke && btnConfigured) {
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      ctx.font = `500 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 10 : 11}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(${r},${g},${b},0.6)`;
       ctx.textAlign = 'center';
       ctx.fillText(downstreamLabels[i], x + downW / 2, y + downH / 2 + 3);
@@ -335,7 +335,7 @@ if (canvas && btnBespoke && btnConfigured) {
     }
 
     // Bottom label
-    ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.font = `500 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(74,222,128,0.5)';
     ctx.textAlign = 'center';
     ctx.fillText('One core. Configured per domain.', centerX, h - 10);

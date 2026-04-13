@@ -11,28 +11,28 @@
 
         <!-- Top card: Weak verification result -->
         <div class="rounded-xl border p-5 md:p-6 mb-6" style="background: rgba(239,68,68,0.03); border-color: rgba(239,68,68,0.15);">
-          <p class="text-[10px] uppercase tracking-wider font-semibold mb-4" style="color: rgba(239,68,68,0.6);">Verification Result</p>
+          <p class="text-[13px] uppercase tracking-wider font-semibold mb-4" style="color: rgba(239,68,68,0.6);">Verification Result</p>
           <div class="space-y-2">
             <div class="flex items-baseline gap-3">
-              <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Verified</span>
+              <span class="text-[13px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Verified</span>
               <span class="text-sm font-mono" style="color: rgba(239,68,68,0.7);">true</span>
             </div>
             <div class="flex items-baseline gap-3">
-              <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Signature</span>
+              <span class="text-[13px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Signature</span>
               <span class="text-sm font-mono text-text-tertiary">[bytes]</span>
             </div>
             <div class="flex items-baseline gap-3">
-              <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Timestamp</span>
+              <span class="text-[13px] text-text-tertiary uppercase tracking-wider font-semibold w-24 flex-shrink-0">Timestamp</span>
               <span class="text-sm font-mono text-text-tertiary">2024-05-21 09:23</span>
             </div>
           </div>
-          <p class="text-[10px] mt-4 leading-relaxed" style="color: rgba(239,68,68,0.45);">Stored result — cannot re-verify independently</p>
+          <p class="text-[13px] mt-4 leading-relaxed" style="color: rgba(239,68,68,0.45);">Stored result — cannot re-verify independently</p>
         </div>
 
         <!-- Bottom card: Proof package with hoverable layers -->
         <div class="rounded-xl border p-5 md:p-6" style="background: rgba(56,189,248,0.02); border-color: rgba(74,222,128,0.15);">
-          <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(74,222,128,0.6);">Proof Package</p>
-          <p class="text-text-tertiary text-[10px] uppercase tracking-wider font-semibold mb-4">Select a layer to see what breaks without it</p>
+          <p class="text-[13px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(74,222,128,0.6);">Proof Package</p>
+          <p class="text-text-tertiary text-[13px] uppercase tracking-wider font-semibold mb-4">Select a layer to see what breaks without it</p>
 
           <div id="svp-layers" class="space-y-0"></div>
         </div>
@@ -158,12 +158,12 @@ for (let i = 0; i < layers.length; i++) {
 
   row.innerHTML = `
     <div class="flex items-center gap-4 px-5 py-3.5 border border-border transition-all duration-300" style="${borderRadius} border-bottom: ${isLast ? '1px' : '0'} solid rgba(255,255,255,0.06); background: ${layer.colorDim};">
-      <span class="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-[10px] font-mono font-bold transition-all duration-300" style="background: ${layer.color}; color: rgba(11,11,17,0.8);">${i + 1}</span>
+      <span class="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-[13px] font-mono font-bold transition-all duration-300" style="background: ${layer.color}; color: rgba(11,11,17,0.8);">${i + 1}</span>
       <div class="flex-1 min-w-0">
         <span class="text-sm font-display font-semibold text-text-primary transition-colors duration-300">${layer.label}</span>
         <span class="text-xs text-text-tertiary block sm:inline sm:ml-2 mt-0.5 sm:mt-0">${layer.description}</span>
       </div>
-      <span class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0 hidden sm:block">Remove?</span>
+      <span class="text-[13px] text-text-tertiary uppercase tracking-wider font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0 hidden sm:block">Remove?</span>
     </div>
   `;
 

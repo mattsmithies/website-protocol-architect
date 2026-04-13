@@ -11,7 +11,7 @@
       {/* Outcome metrics — below canvas, not overlapping */}
       <div class="grid grid-cols-2 gap-4 mt-4 border-t border-border pt-4">
         <div>
-          <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(239,68,68,0.5);">Issuance first</p>
+          <p class="text-[13px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(239,68,68,0.5);">Issuance first</p>
           <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
             <span class="text-text-tertiary">Searchability</span><span style="color: rgba(239,68,68,0.6);">Low</span>
             <span class="text-text-tertiary">Comparability</span><span style="color: rgba(239,68,68,0.6);">Low</span>
@@ -20,7 +20,7 @@
           </div>
         </div>
         <div>
-          <p class="text-[10px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(74,222,128,0.5);">Container first</p>
+          <p class="text-[13px] uppercase tracking-wider font-semibold mb-2" style="color: rgba(74,222,128,0.5);">Container first</p>
           <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
             <span class="text-text-tertiary">Searchability</span><span style="color: rgba(74,222,128,0.7);">High</span>
             <span class="text-text-tertiary">Comparability</span><span style="color: rgba(74,222,128,0.7);">High</span>
@@ -118,7 +118,7 @@ if (canvas) {
     const lineW = w - margin * 2;
 
     // Pipeline labels
-    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 12 : 13}px "Syne", system-ui`;
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(239,68,68,0.5)';
     ctx.fillText('ISSUANCE FIRST', margin, topY - (isNarrow ? 40 : 50));
@@ -167,12 +167,12 @@ if (canvas) {
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.font = `600 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(232,232,240,${alpha})`;
       ctx.textAlign = 'center';
       ctx.fillText(s.label, s.x, s.y - nodeR - 8);
 
-      ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+      ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
       ctx.fillStyle = `rgba(239,68,68,${alpha * 0.6})`;
       ctx.fillText(s.sublabel, s.x, s.y + nodeR + 12);
     }
@@ -220,12 +220,12 @@ if (canvas) {
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      ctx.font = `600 ${isNarrow ? 7 : 9}px "Syne", system-ui`;
+      ctx.font = `600 ${isNarrow ? 10 : 12}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(232,232,240,${alpha})`;
       ctx.textAlign = 'center';
       ctx.fillText(s.label, s.x, s.y - nodeR - 8);
 
-      ctx.font = `400 ${isNarrow ? 6 : 8}px "Inter", system-ui`;
+      ctx.font = `400 ${isNarrow ? 9 : 11}px "Inter", system-ui`;
       ctx.fillStyle = `rgba(74,222,128,${alpha * 0.6})`;
       ctx.fillText(s.sublabel, s.x, s.y + nodeR + 12);
     }

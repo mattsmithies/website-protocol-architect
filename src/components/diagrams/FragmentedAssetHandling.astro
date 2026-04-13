@@ -21,15 +21,15 @@
       <div id="fah-summary" class="mt-4 border-t border-border pt-4" aria-live="polite">
         <div class="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Portability</p>
+            <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Portability</p>
             <p class="text-sm font-display font-bold" id="fah-portability">—</p>
           </div>
           <div>
-            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Comparability</p>
+            <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Comparability</p>
             <p class="text-sm font-display font-bold" id="fah-comparability">—</p>
           </div>
           <div>
-            <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Audit cost</p>
+            <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Audit cost</p>
             <p class="text-sm font-display font-bold" id="fah-audit">—</p>
           </div>
         </div>
@@ -130,7 +130,7 @@ if (canvas && btnFrag && btnCont) {
     const midX = w / 2;
 
     // Column labels
-    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 12 : 13}px "Syne", system-ui`;
     ctx.textAlign = 'center';
 
     if (!isCont) {
@@ -148,7 +148,7 @@ if (canvas && btnFrag && btnCont) {
 
         // Left registry — different shapes
         drawShape(leftX, y, shapes[i], isNarrow ? 10 : 13, colorsA[i], 0.6);
-        ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+        ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
         ctx.fillStyle = `rgba(${colorsA[i][0]},${colorsA[i][1]},${colorsA[i][2]},0.5)`;
         ctx.textAlign = 'center';
         ctx.fillText(assetTypes[i], leftX, y + (isNarrow ? 20 : 24));
@@ -156,7 +156,7 @@ if (canvas && btnFrag && btnCont) {
         // Right registry — different shapes for same type
         const altShape = shapes[(i + 2) % 5];
         drawShape(rightX, y, altShape, isNarrow ? 10 : 13, colorsB[i], 0.6);
-        ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+        ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
         ctx.fillStyle = `rgba(${colorsB[i][0]},${colorsB[i][1]},${colorsB[i][2]},0.5)`;
         ctx.textAlign = 'center';
         ctx.fillText(assetTypes[i], rightX, y + (isNarrow ? 20 : 24));
@@ -189,7 +189,7 @@ if (canvas && btnFrag && btnCont) {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        ctx.font = '400 5px "JetBrains Mono", monospace';
+        ctx.font = '400 8px "JetBrains Mono", monospace';
         ctx.fillStyle = 'rgba(239,68,68,0.5)';
         ctx.textAlign = 'center';
         ctx.fillText('?', breakX, y + 2);
@@ -199,7 +199,7 @@ if (canvas && btnFrag && btnCont) {
       const fragLabels = isNarrow
         ? ['Schema \u2260', 'Identity \u2260', 'Metadata \u2260', 'History \u2260', 'Proof \u2260']
         : ['Different schema', 'Different identity model', 'Different metadata fields', 'Different history format', 'Different proof standard'];
-      ctx.font = `500 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+      ctx.font = `500 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
       ctx.textAlign = 'center';
       for (let i = 0; i < 5; i++) {
         ctx.fillStyle = 'rgba(239,68,68,0.45)';
@@ -207,7 +207,7 @@ if (canvas && btnFrag && btnCont) {
       }
 
       // Bottom status
-      ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
       ctx.fillStyle = 'rgba(239,68,68,0.5)';
       ctx.textAlign = 'center';
       ctx.fillText('Every transfer requires bespoke translation', midX, h - 20);
@@ -228,7 +228,7 @@ if (canvas && btnFrag && btnCont) {
         // Small shape inside to show asset identity preserved
         drawShape(leftX, y, shapes[i], isNarrow ? 5 : 6, VIOLET, 0.4);
 
-        ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+        ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
         ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},0.5)`;
         ctx.textAlign = 'center';
         ctx.fillText(assetTypes[i], leftX, y + (isNarrow ? 22 : 26));
@@ -237,7 +237,7 @@ if (canvas && btnFrag && btnCont) {
         drawContainer(rightX, y, isNarrow ? 10 : 13, color, 0.5);
         drawShape(rightX, y, shapes[i], isNarrow ? 5 : 6, VIOLET, 0.4);
 
-        ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
+        ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
         ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},0.5)`;
         ctx.textAlign = 'center';
         ctx.fillText(assetTypes[i], rightX, y + (isNarrow ? 22 : 26));
@@ -267,7 +267,7 @@ if (canvas && btnFrag && btnCont) {
       const contLabels = isNarrow
         ? ['Searchable \u2713', 'Comparable \u2713', 'Verifiable \u2713', 'Auditable \u2713', 'Portable \u2713']
         : ['Searchable across systems', 'Comparable across registries', 'Verifiable without translation', 'Auditable with provenance', 'Portable without ambiguity'];
-      ctx.font = `500 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+      ctx.font = `500 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
       ctx.textAlign = 'center';
       for (let i = 0; i < 5; i++) {
         ctx.fillStyle = 'rgba(74,222,128,0.5)';
@@ -275,7 +275,7 @@ if (canvas && btnFrag && btnCont) {
       }
 
       // Bottom status
-      ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
       ctx.fillStyle = 'rgba(74,222,128,0.5)';
       ctx.textAlign = 'center';
       ctx.fillText('Same container, any system', midX, h - 20);

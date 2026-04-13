@@ -21,19 +21,19 @@
       {/* Output metrics */}
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 border-t border-border pt-4">
         <div class="text-center">
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Quality</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Quality</p>
           <p class="text-sm font-display font-bold" id="adl-quality">—</p>
         </div>
         <div class="text-center">
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Freshness</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Freshness</p>
           <p class="text-sm font-display font-bold" id="adl-freshness">—</p>
         </div>
         <div class="text-center">
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Coverage</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Coverage</p>
           <p class="text-sm font-display font-bold" id="adl-coverage">—</p>
         </div>
         <div class="text-center">
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Reliability</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Reliability</p>
           <p class="text-sm font-display font-bold" id="adl-reliability">—</p>
         </div>
       </div>
@@ -117,7 +117,7 @@ if (canvas) {
     ctx.strokeStyle = `rgba(${mr},${mg},${mb},${isReal ? 0.5 : 0.15})`;
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    ctx.font = '600 10px "Syne", system-ui';
+    ctx.font = '600 13px "Syne", system-ui';
     ctx.fillStyle = `rgba(${mr},${mg},${mb},${isReal ? 0.7 : 0.25})`;
     ctx.textAlign = 'center';
     ctx.fillText('Agent', ax, ay - 28);
@@ -126,7 +126,7 @@ if (canvas) {
     const reqX = isNarrow ? w * 0.2 : w * 0.25;
     for (let i = 0; i < requests.length; i++) {
       const ry = 40 + i * ((h - 80) / (requests.length - 1));
-      ctx.font = '400 9px "Inter", system-ui';
+      ctx.font = '400 12px "Inter", system-ui';
       ctx.fillStyle = `rgba(${mr},${mg},${mb},${isReal ? 0.5 : 0.15})`;
       ctx.textAlign = 'left';
       ctx.fillText(requests[i], reqX, ry + 3);
@@ -160,7 +160,7 @@ if (canvas) {
     ctx.strokeStyle = `rgba(${gr},${gg},${gb},${isReal ? 0.3 : 0.1})`;
     ctx.lineWidth = 1;
     ctx.stroke();
-    ctx.font = '500 8px "Syne", system-ui';
+    ctx.font = '500 11px "Syne", system-ui';
     ctx.fillStyle = `rgba(${gr},${gg},${gb},${isReal ? 0.6 : 0.2})`;
     ctx.textAlign = 'center';
     ctx.fillText('Token', routeX, routeY - 4);
@@ -181,7 +181,7 @@ if (canvas) {
     const recX = isNarrow ? w * 0.72 : w * 0.78;
     for (let i = 0; i < recipients.length; i++) {
       const ry = 40 + i * ((h - 80) / (recipients.length - 1));
-      ctx.font = '400 9px "Inter", system-ui';
+      ctx.font = '400 12px "Inter", system-ui';
       ctx.fillStyle = `rgba(${gr},${gg},${gb},${isReal ? 0.5 : 0.15})`;
       ctx.textAlign = 'left';
       ctx.fillText(recipients[i], recX, ry + 3);
@@ -217,7 +217,7 @@ if (canvas) {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.font = '400 8px "Inter", system-ui';
+      ctx.font = '400 11px "Inter", system-ui';
       ctx.fillStyle = 'rgba(56,189,248,0.3)';
       ctx.textAlign = 'center';
       ctx.fillText('Better outputs → more requests', w - 50, h / 2);

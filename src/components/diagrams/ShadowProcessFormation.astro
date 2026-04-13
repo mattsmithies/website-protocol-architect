@@ -9,7 +9,7 @@
 
       <div class="mb-4">
         <div class="flex items-center justify-between mb-2">
-          <label for="sp-slider" class="text-[10px] text-text-tertiary uppercase tracking-wider font-semibold">Process rigidity</label>
+          <label for="sp-slider" class="text-[13px] text-text-tertiary uppercase tracking-wider font-semibold">Process rigidity</label>
           <span class="text-xs font-mono" id="sp-rigidity-label" style="color: rgba(74,222,128,0.7);">Flexible</span>
         </div>
         <input
@@ -20,7 +20,7 @@
         />
       </div>
 
-      <canvas id="sp-canvas" class="w-full" style="height: 340px;" role="img" aria-label="Visualisation of an official workflow line with shadow processes emerging as rigidity increases. Hover or tap side paths for details."></canvas>
+      <canvas id="sp-canvas" class="w-full" style="height: 400px;" role="img" aria-label="Visualisation of an official workflow line with shadow processes emerging as rigidity increases. Hover or tap side paths for details."></canvas>
 
       <div id="sp-tooltip" class="mt-3 min-h-[24px]" aria-live="polite">
         <p class="text-xs text-text-secondary italic" id="sp-tooltip-text">Hover or tap a shadow path to see why it emerged.</p>
@@ -28,11 +28,11 @@
 
       <div class="grid grid-cols-2 gap-4 mt-3 border-t border-border pt-4" aria-live="polite">
         <div class="text-center">
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">System truth</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">System truth</p>
           <p class="text-sm font-display font-bold" id="sp-truth">High</p>
         </div>
         <div class="text-center">
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Audit confidence</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Audit confidence</p>
           <p class="text-sm font-display font-bold" id="sp-audit">High</p>
         </div>
       </div>
@@ -103,7 +103,7 @@ if (canvas && slider) {
     ctx.clearRect(0, 0, w, h);
 
     // Main line
-    const marginX = isNarrow ? 30 : 50;
+    const marginX = isNarrow ? 30 : 60;
     const mainY = h / 2;
     const lineStartX = marginX;
     const lineEndX = w - marginX;
@@ -113,27 +113,48 @@ if (canvas && slider) {
     const activeShadows = shadowPaths.filter(s => rigidity >= s.threshold).length;
     const mainAlpha = Math.max(0.15, 0.7 - activeShadows * 0.11);
 
-    // Main line
-    ctx.beginPath();
-    ctx.moveTo(lineStartX, mainY);
-    ctx.lineTo(lineEndX, mainY);
-    ctx.strokeStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
     // Main steps
     const stepLabels = ['Initiate', 'Review', 'Evidence', 'Approve', 'Complete'];
     const stepPositions: { x: number; y: number }[] = [];
-    const stepRadius = isNarrow ? 16 : 20;
+    const stepRadius = isNarrow ? 20 : 24;
 
     for (let i = 0; i < 5; i++) {
-      const x = lineStartX + (lineWidth / 4) * i;
-      const y = mainY;
-      stepPositions.push({ x, y });
+      stepPositions.push({ x: lineStartX + (lineWidth / 4) * i, y: mainY });
+    }
+
+    // Progressive dashed segments between steps — opacity increases left to right
+    for (let i = 0; i < 4; i++) {
+      const x1 = stepPositions[i].x + stepRadius + 4;
+      const x2 = stepPositions[i + 1].x - stepRadius - 4;
+      const progress = (i + 1) / 5;
+      const segAlpha = mainAlpha * (0.12 + progress * 0.55);
+      const dashLen = 6;
+      const gapLen = 8;
+      const segLen = x2 - x1;
+      const dashCount = Math.floor(segLen / (dashLen + gapLen));
+
+      for (let d = 0; d < dashCount; d++) {
+        const dashProgress = d / dashCount;
+        const dx = x1 + d * (dashLen + gapLen);
+        const dashAlpha = segAlpha * (0.35 + dashProgress * 0.65);
+
+        ctx.beginPath();
+        ctx.moveTo(dx, mainY);
+        ctx.lineTo(Math.min(dx + dashLen, x2), mainY);
+        ctx.strokeStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${dashAlpha})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    // Draw step nodes
+    for (let i = 0; i < 5; i++) {
+      const { x, y } = stepPositions[i];
+      const stageAlpha = mainAlpha * (0.4 + (i / 4) * 0.6);
 
       // Node glow
       const grad = ctx.createRadialGradient(x, y, 0, x, y, stepRadius * 2.5);
-      grad.addColorStop(0, `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha * 0.15})`);
+      grad.addColorStop(0, `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${stageAlpha * 0.15})`);
       grad.addColorStop(1, `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
@@ -143,36 +164,36 @@ if (canvas && slider) {
       // Node circle
       ctx.beginPath();
       ctx.arc(x, y, stepRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha * 0.7})`;
+      ctx.strokeStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${stageAlpha * 0.7})`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha * 0.08})`;
+      ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${stageAlpha * 0.08})`;
       ctx.fill();
 
-      // Step number
-      ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
-      ctx.fillStyle = `rgba(232,232,240,${mainAlpha * 0.85})`;
+      // Step number — large and prominent
+      ctx.font = `700 ${isNarrow ? 14 : 16}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${stageAlpha * 0.95})`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(String(i + 1), x, y);
       ctx.textBaseline = 'alphabetic';
 
       // Step label
-      ctx.font = `400 ${isNarrow ? 7 : 8}px "Inter", system-ui`;
-      ctx.fillStyle = `rgba(232,232,240,${mainAlpha * 0.5})`;
+      ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${stageAlpha * 0.55})`;
       ctx.textAlign = 'center';
-      ctx.fillText(stepLabels[i], x, y + stepRadius + 14);
+      ctx.fillText(stepLabels[i], x, y + stepRadius + 16);
     }
 
     // "System tracked" label
-    ctx.font = `500 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+    ctx.font = `500 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
     ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},${mainAlpha * 0.5})`;
     ctx.textAlign = 'left';
-    ctx.fillText('SYSTEM TRACKED', lineStartX, mainY - stepRadius - 20);
+    ctx.fillText('SYSTEM TRACKED', lineStartX, mainY - stepRadius - 22);
 
     // ── Shadow paths ──
-    const shadowNodeRadius = isNarrow ? 11 : 14;
-    const shadowArmLength = isNarrow ? 55 : 75;
+    const shadowNodeRadius = isNarrow ? 13 : 16;
+    const shadowArmLength = isNarrow ? 65 : 85;
 
     for (let i = 0; i < shadowPaths.length; i++) {
       const sp = shadowPaths[i];
@@ -223,10 +244,10 @@ if (canvas && slider) {
       ctx.fill();
 
       // Shadow label
-      ctx.font = `500 ${isNarrow ? 6 : 7}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(${sr},${sg},${sb},${shadowAlpha * 0.8})`;
       ctx.textAlign = 'center';
-      const labelY = sp.direction === 'up' ? targetY - shadowNodeRadius - 7 : targetY + shadowNodeRadius + 11;
+      const labelY = sp.direction === 'up' ? targetY - shadowNodeRadius - 9 : targetY + shadowNodeRadius + 14;
       ctx.fillText(sp.label, targetX, labelY);
 
       // Store hit region
@@ -235,7 +256,7 @@ if (canvas && slider) {
 
     // "Shadow process" label (appears when paths exist)
     if (activeShadows > 0) {
-      ctx.font = `500 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+      ctx.font = `500 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
       ctx.fillStyle = 'rgba(239,68,68,0.4)';
       ctx.textAlign = 'left';
       ctx.fillText('SHADOW PROCESS', lineStartX, mainY + stepRadius + 30 + shadowArmLength);

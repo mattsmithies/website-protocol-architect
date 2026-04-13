@@ -16,19 +16,19 @@
         </button>
       </div>
 
-      <canvas id="lcg-canvas" class="w-full" style="height: 360px;" role="img" aria-label="Comparison of a linear approval chain versus a collaborative graph-shaped workflow with parallel inputs and structured choices"></canvas>
+      <canvas id="lcg-canvas" class="w-full" style="height: 460px;" role="img" aria-label="Comparison of a linear approval chain versus a collaborative graph-shaped workflow with parallel inputs and structured choices"></canvas>
 
       <div class="grid grid-cols-3 gap-4 mt-4 border-t border-border pt-4 text-center" aria-live="polite">
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Parallel input</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Parallel input</p>
           <p class="text-sm font-display font-bold" id="lcg-parallel" style="color: rgba(239,68,68,0.8);">Forced into side channels</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Structured choice</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Structured choice</p>
           <p class="text-sm font-display font-bold" id="lcg-choice" style="color: rgba(239,68,68,0.8);">Free text — not comparable</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider">Downstream reuse</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider">Downstream reuse</p>
           <p class="text-sm font-display font-bold" id="lcg-reuse" style="color: rgba(239,68,68,0.8);">Each client rebuilds logic</p>
         </div>
       </div>
@@ -76,15 +76,15 @@ if (canvas && btnLinear && btnGraph) {
     ctx.stroke();
 
     const isNarrow = canvas.clientWidth < 500;
-    ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(232,232,240,${alpha * 0.8})`;
     ctx.textAlign = 'center';
-    ctx.fillText(label, x, y - r - 7);
+    ctx.fillText(label, x, y - r - 10);
 
     if (sublabel) {
-      ctx.font = `400 ${isNarrow ? 6 : 7}px "Inter", system-ui`;
+      ctx.font = `400 ${isNarrow ? 9 : 10}px "Inter", system-ui`;
       ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha * 0.5})`;
-      ctx.fillText(sublabel, x, y + r + 11);
+      ctx.fillText(sublabel, x, y + r + 15);
     }
   }
 
@@ -117,7 +117,7 @@ if (canvas && btnLinear && btnGraph) {
     const isNarrow = w < 500;
     ctx.clearRect(0, 0, w, h);
 
-    const nr = isNarrow ? 12 : 16;
+    const nr = isNarrow ? 16 : 20;
 
     if (mode === 'linear') {
       // Simple 5-step linear chain
@@ -139,18 +139,18 @@ if (canvas && btnLinear && btnGraph) {
       }
 
       // Label
-      ctx.font = `400 ${isNarrow ? 8 : 9}px "Inter", system-ui`;
+      ctx.font = `400 ${isNarrow ? 11 : 12}px "Inter", system-ui`;
       ctx.fillStyle = 'rgba(239,68,68,0.4)';
       ctx.textAlign = 'center';
       ctx.fillText('Single lane. Single path. No parallel input.', w / 2, h - 20);
 
       // Choice labels on edges
       if (!isNarrow) {
-        ctx.font = '400 7px "JetBrains Mono", monospace';
+        ctx.font = '400 10px "JetBrains Mono", monospace';
         ctx.fillStyle = 'rgba(100,100,120,0.35)';
         for (let i = 0; i < steps.length - 1; i++) {
           const x = margin + (lineW / (steps.length - 1)) * (i + 0.5);
-          ctx.fillText('free text', x, cy - 22);
+          ctx.fillText('free text', x, cy - 28);
         }
       }
 
@@ -158,8 +158,8 @@ if (canvas && btnLinear && btnGraph) {
       // Collaborative graph
       const cx = w / 2;
       const cy = h / 2;
-      const spread = isNarrow ? w * 0.32 : w * 0.35;
-      const vSpread = h * 0.28;
+      const spread = isNarrow ? w * 0.34 : w * 0.37;
+      const vSpread = h * 0.30;
 
       // Node positions
       const nodes: { x: number; y: number; label: string; sublabel: string; color: [number, number, number] }[] = [
@@ -193,14 +193,14 @@ if (canvas && btnLinear && btnGraph) {
 
       // Choice annotations
       if (!isNarrow) {
-        ctx.font = '400 7px "JetBrains Mono", monospace';
+        ctx.font = '400 10px "JetBrains Mono", monospace';
         ctx.textAlign = 'left';
         ctx.fillStyle = 'rgba(74,222,128,0.4)';
         ctx.fillText('approve | reject | escalate', nodes[3].x + nr + 8, nodes[3].y + 3);
         ctx.fillText('low | medium | high | critical', nodes[4].x + nr + 8, nodes[4].y + 3);
       }
 
-      ctx.font = `400 ${isNarrow ? 8 : 9}px "Inter", system-ui`;
+      ctx.font = `400 ${isNarrow ? 11 : 12}px "Inter", system-ui`;
       ctx.fillStyle = 'rgba(74,222,128,0.4)';
       ctx.textAlign = 'center';
       ctx.fillText('Parallel inputs. Structured choices. Convergent outcome.', w / 2, h - 20);

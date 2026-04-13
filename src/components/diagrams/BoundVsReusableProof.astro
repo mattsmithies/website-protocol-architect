@@ -10,7 +10,7 @@
       <canvas
         id="bvr-canvas"
         class="w-full"
-        style="height: 380px;"
+        style="height: 500px;"
         role="img"
         aria-label="Two horizontal flows comparing proof reuse. Top flow shows a signed proof being reattached from its original action to a different action without protection. Bottom flow shows a nonce-bound proof that cannot be reused against a different action."
       ></canvas>
@@ -18,14 +18,14 @@
       <!-- Metrics -->
       <div class="grid grid-cols-2 gap-4 mt-4 border-t border-border pt-4">
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Context binding</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Context binding</p>
           <div class="space-y-1">
             <p class="text-xs font-display font-bold" style="color: rgba(239,68,68,0.8);">Without: None — reusable</p>
             <p class="text-xs font-display font-bold" style="color: rgba(74,222,128,0.8);">With: Nonce bound — single use</p>
           </div>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Replay protection</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Replay protection</p>
           <div class="space-y-1">
             <p class="text-xs font-display font-bold" style="color: rgba(239,68,68,0.8);">Without: Vulnerable</p>
             <p class="text-xs font-display font-bold" style="color: rgba(74,222,128,0.8);">With: Protected</p>
@@ -148,15 +148,15 @@ if (canvas) {
     const margin = isNarrow ? 16 : 40;
     const nodeW = isNarrow ? 80 : 110;
     const nodeH = isNarrow ? 40 : 48;
-    const proofW = isNarrow ? 90 : 130;
-    const proofH = isNarrow ? 44 : 52;
+    const proofW = isNarrow ? 160 : 200;
+    const proofH = isNarrow ? 56 : 64;
 
     const flowW = w - margin * 2;
     const cx = w / 2;
 
     // Top flow Y centre, bottom flow Y centre
-    const topY = isNarrow ? h * 0.22 : h * 0.24;
-    const bottomY = isNarrow ? h * 0.72 : h * 0.74;
+    const topY = isNarrow ? h * 0.20 : h * 0.22;
+    const bottomY = isNarrow ? h * 0.76 : h * 0.76;
     const dividerY = h * 0.48;
 
     // Node X positions: left, centre, right
@@ -172,7 +172,7 @@ if (canvas) {
     ctx.stroke();
 
     // Section labels
-    ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 12 : 14}px "Syne", system-ui`;
     ctx.textAlign = 'left';
     ctx.fillStyle = `rgba(${RED[0]},${RED[1]},${RED[2]},0.5)`;
     ctx.fillText('Without context binding', margin, isNarrow ? 14 : 18);
@@ -212,7 +212,7 @@ if (canvas) {
     }
 
     // "Proof reattached" label on right arrow
-    ctx.font = `500 ${isNarrow ? 7 : 9}px "Syne", system-ui`;
+    ctx.font = `500 ${isNarrow ? 10 : 12}px "Syne", system-ui`;
     ctx.textAlign = 'center';
     ctx.fillStyle = `rgba(${RED[0]},${RED[1]},${RED[2]},0.55)`;
     const topRightMidX = (cx + proofW / 2 + rightX - nodeW / 2) / 2;
@@ -225,7 +225,7 @@ if (canvas) {
     ctx.strokeStyle = 'rgba(100,100,120,0.25)';
     ctx.lineWidth = 1;
     ctx.stroke();
-    ctx.font = `600 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(232,232,240,0.6)';
     ctx.textAlign = 'center';
     ctx.fillText('Original action', leftX, topY + 3);
@@ -237,7 +237,7 @@ if (canvas) {
     ctx.strokeStyle = `rgba(${RED[0]},${RED[1]},${RED[2]},0.3)`;
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    ctx.font = `600 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(${RED[0]},${RED[1]},${RED[2]},0.7)`;
     ctx.textAlign = 'center';
     ctx.fillText('Signed proof', cx, topY + 3);
@@ -249,7 +249,7 @@ if (canvas) {
     ctx.strokeStyle = `rgba(${AMBER[0]},${AMBER[1]},${AMBER[2]},0.25)`;
     ctx.lineWidth = 1;
     ctx.stroke();
-    ctx.font = `600 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(${AMBER[0]},${AMBER[1]},${AMBER[2]},0.7)`;
     ctx.textAlign = 'center';
     ctx.fillText('Different action', rightX, topY + 3);
@@ -259,10 +259,10 @@ if (canvas) {
     drawCheck(checkX, topY, isNarrow ? 6 : 8, AMBER, 0.7);
 
     // Top status text
-    ctx.font = `500 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+    ctx.font = `500 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(${RED[0]},${RED[1]},${RED[2]},0.6)`;
     ctx.textAlign = 'center';
-    const topStatusY = topY + proofH / 2 + (isNarrow ? 16 : 22);
+    const topStatusY = topY + proofH / 2 + (isNarrow ? 22 : 28);
     const topStatus = 'Same bytes. Different context. Fact claim now ambiguous.';
     // Word-wrap
     const maxStatusW = w - margin * 2 - 20;
@@ -318,7 +318,7 @@ if (canvas) {
     ctx.strokeStyle = 'rgba(100,100,120,0.25)';
     ctx.lineWidth = 1;
     ctx.stroke();
-    ctx.font = `600 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(232,232,240,0.6)';
     ctx.textAlign = 'center';
     ctx.fillText('Original action', leftX, bottomY + 3);
@@ -337,18 +337,18 @@ if (canvas) {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    ctx.font = `600 ${isNarrow ? 7 : 9}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 10 : 12}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(${GREEN[0]},${GREEN[1]},${GREEN[2]},0.7)`;
     ctx.textAlign = 'center';
-    ctx.fillText('Bound proof', cx, bottomY - (isNarrow ? 6 : 8));
+    ctx.fillText('Bound proof', cx, bottomY - (isNarrow ? 10 : 12));
 
     // Internal labels
-    ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+    ctx.font = `400 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
     ctx.fillStyle = `rgba(${GREEN[0]},${GREEN[1]},${GREEN[2]},0.45)`;
-    ctx.fillText('content + nonce + signature', cx, bottomY + (isNarrow ? 6 : 8));
+    ctx.fillText('content + nonce + signature', cx, bottomY + (isNarrow ? 10 : 14));
 
     // Nonce label below proof node
-    ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+    ctx.font = `400 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
     ctx.fillStyle = `rgba(${GREEN[0]},${GREEN[1]},${GREEN[2]},0.35)`;
     ctx.fillText('nonce: n-4821', cx, bottomY + proofH / 2 + (isNarrow ? 10 : 12));
 
@@ -361,7 +361,7 @@ if (canvas) {
     ctx.setLineDash([3, 3]);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.font = `600 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(239,68,68,0.45)';
     ctx.textAlign = 'center';
     ctx.fillText('Different action', rightX, bottomY + 3);
@@ -371,10 +371,10 @@ if (canvas) {
     drawX(rejectX, bottomY, isNarrow ? 6 : 8, RED, 0.6);
 
     // Bottom status text
-    ctx.font = `500 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+    ctx.font = `500 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(${GREEN[0]},${GREEN[1]},${GREEN[2]},0.6)`;
     ctx.textAlign = 'center';
-    const bottomStatusY = bottomY + proofH / 2 + (isNarrow ? 24 : 30);
+    const bottomStatusY = bottomY + proofH / 2 + (isNarrow ? 30 : 36);
     ctx.fillText('Proof bound to original action. Cannot be reused.', cx, bottomStatusY);
 
     if (!prefersReducedMotion) {

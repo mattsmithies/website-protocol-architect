@@ -9,13 +9,13 @@
       {/* Left: Narrative token */}
       <div class="p-6 md:p-8">
         <p class="text-red-400/70 text-xs font-semibold tracking-[0.2em] uppercase mb-5">Narrative Token</p>
-        <canvas id="tnf-narrative" class="w-full" style="height: 260px;" role="img" aria-label="Narrative token flow — value moves from treasury through rewards to users then exits via exchanges"></canvas>
+        <canvas id="tnf-narrative" class="w-full" style="height: 380px;" role="img" aria-label="Narrative token flow — value moves from treasury through rewards to users then exits via exchanges"></canvas>
       </div>
 
       {/* Right: Demand sink token */}
       <div class="p-6 md:p-8">
         <p class="text-green-400/70 text-xs font-semibold tracking-[0.2em] uppercase mb-5">Demand Sink Token</p>
-        <canvas id="tnf-demand" class="w-full" style="height: 260px;" role="img" aria-label="Demand sink token flow — value cycles through required network actions and contributors, reinforcing the network"></canvas>
+        <canvas id="tnf-demand" class="w-full" style="height: 380px;" role="img" aria-label="Demand sink token flow — value cycles through required network actions and contributors, reinforcing the network"></canvas>
       </div>
 
     </div>
@@ -38,8 +38,8 @@ function drawTokenFlow(canvasId: string, type: 'narrative' | 'demand') {
   const AMBER = [245, 158, 11];
   const DIM = [120, 120, 140];
 
-  interface FNode { x: number; y: number; label: string; color: number[]; }
-  interface FEdge { from: number; to: number; color: number[]; thick: number; label: string; type: 'leak' | 'sink' | 'reinforce' | 'neutral'; }
+  interface FNode { x: number; y: number; label: string; color: number[]; halfW: number; halfH: number; }
+  interface FEdge { from: number; to: number; color: number[]; label: string; type: 'leak' | 'sink' | 'reinforce' | 'neutral'; }
 
   let nodes: FNode[] = [];
   let edges: FEdge[] = [];
@@ -53,39 +53,48 @@ function drawTokenFlow(canvasId: string, type: 'narrative' | 'demand') {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
+  function measureNode(label: string): { halfW: number; halfH: number } {
+    ctx.font = '600 13px "Syne", system-ui';
+    const tw = ctx.measureText(label).width;
+    return { halfW: tw / 2 + 18, halfH: 16 };
+  }
+
   function build() {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
-    const cx = w / 2;
+    const cx = w * 0.38;
+    const step = (h - 70) / 4;
 
     if (type === 'narrative') {
-      nodes = [
-        { x: cx, y: 30, label: 'Treasury', color: VIOLET },
-        { x: cx, y: 85, label: 'Rewards', color: AMBER },
-        { x: cx, y: 140, label: 'Users', color: DIM },
-        { x: cx, y: 195, label: 'Exchange', color: RED },
-        { x: cx, y: 245, label: 'Sell', color: RED },
+      const raw = [
+        { x: cx, y: 40, label: 'Treasury', color: VIOLET },
+        { x: cx, y: 40 + step, label: 'Rewards', color: AMBER },
+        { x: cx, y: 40 + step * 2, label: 'Users', color: DIM },
+        { x: cx, y: 40 + step * 3, label: 'Exchange', color: RED },
+        { x: cx, y: 40 + step * 4, label: 'Sell', color: RED },
       ];
+      nodes = raw.map(n => ({ ...n, ...measureNode(n.label) }));
       edges = [
-        { from: 0, to: 1, color: VIOLET, thick: 2.5, label: 'Emission', type: 'neutral' },
-        { from: 1, to: 2, color: AMBER, thick: 2.0, label: 'Distribute', type: 'neutral' },
-        { from: 2, to: 3, color: RED, thick: 3.0, label: 'Dump', type: 'leak' },
-        { from: 3, to: 4, color: RED, thick: 3.5, label: 'Exit', type: 'leak' },
+        { from: 0, to: 1, color: VIOLET, label: 'Emission', type: 'neutral' },
+        { from: 1, to: 2, color: AMBER, label: 'Distribute', type: 'neutral' },
+        { from: 2, to: 3, color: RED, label: 'Dump', type: 'leak' },
+        { from: 3, to: 4, color: RED, label: 'Exit', type: 'leak' },
       ];
     } else {
-      nodes = [
-        { x: cx, y: 25, label: 'Buyers', color: BLUE },
-        { x: cx, y: 75, label: 'Token', color: VIOLET },
-        { x: cx, y: 130, label: 'Network Action', color: GREEN },
-        { x: cx, y: 185, label: 'Contributors', color: GREEN },
-        { x: cx, y: 240, label: 'Better Network', color: BLUE },
+      const raw = [
+        { x: cx, y: 40, label: 'Buyers', color: BLUE },
+        { x: cx, y: 40 + step, label: 'Token', color: VIOLET },
+        { x: cx, y: 40 + step * 2, label: 'Network Action', color: GREEN },
+        { x: cx, y: 40 + step * 3, label: 'Contributors', color: GREEN },
+        { x: cx, y: 40 + step * 4, label: 'Better Network', color: BLUE },
       ];
+      nodes = raw.map(n => ({ ...n, ...measureNode(n.label) }));
       edges = [
-        { from: 0, to: 1, color: BLUE, thick: 2.0, label: 'Acquire', type: 'sink' },
-        { from: 1, to: 2, color: GREEN, thick: 2.5, label: 'Required spend', type: 'sink' },
-        { from: 2, to: 3, color: GREEN, thick: 2.0, label: 'Redistribute', type: 'reinforce' },
-        { from: 3, to: 4, color: BLUE, thick: 2.0, label: 'Improve', type: 'reinforce' },
-        { from: 4, to: 0, color: BLUE, thick: 1.5, label: 'Attract', type: 'reinforce' },
+        { from: 0, to: 1, color: BLUE, label: 'Acquire', type: 'sink' },
+        { from: 1, to: 2, color: GREEN, label: 'Required spend', type: 'sink' },
+        { from: 2, to: 3, color: GREEN, label: 'Redistribute', type: 'reinforce' },
+        { from: 3, to: 4, color: BLUE, label: 'Improve', type: 'reinforce' },
+        { from: 4, to: 0, color: BLUE, label: 'Attract', type: 'reinforce' },
       ];
     }
   }
@@ -96,78 +105,114 @@ function drawTokenFlow(canvasId: string, type: 'narrative' | 'demand') {
     const t = now * 0.001;
     ctx.clearRect(0, 0, w, h);
 
-    // Edges with particles
+    const typeColors: Record<string, string> = {
+      leak: `rgba(239,68,68,0.45)`,
+      sink: `rgba(74,222,128,0.45)`,
+      reinforce: `rgba(56,189,248,0.45)`,
+      neutral: `rgba(167,139,250,0.35)`,
+    };
+
+    // Edges (behind nodes)
     for (let i = 0; i < edges.length; i++) {
       const e = edges[i];
       const a = nodes[e.from];
       const b = nodes[e.to];
       const [r, g, bl] = e.color;
 
+      // Skip the feedback loop edge (last edge in demand mode) — drawn separately
+      if (type === 'demand' && i === edges.length - 1) continue;
+
+      const y1 = a.y + a.halfH;
+      const y2 = b.y - b.halfH;
+
+      // Subtle flow line
       ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.strokeStyle = `rgba(${r},${g},${bl},0.2)`;
-      ctx.lineWidth = e.thick;
+      ctx.moveTo(a.x, y1);
+      ctx.lineTo(b.x, y2);
+      ctx.strokeStyle = `rgba(${r},${g},${bl},0.12)`;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Particles
-      for (let p = 0; p < 3; p++) {
-        const pt = ((t * 0.3 + i * 0.15 + p * 0.33) % 1);
-        const px = a.x + (b.x - a.x) * pt;
-        const py = a.y + (b.y - a.y) * pt;
-        ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${g},${bl},0.6)`;
-        ctx.fill();
-      }
+      // Small directional chevron at midpoint
+      const mx = (a.x + b.x) / 2;
+      const my = (y1 + y2) / 2;
+      const chevSize = 4;
+      ctx.beginPath();
+      ctx.moveTo(mx - chevSize, my - chevSize);
+      ctx.lineTo(mx, my);
+      ctx.lineTo(mx + chevSize, my - chevSize);
+      ctx.strokeStyle = `rgba(${r},${g},${bl},0.25)`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
 
-      // Edge label
-      const mx = (a.x + b.x) / 2 + 20;
-      const my = (a.y + b.y) / 2;
-      ctx.font = '400 8px "Inter", system-ui';
-      const typeColors = { leak: `rgba(239,68,68,0.5)`, sink: `rgba(74,222,128,0.5)`, reinforce: `rgba(56,189,248,0.5)`, neutral: `rgba(167,139,250,0.4)` };
+      // Subtle particle
+      const pt = ((t * 0.2 + i * 0.2) % 1);
+      const py = y1 + (y2 - y1) * pt;
+      ctx.beginPath();
+      ctx.arc(a.x + (b.x - a.x) * pt, py, 2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${bl},0.4)`;
+      ctx.fill();
+
+      // Edge label — inline beside flow line
+      ctx.font = '400 11px "Inter", system-ui';
       ctx.fillStyle = typeColors[e.type];
       ctx.textAlign = 'left';
-      ctx.fillText(e.label, mx, my + 3);
+      ctx.fillText(e.label, mx + 10, my + 4);
     }
 
-    // Feedback arrow for demand model
+    // Feedback loop for demand model
     if (type === 'demand') {
-      const a = nodes[4];
-      const b = nodes[0];
+      const e = edges[edges.length - 1];
+      const a = nodes[e.from];
+      const b = nodes[e.to];
+      const [r, g, bl] = e.color;
+
       ctx.beginPath();
-      ctx.moveTo(a.x + 40, a.y);
-      ctx.quadraticCurveTo(w - 20, (a.y + b.y) / 2, b.x + 40, b.y);
-      ctx.strokeStyle = 'rgba(56,189,248,0.12)';
+      ctx.moveTo(a.x + a.halfW + 6, a.y);
+      ctx.quadraticCurveTo(w - 16, (a.y + b.y) / 2, b.x + b.halfW + 6, b.y);
+      ctx.strokeStyle = `rgba(${r},${g},${bl},0.10)`;
       ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
+      ctx.setLineDash([5, 5]);
       ctx.stroke();
       ctx.setLineDash([]);
+
+      // Label on curve
+      ctx.font = '400 10px "Inter", system-ui';
+      ctx.fillStyle = `rgba(${r},${g},${bl},0.35)`;
+      ctx.textAlign = 'center';
+      ctx.fillText(e.label, w - 22, (a.y + b.y) / 2);
     }
 
-    // Nodes
+    // Nodes — rounded rectangles
     for (const node of nodes) {
       const [r, g, bl] = node.color;
-      const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, 30);
-      grad.addColorStop(0, `rgba(${r},${g},${bl},0.1)`);
+      const { x, y, halfW, halfH } = node;
+
+      // Glow
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, halfW * 1.8);
+      grad.addColorStop(0, `rgba(${r},${g},${bl},0.06)`);
       grad.addColorStop(1, `rgba(${r},${g},${bl},0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(node.x, node.y, 30, 0, Math.PI * 2);
+      ctx.arc(x, y, halfW * 1.8, 0, Math.PI * 2);
       ctx.fill();
 
+      // Rounded rect
       ctx.beginPath();
-      ctx.arc(node.x, node.y, 10, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${r},${g},${bl},0.4)`;
+      ctx.roundRect(x - halfW, y - halfH, halfW * 2, halfH * 2, 8);
+      ctx.fillStyle = `rgba(${r},${g},${bl},0.06)`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${bl},0.35)`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      ctx.fillStyle = `rgba(${r},${g},${bl},0.08)`;
-      ctx.fill();
 
-      ctx.font = '600 10px "Syne", system-ui';
-      ctx.fillStyle = `rgba(232,232,240,0.7)`;
+      // Label
+      ctx.font = '600 13px "Syne", system-ui';
+      ctx.fillStyle = `rgba(232,232,240,0.85)`;
       ctx.textAlign = 'center';
-      ctx.fillText(node.label, node.x, node.y - 16);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.label, x, y);
+      ctx.textBaseline = 'alphabetic';
     }
 
     animId = requestAnimationFrame(render);

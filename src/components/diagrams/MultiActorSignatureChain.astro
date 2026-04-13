@@ -277,7 +277,7 @@ if (canvas) {
       }
 
       // Icon inside: checkmark or X
-      ctx.font = `${stage.removed ? '600' : '400'} ${isNarrow ? 14 : 16}px system-ui`;
+      ctx.font = `${stage.removed ? '600' : '400'} ${isNarrow ? 16 : 18}px system-ui`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if (stage.removed) {
@@ -286,26 +286,26 @@ if (canvas) {
       } else {
         ctx.fillStyle = `rgba(${r},${g},${b},0.7)`;
         // Lock icon (simple representation)
-        ctx.font = `400 ${isNarrow ? 12 : 14}px system-ui`;
+        ctx.font = `400 ${isNarrow ? 15 : 16}px system-ui`;
         ctx.fillText('\u2713', stage.x, stage.y);
       }
 
       // Role label above
-      ctx.font = `400 ${isNarrow ? 8 : 9}px 'Inter', system-ui`;
+      ctx.font = `400 ${isNarrow ? 11 : 12}px 'Inter', system-ui`;
       ctx.fillStyle = `rgba(${r},${g},${b},${0.55 * alpha})`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       ctx.fillText(stage.role, stage.x, stage.y - stage.radius - 18);
 
       // Stage label below
-      ctx.font = `600 ${isNarrow ? 9 : 10}px 'Syne', system-ui`;
+      ctx.font = `600 ${isNarrow ? 12 : 13}px 'Syne', system-ui`;
       ctx.fillStyle = `rgba(232,232,240,${0.8 * alpha})`;
       ctx.textAlign = 'center';
       ctx.fillText(stage.label, stage.x, stage.y + stage.radius + 16);
 
       // "Removed" label for removed stages
       if (stage.removed) {
-        ctx.font = `600 ${isNarrow ? 7 : 8}px 'JetBrains Mono', monospace`;
+        ctx.font = `600 ${isNarrow ? 10 : 11}px 'JetBrains Mono', monospace`;
         ctx.fillStyle = 'rgba(239,68,68,0.6)';
         ctx.fillText('REMOVED', stage.x, stage.y + stage.radius + 28);
       }

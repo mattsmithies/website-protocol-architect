@@ -172,14 +172,14 @@ if (canvas) {
       ctx.fill();
 
       // Label
-      ctx.font = `600 ${w < 500 ? 10 : 11}px 'Syne', system-ui, sans-serif`;
+      ctx.font = `600 ${w < 500 ? 13 : 14}px 'Syne', system-ui, sans-serif`;
       ctx.fillStyle = `rgba(232, 232, 240, 0.85)`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(node.label, node.x, node.y - 6);
 
       // Sublabel
-      ctx.font = `400 ${w < 500 ? 8 : 9}px 'Inter', system-ui, sans-serif`;
+      ctx.font = `400 ${w < 500 ? 11 : 12}px 'Inter', system-ui, sans-serif`;
       ctx.fillStyle = `rgba(${r}, ${g}, ${bl}, 0.5)`;
       ctx.fillText(node.sublabel, node.x, node.y + 8);
     }

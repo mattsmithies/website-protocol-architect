@@ -33,15 +33,15 @@
       <!-- Metrics -->
       <div class="grid grid-cols-3 gap-4 border-t border-border pt-4" aria-live="polite">
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Single point of failure</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Single point of failure</p>
           <p class="text-sm font-display font-bold" id="rab-metric-spof" style="color: rgba(239,68,68,0.8);">Yes</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Survives system removal</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Survives system removal</p>
           <p class="text-sm font-display font-bold" id="rab-metric-survive" style="color: rgba(239,68,68,0.8);">No</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Cross-boundary replay</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Cross-boundary replay</p>
           <p class="text-sm font-display font-bold" id="rab-metric-cross" style="color: rgba(239,68,68,0.8);">Not possible</p>
         </div>
       </div>
@@ -130,12 +130,12 @@ if (canvas && btnLocal && btnPortable) {
     const cx = w / 2;
     const cy = h / 2;
     const positions = getSystemPositions(w, h, isNarrow);
-    const boxW = isNarrow ? 90 : 120;
-    const boxH = isNarrow ? 44 : 52;
+    const boxW = isNarrow ? 99 : 132;
+    const boxH = isNarrow ? 48 : 57;
 
     // Proof package in centre
-    const pkgW = isNarrow ? 80 : 110;
-    const pkgH = isNarrow ? 48 : 56;
+    const pkgW = isNarrow ? 140 : 175;
+    const pkgH = isNarrow ? 72 : 85;
 
     // Draw connections first (behind everything)
     for (let i = 0; i < 4; i++) {
@@ -211,7 +211,7 @@ if (canvas && btnLocal && btnPortable) {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.font = `600 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+      ctx.font = `600 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
       ctx.fillStyle = 'rgba(239,68,68,0.5)';
       ctx.textAlign = 'center';
       ctx.fillText('PROOF LOST', cx, cy + 3);
@@ -233,14 +233,14 @@ if (canvas && btnLocal && btnPortable) {
       ctx.shadowBlur = 0;
 
       // Label
-      ctx.font = `600 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+      ctx.font = `600 ${isNarrow ? 10 : 11}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(${pr},${pg},${pb},0.6)`;
       ctx.textAlign = 'center';
-      ctx.fillText('PROOF PACKAGE', cx, cy - (isNarrow ? 12 : 16));
+      ctx.fillText('PROOF PACKAGE', cx, cy - (isNarrow ? 22 : 28));
 
       if (mode === 'portable') {
         // Show field labels
-        ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+        ctx.font = `400 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
         ctx.fillStyle = `rgba(${pr},${pg},${pb},0.45)`;
         const fieldStr = proofFields.join(' + ');
         // Wrap if needed
@@ -258,13 +258,13 @@ if (canvas && btnLocal && btnPortable) {
           }
         }
         if (line) lines.push(line);
-        const lineH = isNarrow ? 9 : 10;
-        const startY = cy - (lines.length * lineH) / 2 + 4;
+        const lineH = isNarrow ? 11 : 13;
+        const startY = cy - (lines.length * lineH) / 2 + 14;
         for (let l = 0; l < lines.length; l++) {
           ctx.fillText(lines[l], cx, startY + l * lineH);
         }
       } else {
-        ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+        ctx.font = `400 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
         ctx.fillStyle = `rgba(${pr},${pg},${pb},0.4)`;
         ctx.fillText('signature', cx, cy + 3);
       }
@@ -306,7 +306,7 @@ if (canvas && btnLocal && btnPortable) {
         ctx.stroke();
         ctx.lineCap = 'butt';
 
-        ctx.font = `500 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+        ctx.font = `500 ${isNarrow ? 10 : 11}px "Syne", system-ui`;
         ctx.fillStyle = 'rgba(239,68,68,0.35)';
         ctx.textAlign = 'center';
         ctx.fillText('REMOVED', pos.x, pos.y + boxH / 2 + (isNarrow ? 10 : 14));
@@ -333,14 +333,14 @@ if (canvas && btnLocal && btnPortable) {
         }
 
         // System label
-        ctx.font = `600 ${isNarrow ? 8 : 10}px "Syne", system-ui`;
+        ctx.font = `600 ${isNarrow ? 11 : 13}px "Syne", system-ui`;
         ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${isActive ? 0.8 : 0.3})`;
         ctx.textAlign = 'center';
         ctx.fillText(sys.label, pos.x, pos.y - 2);
 
         // Preserves label
         if (mode === 'portable' && isActive) {
-          ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+          ctx.font = `400 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
           ctx.fillStyle = `rgba(${sr},${sg},${sb},0.45)`;
           ctx.fillText(sys.preserves, pos.x, pos.y + 12);
         }
@@ -357,7 +357,7 @@ if (canvas && btnLocal && btnPortable) {
       ctx.fill();
 
       // "Click to remove" hint
-      ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+      ctx.font = `400 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
       ctx.fillStyle = `rgba(${VIOLET[0]},${VIOLET[1]},${VIOLET[2]},0.3)`;
       ctx.textAlign = 'center';
       ctx.fillText('click to remove', positions[0].x, positions[0].y + boxH / 2 + (isNarrow ? 10 : 14));
@@ -365,7 +365,7 @@ if (canvas && btnLocal && btnPortable) {
 
     if (mode === 'portable' && removedSystem === -1 && !prefersReducedMotion) {
       // Hint on all boxes
-      ctx.font = `400 ${isNarrow ? 6 : 7}px "JetBrains Mono", monospace`;
+      ctx.font = `400 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
       ctx.fillStyle = 'rgba(232,232,240,0.2)';
       ctx.textAlign = 'center';
       for (let i = 0; i < 4; i++) {

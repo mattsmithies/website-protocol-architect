@@ -29,15 +29,15 @@
       <!-- Metrics -->
       <div class="grid grid-cols-3 gap-4 mt-4 border-t border-border pt-4" aria-live="polite">
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Post-quantum ready</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Post-quantum ready</p>
           <p class="text-sm font-display font-bold" id="rvap-metric-pq" style="color: rgba(239,68,68,0.8);">Requires redesign</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Signature size</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Signature size</p>
           <p class="text-sm font-display font-bold" id="rvap-metric-size" style="color: rgba(239,68,68,0.8);">Hard-coded</p>
         </div>
         <div>
-          <p class="text-[10px] text-text-tertiary uppercase tracking-wider mb-1">Dual signature</p>
+          <p class="text-[13px] text-text-tertiary uppercase tracking-wider mb-1">Dual signature</p>
           <p class="text-sm font-display font-bold" id="rvap-metric-dual" style="color: rgba(239,68,68,0.8);">Not supported</p>
         </div>
       </div>
@@ -125,7 +125,7 @@ if (canvas && btnFixed && btnAgnostic) {
     let startY = h * 0.12;
 
     // Title
-    ctx.font = `600 ${isNarrow ? 10 : 12}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 13 : 15}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(239,68,68,0.7)';
     ctx.textAlign = 'center';
     ctx.fillText('Fixed signature model', cx, startY - 6);
@@ -145,13 +145,13 @@ if (canvas && btnFixed && btnAgnostic) {
       ctx.lineWidth = isWarning ? 1.5 : 1;
       ctx.stroke();
 
-      ctx.font = `500 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 12 : 13}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
       ctx.textAlign = 'center';
       ctx.fillText(item.label, cx, y + boxH / 2 + 3);
 
       if (item.sub) {
-        ctx.font = `400 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+        ctx.font = `400 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
         ctx.fillStyle = `rgba(${r},${g},${b},0.4)`;
         ctx.fillText(item.sub, cx + boxW / 2 + (isNarrow ? 4 : 8), y + boxH / 2 + 3);
         ctx.textAlign = 'center';
@@ -165,7 +165,7 @@ if (canvas && btnFixed && btnAgnostic) {
     const fieldX = cx - fieldBoxW / 2;
 
     // The fixed-size field box
-    ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.font = `500 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(100,100,120,0.5)';
     ctx.textAlign = 'center';
     ctx.fillText('64-byte signature field', cx, overflowY - 6);
@@ -196,7 +196,7 @@ if (canvas && btnFixed && btnAgnostic) {
     ctx.stroke();
 
     // Label inside blob
-    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 12 : 13}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(239,68,68,${0.7 * pulse / 0.5})`;
     ctx.textAlign = 'center';
     ctx.fillText('ML-DSA-65 signature (3293 bytes)', cx, overflowY + blobH / 2 + 3);
@@ -223,7 +223,7 @@ if (canvas && btnFixed && btnAgnostic) {
     ctx.lineCap = 'butt';
 
     // Overflow labels
-    ctx.font = `600 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+    ctx.font = `600 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
     ctx.fillStyle = `rgba(239,68,68,${0.6 * pulse / 0.5})`;
     ctx.textAlign = 'center';
     ctx.fillText('OVERFLOW', cx, overflowY + blobH + (isNarrow ? 14 : 18));
@@ -249,7 +249,7 @@ if (canvas && btnFixed && btnAgnostic) {
     let startY = h * 0.08;
 
     // Title
-    ctx.font = `600 ${isNarrow ? 10 : 12}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 13 : 15}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(74,222,128,0.7)';
     ctx.textAlign = 'center';
     ctx.fillText('Algorithm-agnostic envelope', cx, startY - 6);
@@ -276,7 +276,7 @@ if (canvas && btnFixed && btnAgnostic) {
         ctx.shadowBlur = 0;
       }
 
-      ctx.font = `500 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+      ctx.font = `500 ${isNarrow ? 12 : 13}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(${r},${g},${b},0.8)`;
       ctx.textAlign = 'center';
       ctx.fillText(item.label, cx, y + boxH / 2 + 3);
@@ -286,7 +286,7 @@ if (canvas && btnFixed && btnAgnostic) {
     const totalStackH = agnosticItems.length * (boxH + gap) - gap;
     const expandY = startY + totalStackH + (isNarrow ? 24 : 32);
 
-    ctx.font = `500 ${isNarrow ? 8 : 9}px "Syne", system-ui`;
+    ctx.font = `500 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(74,222,128,0.5)';
     ctx.textAlign = 'center';
     ctx.fillText('Variable-length envelope', cx, expandY - 6);
@@ -323,13 +323,13 @@ if (canvas && btnFixed && btnAgnostic) {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.font = `600 ${isNarrow ? 9 : 10}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 12 : 13}px "Syne", system-ui`;
     ctx.fillStyle = 'rgba(74,222,128,0.7)';
     ctx.textAlign = 'center';
     ctx.fillText('ML-DSA-65 signature (3293 bytes)', cx, sigY + sigH / 2 + 3);
 
     // Checkmark label
-    ctx.font = `600 ${isNarrow ? 8 : 9}px "JetBrains Mono", monospace`;
+    ctx.font = `600 ${isNarrow ? 11 : 12}px "JetBrains Mono", monospace`;
     ctx.fillStyle = 'rgba(74,222,128,0.6)';
     ctx.fillText('\u2713 FITS', cx, expandY + blobH + (isNarrow ? 14 : 18));
 

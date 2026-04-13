@@ -32,10 +32,10 @@
           <span class="text-text-primary font-display font-bold text-base block" id="atp-broken-count">—</span>
         </div>
         <div class="border-t border-border pt-3">
-          <p class="text-[10px] text-text-tertiary mb-1">Permitted</p>
-          <p class="text-[10px] text-green-400/70 font-mono leading-relaxed" id="atp-permitted">—</p>
-          <p class="text-[10px] text-text-tertiary mt-2 mb-1">Denied</p>
-          <p class="text-[10px] text-red-400/70 font-mono leading-relaxed" id="atp-denied">—</p>
+          <p class="text-[13px] text-text-tertiary mb-1">Permitted</p>
+          <p class="text-[13px] text-green-400/70 font-mono leading-relaxed" id="atp-permitted">—</p>
+          <p class="text-[13px] text-text-tertiary mt-2 mb-1">Denied</p>
+          <p class="text-[13px] text-red-400/70 font-mono leading-relaxed" id="atp-denied">—</p>
         </div>
       </div>
     </div>
@@ -165,7 +165,7 @@ if (canvas) {
     ctx.stroke();
 
     // Time labels
-    ctx.font = '400 9px "JetBrains Mono", monospace';
+    ctx.font = '400 12px "JetBrains Mono", monospace';
     ctx.fillStyle = 'rgba(232,232,240,0.2)';
     ctx.textAlign = 'center';
     for (let i = 0; i <= 4; i++) {
@@ -193,7 +193,7 @@ if (canvas) {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.font = '500 9px "Syne", system-ui';
+      ctx.font = '500 12px "Syne", system-ui';
       ctx.fillStyle = 'rgba(167,139,250,0.7)';
       ctx.textAlign = 'center';
       ctx.fillText(cursorT >= 0 ? 'ACTION TIME' : 'NOW', cx, marginTop - 12);
@@ -230,14 +230,14 @@ if (canvas) {
       }
 
       if (expired && t <= 1) {
-        ctx.font = '400 7px "JetBrains Mono", monospace';
+        ctx.font = '400 10px "JetBrains Mono", monospace';
         ctx.fillStyle = 'rgba(239,68,68,0.45)';
         ctx.textAlign = 'left';
         ctx.fillText('EXPIRED', x2 + 6, y + barH / 2 + 3);
       }
 
       if (w >= 500) {
-        ctx.font = '500 10px "Syne", system-ui';
+        ctx.font = '500 13px "Syne", system-ui';
         ctx.fillStyle = `rgba(${r},${g},${b},${active ? 0.85 : 0.35})`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
@@ -269,7 +269,7 @@ if (canvas) {
       const gBarH = rowHeight * 0.48;
       ctx.fillStyle = 'rgba(245,158,11,0.06)';
       ctx.fillRect(gx1, gy, gx2 - gx1, gBarH);
-      ctx.font = '600 8px "Syne", system-ui';
+      ctx.font = '600 11px "Syne", system-ui';
       ctx.fillStyle = 'rgba(245,158,11,0.7)';
       ctx.textAlign = 'center';
       ctx.fillText('AUTHORITY GAP', (gx1 + gx2) / 2, gy + gBarH / 2 + 3);

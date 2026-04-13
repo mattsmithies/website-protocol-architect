@@ -7,7 +7,7 @@
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
     <div class="p-6 md:p-8">
 
-      <p class="text-text-tertiary text-[10px] uppercase tracking-wider font-semibold mb-4">
+      <p class="text-text-tertiary text-[13px] uppercase tracking-wider font-semibold mb-4">
         Select a validity scenario
       </p>
       <div class="flex flex-wrap gap-2 mb-5" id="wv-scenarios" role="group" aria-label="Select a workflow validity scenario">
@@ -209,7 +209,7 @@ if (canvas) {
     }
 
     // Centre label
-    ctx.font = `600 ${isNarrow ? 7 : 8}px "Syne", system-ui`;
+    ctx.font = `600 ${isNarrow ? 10 : 11}px "Syne", system-ui`;
     ctx.fillStyle = `rgba(${ccr},${ccg},${ccb},0.85)`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -241,7 +241,7 @@ if (canvas) {
       ctx.stroke();
 
       // Vertex label
-      ctx.font = `600 ${isNarrow ? 9 : 11}px "Syne", system-ui`;
+      ctx.font = `600 ${isNarrow ? 12 : 14}px "Syne", system-ui`;
       ctx.fillStyle = `rgba(232,232,240,${alpha * 0.9})`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -250,7 +250,7 @@ if (canvas) {
 
       // Status badge below vertex
       const badgeY = v.y + vertexRadius + 14;
-      ctx.font = `500 ${isNarrow ? 7 : 8}px "JetBrains Mono", monospace`;
+      ctx.font = `500 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
       ctx.fillStyle = `rgba(${r},${g},${b},0.6)`;
       ctx.textAlign = 'center';
       if (v.status === 'valid') ctx.fillText('VALID', v.x, badgeY);
