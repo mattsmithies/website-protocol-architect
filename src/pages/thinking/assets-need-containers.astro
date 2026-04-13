@@ -24,27 +24,27 @@ import '../../styles/global.css';
             Assets need containers before they need markets
           </h1>
           <p class="text-text-tertiary text-base">
-            The asset is not enough. The structure around the asset determines whether it can scale beyond its home system.
+            Markets do not make assets legible. Containers do.
           </p>
         </div>
       </div>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 1: Opening — the shipping container analogy
+          SECTION 1: Opening — the structural mistake
           ══════════════════════════════════════════════════ */}
       <div class="max-w-3xl mx-auto pb-8">
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>Before the shipping container, global trade existed, but it was slow, fragile, and expensive. Every port had its own loading process, its own dimensions, its own handling assumptions. Goods moved, but the system around them did not. Coordination stayed expensive because every transfer required translation.</p>
+          <p>Most asset systems try to create markets before they create common containers.</p>
 
-          <p>The shipping container did not change what was being shipped. It changed the structure around it. It created a standard envelope that ports, ships, cranes, schedules, and operators could all agree on. That one move unlocked comparability, portability, lower friction, and a different scale of trade.</p>
+          <p>They issue the asset. They list it. They build the marketplace. They announce liquidity.</p>
 
-          <p class="text-text-primary font-display font-bold text-2xl pt-4">Digital assets have the same problem.</p>
+          <p class="text-text-primary font-display font-bold text-xl pt-2">Then they discover the assets cannot be compared, searched, moved, or trusted across systems.</p>
 
-          <p>Tokens, credits, credentials, licences, data rights, provenance records, and issued claims already exist. What is missing is the shared container around them. Each registry defines them differently. Each platform indexes them differently. Each system carries its own assumptions about identity, metadata, transfer, history, and proof.</p>
+          <p>The problem is not the asset. The problem is the absence of a shared structure around it. Each registry defines its own schema. Each platform carries its own assumptions about identity, metadata, state, and proof. The asset may exist in each system, but it arrives differently every time. Every integration becomes bespoke. Every audit begins with translation. Every marketplace stays thinner and less credible than it looks.</p>
 
-          <p>So the asset may exist, but it does not travel well.</p>
+          <p>The shipping container solved this for physical trade. It did not change what was being shipped. It standardised the envelope &mdash; the shared structure that ports, ships, cranes, and operators could all agree on. One structural primitive unlocked comparability, portability, and a different scale of trade.</p>
 
-          <p>That is why so much so-called asset infrastructure still feels brittle. The asset is there, but the envelope around it is inconsistent. Without a common container, every integration is bespoke, every marketplace is narrower than it should be, and every audit begins with translation.</p>
+          <p>Digital assets need the same move. Not another marketplace. A common container.</p>
         </div>
       </div>
 
@@ -58,31 +58,38 @@ import '../../styles/global.css';
           ══════════════════════════════════════════════════ */}
       <div class="max-w-3xl mx-auto py-16">
         <div class="reveal">
-          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">The real problem is not issuance</h2>
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Marketplace-first thinking is the structural mistake</h2>
         </div>
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>Most digital asset discussions start at the wrong layer.</p>
+          <p>The default sequence is always the same.</p>
 
           <div class="border-l-2 border-red-400/20 pl-6 my-8">
             <p class="text-text-tertiary text-base font-mono leading-loose">
-              How do we mint the thing.<br/>
-              How do we tokenise it.<br/>
-              How do we create supply.<br/>
-              How do we put it on chain.<br/>
-              How do we list it.<br/>
-              How do we trade it.
+              Mint the thing.<br/>
+              Tokenise it.<br/>
+              List it.<br/>
+              Announce liquidity.<br/>
+              Wait for depth.
             </p>
           </div>
 
-          <p>That is too early.</p>
+          <p>Depth never arrives. Not because demand is absent. Because the assets are not in a form the market can reliably consume.</p>
 
-          <p>Before an asset can become liquid, it has to become <em class="text-signal not-italic font-medium">legible</em>. Before it can become legible, it has to be <em class="text-signal not-italic font-medium">contained</em>. That means a standard structure around the asset that preserves identity, provenance, category, state, issuer context, and the fields required for comparison.</p>
+          <p>Before an asset can become liquid, it has to become <em class="text-signal not-italic font-medium">legible</em>. Before it can become legible, it has to be <em class="text-signal not-italic font-medium">contained</em>. That means a shared structure that preserves identity, provenance, category, state, and the fields required for comparison.</p>
 
-          <p>Without that, markets stay shallow because buyers are not really comparing like with like. Search stays weak because each system names and stores the asset differently. Audit stays expensive because provenance and validity have to be reconstructed case by case.</p>
+          <p>Without that structure, the consequences are severe and predictable.</p>
 
-          <p>The market does not fail because demand is absent. It often fails because the assets do not arrive in a form the market can reliably consume.</p>
+          <div class="border-l-2 border-red-400/20 pl-6 my-8">
+            <p class="text-text-tertiary text-base font-mono leading-loose">
+              Comparison stays weak &mdash; buyers cannot tell like from unlike.<br/>
+              Portability stays fragile &mdash; every transfer loses meaning.<br/>
+              Search stays broken &mdash; each system names and stores differently.<br/>
+              Discovery breaks down &mdash; assets that cannot be found cannot be priced.<br/>
+              Markets stay shallow, fragmented, or fake.
+            </p>
+          </div>
 
-          <p class="text-text-primary font-display font-bold text-xl pt-4">That is the missing primitive.</p>
+          <p class="text-text-primary font-display font-bold text-xl pt-4">The missing primitive is not the marketplace. It is the container.</p>
         </div>
       </div>
 
@@ -99,26 +106,22 @@ import '../../styles/global.css';
           <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">What a container actually is</h2>
         </div>
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>A container is not a single schema that every asset must conform to. That reading is too narrow and slightly wrong.</p>
+          <p>A container is not a single schema. It does not standardise the asset. <em class="text-signal not-italic font-medium">It standardises the structure around the asset.</em></p>
 
-          <p>The container does not standardise the asset itself. <em class="text-signal not-italic font-medium">It standardises the structure around the asset.</em> That is the difference. Many standards, methodologies, and asset types can live inside the same container model, as long as identity, category, provenance, state, and comparable fields remain legible across systems.</p>
-
-          <p>The goal is not forced sameness. The goal is structured comparability.</p>
-
-          <p>A real container does four things.</p>
+          <p>Many standards, methodologies, and asset types can live inside the same container model. What the container enforces is not sameness. It is legibility: the minimum shared envelope that makes an asset understandable beyond its original system.</p>
 
           <div class="border-l-2 border-signal/20 pl-6 my-8">
             <p class="text-text-tertiary text-base font-mono leading-loose">
-              It gives the asset a stable identity.<br/>
-              It defines the minimum structure required for comparison.<br/>
-              It preserves provenance and historical state.<br/>
-              It makes the asset portable across systems without losing meaning.
+              Stable identity that persists across systems.<br/>
+              Comparable fields that enable search and pricing.<br/>
+              Provenance and state history that survive transfer.<br/>
+              A portable envelope that does not require the original system to interpret.
             </p>
           </div>
 
-          <p>None of that requires flattening the asset into a single format. Different asset types keep their own rules, fields, and internal logic. The container is the meta structure that holds them while making them searchable, comparable, and portable.</p>
+          <p>That is what a container unlocks: interoperability, searchability, standardised metadata, comparable pricing, common rules, and stronger trust. Not by flattening difference, but by giving every asset a consistent interface.</p>
 
-          <p>If two systems both claim to support the same class of asset but cannot preserve identity, category, provenance, and comparable fields across transfer, then they do not share a container. They share a label.</p>
+          <p>If two systems both claim to support the same class of asset but cannot preserve identity, provenance, and comparable fields across transfer, they do not share a container. They share a label.</p>
 
           <p>Labels create marketing alignment. <em class="text-signal not-italic font-medium">Containers create operational alignment.</em></p>
         </div>
@@ -183,34 +186,27 @@ import '../../styles/global.css';
           ══════════════════════════════════════════════════ */}
       <div class="max-w-3xl mx-auto py-16">
         <div class="reveal">
-          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Markets reward boring correctness</h2>
+          <h2 class="text-text-primary font-display font-bold text-2xl md:text-3xl tracking-tight mb-6">Without containers, markets are structurally weaker than they appear</h2>
         </div>
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>The shipping container did not win because it was exciting.</p>
+          <p>A marketplace with bespoke assets is not a market. It is a catalogue with a price field.</p>
 
-          <p>It won because it was boring, standard, and correct.</p>
-
-          <p>That is the lesson digital asset infrastructure keeps avoiding.</p>
+          <p>Real markets require that different actors can arrive at the same understanding of what an asset is, what state it is in, where it came from, and what can be done with it. That requires a shared container. Without one, every participant is interpreting the asset differently, and the market is thinner and less trustworthy than its volume suggests.</p>
 
           <div class="border-l-2 border-red-400/20 pl-6 my-8">
             <p class="text-text-tertiary text-base font-mono leading-loose">
               Teams want the asset.<br/>
               They want the marketplace.<br/>
-              They want the narrative.<br/>
-              They want the issuance event.<br/>
-              They want the graph.
+              They want the liquidity narrative.<br/>
+              Very few spend enough time on the envelope.
             </p>
           </div>
 
-          <p>Very few want to spend enough time on the envelope.</p>
-
-          <p>But markets reward boring correctness.</p>
-
-          <p>They reward assets that can be found, compared, verified, moved, and understood without bespoke handling at every step. They reward infrastructure that reduces interpretation cost. They reward systems that let different actors arrive at the same understanding of what the asset is, what state it is in, where it came from, and what can be done with it.</p>
+          <p>But markets do not reward novelty. They reward assets that can be found, compared, verified, and moved without bespoke handling at every step. They reward infrastructure that reduces interpretation cost to near zero.</p>
 
           <p>That is what containers do.</p>
 
-          <p>They do not make the asset interesting. <em class="text-signal not-italic font-medium">They make the asset usable at scale.</em></p>
+          <p>They do not make the asset interesting. <em class="text-signal not-italic font-medium">They make the asset trustworthy at scale.</em></p>
         </div>
       </div>
 
@@ -222,9 +218,9 @@ import '../../styles/global.css';
       {/* ── Closing ─────────────────────────────────────── */}
       <div class="max-w-3xl mx-auto py-16 pb-24">
         <div class="reveal space-y-5 text-text-secondary text-lg leading-relaxed">
-          <p>Before markets scale, systems need to agree on what an asset must carry with it as it moves: identity, provenance, state, comparable fields, authority context. That agreement is the container. Everything that follows — search, comparison, audit, liquidity — depends on it.</p>
+          <p>Assets do not become market-ready because someone lists them. They become market-ready when they can move, be understood, and be trusted inside a shared container.</p>
 
-          <p>The next generation of asset infrastructure will not be defined by who issued the most. It will be defined by who built the most correct container.</p>
+          <p>The next generation of asset infrastructure will not be defined by who issued the most, or who built the largest marketplace. <em class="text-signal not-italic font-medium">It will be defined by who built the most correct container.</em></p>
         </div>
 
         {/* ── Production bridge ──────────────────────────── */}
