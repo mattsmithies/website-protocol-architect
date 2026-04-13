@@ -1,15 +1,12 @@
 ---
-// About.astro — Bio, headshot, domains, social links
+// About.astro — Bio, headshot, operating model
 
-const domains = [
-  "Carbon and environmental infrastructure",
-  "Workflow and audit systems",
-  "Identity and authority models",
-  "Token economy and mechanism design",
-  "Supply chain provenance",
-  "Protocol architecture",
-  "Enterprise data systems",
-  "AI coordination and memory layers",
+const principles = [
+  "Make authority explicit",
+  "Make time first-class",
+  "Design for replayability",
+  "Separate record from derived view",
+  "Align incentives with behaviour",
 ];
 ---
 
@@ -24,21 +21,18 @@ const domains = [
           About
         </p>
         <h2 class="text-gradient text-3xl md:text-4xl font-display font-bold tracking-tight mb-8 leading-tight">
-          The architecture beneath trust, authority, workflow, and incentives
+          The layer beneath products, where authority and evidence become explicit
         </h2>
 
         <div class="space-y-5 text-text-secondary text-base leading-relaxed">
           <p>
-            I design systems for environments where trust cannot remain implicit.
+            I work on the layer beneath products &mdash; where authority, process, evidence, and incentives need to become explicit. That means designing systems that can hold their shape over time: authority models, provenance, workflow execution, token economies, and the structures that make complex coordination legible and durable.
           </p>
           <p>
-            That includes authority models, provenance, workflow execution, token economies, and the underlying structures that allow complex systems to hold together over time.
+            I think in decade-scale systems, then reduce them into clear primitives, annual stages, and execution paths that teams can actually ship.
           </p>
           <p>
-            My work sits between long horizon architecture and practical delivery. I think in decade scale systems, but I break them down into annual stages, clear primitives, and execution paths that teams can actually ship.
-          </p>
-          <p>
-            My edge is the combination: systems architecture, authority design, workflow modelling, provenance thinking, protocol strategy, token economy design, and commercial reality. Most teams split those concerns across different people and end up with gaps between them. I work across the whole model.
+            What makes my work unusual is the combination: systems architecture, authority design, workflow modelling, provenance, mechanism design, and commercial reality. Most teams split those concerns across different people. I work across the whole model.
           </p>
         </div>
 
@@ -46,14 +40,14 @@ const domains = [
         <div class="flex items-center gap-5 mt-8">
           <a href="https://github.com/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">GitHub</a>
           <a href="https://linkedin.com/in/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">LinkedIn</a>
-          <a href="https://dovu.ai" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">DOVU</a>
+          <a href="https://dovu.earth" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">DOVU</a>
         </div>
       </div>
 
-      <!-- Right column: Photo + Domains -->
+      <!-- Right column: Photo + Operating model -->
       <div class="lg:col-span-2 reveal space-y-6">
 
-        <!-- Headshot: drop your image at public/headshot.jpg -->
+        <!-- Headshot -->
         <div class="glass-card p-2 overflow-hidden relative">
           <img
             src="/headshot.jpg"
@@ -62,19 +56,18 @@ const domains = [
             loading="lazy"
             onerror="this.parentElement.style.display='none'"
           />
-          <!-- Violet overlay tint -->
           <div class="absolute inset-0 rounded-xl bg-gradient-to-b from-signal/10 via-transparent to-void/60 mix-blend-screen pointer-events-none"></div>
         </div>
 
-        <!-- Domains -->
+        <!-- Operating model -->
         <div class="glass-card p-8">
           <h3 class="text-text-primary font-display font-semibold text-sm tracking-[0.15em] uppercase mb-6">
-            Domains
+            Operating model
           </h3>
           <ul class="space-y-0">
-            {domains.map((domain) => (
+            {principles.map((principle) => (
               <li class="py-3 border-b border-border last:border-0">
-                <span class="text-text-secondary text-sm" set:html={domain} />
+                <span class="text-text-secondary text-sm">{principle}</span>
               </li>
             ))}
           </ul>

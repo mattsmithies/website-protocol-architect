@@ -1,5 +1,5 @@
 ---
-// Philosophy.astro — Operating model section with structured systems layer list
+// Philosophy.astro — Operating model section
 
 const items = [
   "Who has authority",
@@ -14,7 +14,7 @@ const items = [
 
 <section id="philosophy" class="section-padding px-6">
   <div class="max-w-6xl mx-auto">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
 
       <!-- Left column -->
       <div class="reveal">
@@ -22,29 +22,29 @@ const items = [
           Operating Model
         </p>
         <h2 class="text-gradient text-3xl md:text-4xl font-display font-bold tracking-tight mb-8 leading-tight">
-          Long horizon architecture. Staged delivery.
+          Long-horizon architecture. Practical sequencing.
         </h2>
-        <div class="space-y-5 text-text-secondary text-lg leading-relaxed">
+        <div class="space-y-5 text-text-primary/70 text-lg leading-relaxed">
           <p>
-            I work backwards from decade scale systems, but I do not treat long term thinking as an excuse for vagueness. The work still has to be broken into annual stages, clear primitives, and delivery paths that teams can actually execute.
+            I start from the system that needs to exist years from now, then reduce it into clear primitives, staged delivery, and decisions teams can actually ship.
           </p>
           <p>
-            Most teams either think long term and stay abstract, or execute near term and lose the architecture. My edge is holding both. I can see the system that needs to exist years from now and still break it into what has to be built now, next, and after that.
+            Most teams either think long term and stay abstract, or execute near term and lose the architecture. My edge is holding both.
           </p>
         </div>
-        <p class="text-text-secondary text-lg leading-relaxed mt-8 font-display font-semibold">
-          I work on the parts of systems that most teams leave implicit
-        </p>
       </div>
 
       <!-- Right column -->
       <div class="reveal">
+        <p class="text-text-primary font-display font-semibold text-sm tracking-[0.15em] uppercase mb-6">
+          What I make explicit
+        </p>
         {items.map((label, index) => (
           <div class="group flex items-center gap-5 py-5 border-b border-border hover:border-signal/20 transition-colors duration-500">
-            <span class="text-signal/40 text-xs font-mono tabular-nums group-hover:text-signal/80 transition-colors">
+            <span class="text-signal/50 text-sm font-mono tabular-nums group-hover:text-signal transition-colors">
               {String(index + 1).padStart(2, "0")}
             </span>
-            <span class="text-text-secondary text-lg font-display group-hover:text-text-primary transition-colors duration-300">
+            <span class="text-text-primary/80 text-lg font-display group-hover:text-text-primary transition-colors duration-300">
               {label}
             </span>
           </div>

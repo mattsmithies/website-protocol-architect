@@ -1,35 +1,35 @@
 ---
-// Capabilities.astro — Core capabilities grid with glass cards
+// Capabilities.astro — Core primitives grid
 ---
 
-<section id="capabilities" class="section-padding px-6">
+<section id="primitives" class="section-padding px-6">
   <div class="max-w-6xl mx-auto">
 
     <!-- Section Header -->
     <div class="reveal mb-16 md:mb-20">
       <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
-        Core Capabilities
+        Core Primitives
       </p>
       <h2 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight mb-6">
-        Where software meets trust
+        The layer beneath trust
       </h2>
       <p class="text-text-secondary text-lg max-w-2xl leading-relaxed">
-        The hardest systems are not just technical. They involve authority, evidence, time, permissions, incentives, and coordination under pressure. I work on the layer beneath products, where those things stop being assumptions and become structure.
+        The hardest systems depend on authority, evidence, time, and coordination under pressure. I work where those things stop being assumptions and become structure.
       </p>
     </div>
 
-    <!-- Capabilities Grid -->
+    <!-- Primitives Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
-      <!-- 1. Systems Architecture -->
+      <!-- 1. Authority Models — primary weight -->
       <div class="reveal glass-card p-7 md:p-8 group hover:border-signal/20 transition-all duration-500" style="transition-delay: 0ms;">
         <div class="w-10 h-10 rounded-lg bg-signal-faint flex items-center justify-center mb-5 group-hover:bg-signal/15 transition">
           <svg class="w-5 h-5 text-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z" />
+            <path d="M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5" />
           </svg>
         </div>
-        <h3 class="text-text-primary font-display font-semibold text-lg mb-3 tracking-tight">Systems Architecture</h3>
-        <p class="text-text-tertiary text-sm leading-relaxed">Designing foundational models, primitives, and system boundaries for products and infrastructure that need to survive real world pressure.</p>
+        <h3 class="text-text-primary font-display font-semibold text-lg mb-2 tracking-tight">Authority Models</h3>
+        <p class="text-text-secondary text-sm leading-relaxed">Who can act, under what rules, with what proof, and how that changes over time.</p>
       </div>
 
       <!-- 2. Verifiable Workflows -->
@@ -39,52 +39,52 @@
             <path d="M3 12h4l3-9 4 18 3-9h4" />
           </svg>
         </div>
-        <h3 class="text-text-primary font-display font-semibold text-lg mb-3 tracking-tight">Verifiable Workflows</h3>
-        <p class="text-text-tertiary text-sm leading-relaxed">Building systems where steps, roles, decisions, and evidence can be explicitly modelled, enforced, and replayed.</p>
+        <h3 class="text-text-primary font-display font-semibold text-lg mb-2 tracking-tight">Verifiable Workflows</h3>
+        <p class="text-text-secondary text-sm leading-relaxed">Steps, decisions, and evidence that can be modelled, enforced, and replayed.</p>
       </div>
 
-      <!-- 3. Identity & Authority -->
+      <!-- 3. Provenance -->
       <div class="reveal glass-card p-7 md:p-8 group hover:border-signal/20 transition-all duration-500" style="transition-delay: 160ms;">
-        <div class="w-10 h-10 rounded-lg bg-signal-faint flex items-center justify-center mb-5 group-hover:bg-signal/15 transition">
-          <svg class="w-5 h-5 text-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <h3 class="text-text-primary font-display font-semibold text-lg mb-3 tracking-tight">Identity &amp; Authority</h3>
-        <p class="text-text-tertiary text-sm leading-relaxed">Designing who can do what, when, under what rules, with what proof, and how that changes over time.</p>
-      </div>
-
-      <!-- 4. Provenance & Auditability -->
-      <div class="reveal glass-card p-7 md:p-8 group hover:border-signal/20 transition-all duration-500" style="transition-delay: 240ms;">
         <div class="w-10 h-10 rounded-lg bg-signal-faint flex items-center justify-center mb-5 group-hover:bg-signal/15 transition">
           <svg class="w-5 h-5 text-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 5H2v14h20V5h-7 M9 5a3 3 0 106 0 M9 5h6" />
           </svg>
         </div>
-        <h3 class="text-text-primary font-display font-semibold text-lg mb-3 tracking-tight">Provenance &amp; Auditability</h3>
-        <p class="text-text-tertiary text-sm leading-relaxed">Creating systems that preserve origin, evidence, accountability, and the chain of events across actors and time.</p>
+        <h3 class="text-text-primary font-display font-semibold text-lg mb-2 tracking-tight">Provenance</h3>
+        <p class="text-text-secondary text-sm leading-relaxed">Origin, chain of action, and accountability made visible across actors and time.</p>
       </div>
 
-      <!-- 5. Mechanism Design -->
-      <div class="reveal glass-card p-7 md:p-8 group hover:border-signal/20 transition-all duration-500" style="transition-delay: 320ms;">
+      <!-- 4. Incentive Design -->
+      <div class="reveal glass-card p-7 md:p-8 group hover:border-signal/20 transition-all duration-500" style="transition-delay: 240ms;">
         <div class="w-10 h-10 rounded-lg bg-signal-faint flex items-center justify-center mb-5 group-hover:bg-signal/15 transition">
           <svg class="w-5 h-5 text-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
           </svg>
         </div>
-        <h3 class="text-text-primary font-display font-semibold text-lg mb-3 tracking-tight">Token Economy &amp; Mechanism Design</h3>
-        <p class="text-text-tertiary text-sm leading-relaxed">Designing token systems as architecture: demand sinks, supply pressure, internal value routing, and the structural conditions that determine whether incentives hold or decay.</p>
+        <h3 class="text-text-primary font-display font-semibold text-lg mb-2 tracking-tight">Incentive Design</h3>
+        <p class="text-text-secondary text-sm leading-relaxed">Demand sinks, supply pressure, reward flows, and flywheels that survive real behaviour.</p>
       </div>
 
-      <!-- 6. Protocol & Platform Strategy -->
+      <!-- 5. System Primitives -->
+      <div class="reveal glass-card p-7 md:p-8 group hover:border-signal/20 transition-all duration-500" style="transition-delay: 320ms;">
+        <div class="w-10 h-10 rounded-lg bg-signal-faint flex items-center justify-center mb-5 group-hover:bg-signal/15 transition">
+          <svg class="w-5 h-5 text-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z" />
+          </svg>
+        </div>
+        <h3 class="text-text-primary font-display font-semibold text-lg mb-2 tracking-tight">System Primitives</h3>
+        <p class="text-text-secondary text-sm leading-relaxed">The foundational models, boundaries, and execution paths that products and platforms rely on.</p>
+      </div>
+
+      <!-- 6. Protocol Structures -->
       <div class="reveal glass-card p-7 md:p-8 group hover:border-signal/20 transition-all duration-500" style="transition-delay: 400ms;">
         <div class="w-10 h-10 rounded-lg bg-signal-faint flex items-center justify-center mb-5 group-hover:bg-signal/15 transition">
           <svg class="w-5 h-5 text-signal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z M11 19.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93z M18.9 17.39c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
           </svg>
         </div>
-        <h3 class="text-text-primary font-display font-semibold text-lg mb-3 tracking-tight">Protocol &amp; Platform Strategy</h3>
-        <p class="text-text-tertiary text-sm leading-relaxed">Designing reusable underlying systems and economic structures, not one-off applications. Architecture that compounds.</p>
+        <h3 class="text-text-primary font-display font-semibold text-lg mb-2 tracking-tight">Protocol Structures</h3>
+        <p class="text-text-secondary text-sm leading-relaxed">Reusable coordination and economic systems designed to compound beyond one-off applications.</p>
       </div>
 
     </div>
