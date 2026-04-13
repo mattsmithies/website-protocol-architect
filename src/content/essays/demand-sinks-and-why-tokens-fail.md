@@ -2,6 +2,7 @@
 title: "Demand sinks, supply sinks, and why most tokens fail"
 category: "Token Economy"
 order: 5
+video: "/videos/Why_Most_Tokens_Fail.mp4"
 ---
 
 A token without credible demand is a slow bleed. It does not matter how elegant the issuance schedule is, or how carefully the vesting is structured. If the system does not create genuine reasons for participants to acquire and hold the token, supply pressure will win eventually.
