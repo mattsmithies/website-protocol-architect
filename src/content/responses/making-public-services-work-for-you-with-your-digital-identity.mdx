@@ -1,0 +1,135 @@
+---
+title: "Making public services work for you with your digital identity"
+summary: "A response on revocation, checker accountability, holder choice, dispute resolution, and replayable verification in UK public digital identity design."
+date: "April 2026"
+order: 1
+---
+
+import PublicSupportBars from '../../components/diagrams/PublicSupportBars.astro';
+import VerificationVsSurveillance from '../../components/diagrams/VerificationVsSurveillance.astro';
+import OptInVsSoftCompulsion from '../../components/diagrams/OptInVsSoftCompulsion.astro';
+import HolderChoiceTrustModel from '../../components/diagrams/HolderChoiceTrustModel.astro';
+import RevocationStateModel from '../../components/diagrams/RevocationStateModel.astro';
+import OversightLoop from '../../components/diagrams/OversightLoop.astro';
+
+*Response written in a personal capacity by Matt Smithies.*
+
+The Cabinet Office consultation is right to frame a national digital identity around three goals: it should be useful, inclusive and trusted. It also makes three important commitments at the outset: the system should be voluntary rather than compulsory, the identity should primarily sit on a person's own device, and where possible it should disclose only what is needed for the task at hand, such as proving that someone is over 18 rather than sharing their full date of birth. Those are the right starting points. ([GOV.UK][1])
+
+But the real test of a national digital identity system is not whether it can issue a credential cleanly. The real test is whether it remains legible when something goes wrong. A serious public system must still make sense under dispute, under appeal, under fraud review, and under public scrutiny. That means the design problem is larger than issuance. It includes holder choice, verification, revocation, alternative access, oversight, and the practical ability to opt out without being pushed to the edge of public life.
+
+## Public support exists, but it is conditional
+
+There is clearly public appetite for a simpler way to prove identity. Ipsos found in July 2025 that 57 percent of Britons supported the introduction of a national identity card scheme in principle. But support became much softer when people were asked specifically about digital ID cards after considering trade offs. On that question, 38 percent were in favour and 32 percent were opposed. The same polling found that privacy and control worries were central: 32 percent worried about personal data being used without permission, 31 percent worried that data could be sold to private companies, 31 percent worried that the system could be open to abuse, and 39 percent were concerned about civil liberties. Ipsos also found that 51 percent were not confident the government could hold personal information securely. ([Ipsos][2])
+
+<PublicSupportBars />
+
+The broader political lesson is harsher. The Commons Library notes that support for national digital ID fell sharply after the policy was framed in more compulsory terms in late 2025, citing YouGov tracking that moved from 57 percent support in June 2025 to 38 percent in December 2025, while opposition rose from 25 percent to 47 percent. Whether or not that exact pattern holds over time, the signal is clear: public support is highly sensitive to the perception of coercion. If people think a digital identity is turning from a useful option into an instrument of control, trust collapses fast.
+
+The government's own earlier public dialogue on trust in digital identity services points in the same direction. Participants said trust in digital identity cannot be understood in isolation from wider trust in government and business. They placed accountability and transparency at the core of trust, wanted systems to be accessible and agency preserving, and did not regard convenience on its own as a strong enough public benefit. They also wanted recognition that digital identity could become mandatory over time, with clear assurances that alternatives would remain available. ([GOV.UK][3])
+
+So the correct reading of public opinion is not that people reject digital identity outright. It is that they want hard boundaries. They want usefulness without overreach, privacy without theatre, and convenience without quiet compulsion. That is a design requirement, not a communications problem. ([Ipsos][2])
+
+## A national digital identity must not become a tracking layer
+
+The strongest privacy mistake would be to reduce this conversation to selective disclosure alone. Selective disclosure matters and the consultation is right to foreground it. But privacy is not only about what is disclosed in a single transaction. It is also about what the system can silently accumulate over time. The Commons Library briefing summarises the core risk clearly: digital identity systems could create a "360 degree view" of an individual, enable profiling, and record how and when a person's identity was checked in ways that reveal sensitive information such as location and purchase history. It also warns about function creep, where digital identity becomes mandatory in more situations than first proposed.
+
+This is why the boundary between verification and surveillance has to be explicit. A trustworthy system should preserve enough evidence to resolve disputes and support lawful reliance, but not so much that it becomes a general purpose behavioural record of a person's interactions with the state and the wider economy. The Commons Library notes that a record of checks can improve transparency if only the user can access it, but becomes a privacy risk if third parties can access and retain it. That is an important distinction and it should shape the design from the outset.
+
+<VerificationVsSurveillance />
+
+The wider privacy context also matters. In the ICO's 2025 public attitudes survey, only 19 percent of people said they felt informed and 19 percent said they felt in control when presented with "consent or pay" choices online. The dominant feelings were scepticism, pressure and frustration. That is not a digital ID survey, but it is a strong warning about fake consent and opaque controls. If a national digital identity uses consent language without making the system understandable and bounded, people will experience it as control without genuine choice.
+
+The government's own broader digital identity work has already recognised the need to avoid a centralised model. In October 2024, the Office for Digital Identities and Attributes said the UK approach to digital identity should be voluntary, should not involve a centralised database, and should leave people in control of their data and who it is shared with. That is the right direction. The new national scheme should be judged against that standard, not allowed to drift away from it. ([enablingdigitalidentity.blog.gov.uk][4])
+
+## Opt out must be real
+
+The consultation says there will be no legal obligation for people to have or present the digital ID. The 2026 explainer also says police will not be able to demand to see it, and the consultation states that a person will be able to delete the digital ID from their own device at any time. Those are important commitments and they should remain central. ([GOV.UK][5])
+
+But a meaningful opt out is more than the absence of a legal mandate. It means that a person who declines the digital identity must still be able to access essential public services through a lawful and workable alternative route. It means deletion from a device must be simple. It means there must be no dark pattern that makes refusal technically possible but practically punishing. And it means the state should be honest when a route is genuinely optional and when it is becoming the default path in practice. That is especially important because the consultation itself ties the system to future service transformation and to right to work checks.
+
+Current research suggests this is not a theoretical concern. The ICO found in 2025 that 47 percent of digitally disengaged adults said they had felt under pressure to use computers or smartphones even when they did not want to, up from 37 percent the year before. It also found that 49 percent of digitally disengaged people had no or limited access to the internet or a connected device, and that 47 percent said they had had to use a computer or smartphone even when they did not want to, including for shopping, banking and applying for or renewing official documents. A system can therefore become coercive in practice long before it becomes compulsory in law.
+
+<OptInVsSoftCompulsion />
+
+The government's own trust dialogue supports this point. Participants wanted transparency about the risk that digital identity services could become mandatory over time, and they wanted assurances that alternatives would remain available. In other words, opt out is not just a legal statement. It is an ongoing operating principle. ([GOV.UK][3])
+
+## Holder choice is the right direction, if the trust model is explicit
+
+The consultation asks whether people should be able to store the national digital ID in holder services other than the GOV.UK Wallet. My answer is yes. The consultation already sketches the right conditions: a third party holder would need certification under the trust framework, a place on the government register, and a specific agreement with government. It also recognises the risks of user confusion, malware, and unofficial apps masquerading as trusted ones. ([GOV.UK][1])
+
+That is the correct balance. A national system should not confuse the state's authority to issue with the state's need to control every point of presentation. The issuer can remain authoritative without monopolising the holder layer. In fact, the broader UK digital identity programme has already argued for a model in which people can choose from a range of digital identity and attribute providers, rather than being forced into a single presentation surface. ([enablingdigitalidentity.blog.gov.uk][4])
+
+But holder plurality only works if the trust conditions are strict and inspectable. A certified holder should preserve the meaning of the credential, the boundaries of disclosure, the integrity of the exchange, and the status semantics around suspension, revocation and reissue. The holder is not just a convenience layer. It becomes part of the trust surface.
+
+<HolderChoiceTrustModel />
+
+## Verification needs a minimal receipt
+
+The consultation is right to focus on robust checking. It proposes a Government Checker, expects most verification in the wider economy to be done by certified digital verification services, and says the Government Checker could return confirmation that a presented digital ID is valid and trustworthy, limited data for the use case, and a photo to help confirm the holder is the right person. It is also considering whether a basic checker should be available at low or no cost for some uses outside government. ([GOV.UK][1])
+
+That is sensible, but the design should go one step further. A serious national system should not only answer the question, "is this valid now?" It should also make it possible to answer a later question, "what exactly happened when this was checked?" My recommendation is that every successful or failed verification should produce a minimal verification receipt. That receipt should record the checker, the relying party context, the claims requested, the claims disclosed, the result, the time, and a reference that allows the event to be understood later. This is an inference from the consultation's own emphasis on robust checking, right to work audit trails, and oversight.
+
+This matters because the consultation explicitly presents digital right to work checks as a major use case and highlights the value of a digital audit trail for compliance and enforcement. If a business is expected to rely on a digital check for legal protection, then the output of that check must be defensible later. A bare "valid" response is not enough. ([GOV.UK][1])
+
+The privacy boundary still matters here. The Commons Library notes that logging identity checks can improve transparency if only the user has access, but can reveal sensitive information if third parties can access and retain that data. So the right design is not a full activity trail visible to everyone. It is minimal, purpose bound evidence, retained only where needed, visible to the user, and governed by clear access rules.
+
+## Revocation needs due process
+
+The consultation says people may wish to delete their digital ID, that deletion should be simple and quick, and that the government will also need the power to revoke a person's digital ID in limited circumstances such as fraudulent use. The 2026 explainer adds that credentials stored on a lost or stolen phone should be capable of being revoked and later reissued. ([GOV.UK][5])
+
+That is necessary, but it is also one of the most sensitive parts of the design. Revocation is not a minor back office event. It affects a person's ability to prove who they are in a system intended to sit at the heart of public service delivery and some legally significant checks. So revocation should not be treated as a single silent state change. A mature model should distinguish clearly between deletion by the holder, temporary suspension pending review, administrative revocation, expiry, recovery, and reissue. That is a design recommendation grounded in the consultation's separate treatment of deletion, revocation, and oversight. ([GOV.UK][1])
+
+<RevocationStateModel />
+
+At a minimum, any revocation or suspension event should carry a legible reason, a responsible authority, a time of decision, a route to challenge, and clear downstream status handling. Without those elements, the system risks becoming an opaque gatekeeper. With them, it becomes a public instrument that can actually be trusted. ([GOV.UK][1])
+
+## Alternative access routes should remain digital, bounded and supportable
+
+The consultation is right to say that a physical card that is only visually checkable cannot be the answer. It says any alternative access route should still facilitate a digitised check and should remain robust in terms of security, reliability, accuracy and fraud prevention. It also points to international examples such as code displays, signed QR based approaches and mobile alternatives.
+
+At the same time, the government's 2026 explainer says physical alternatives should be available for those without smartphones, face to face help should be available during rollout and afterwards, and dedicated casework should exist for challenging situations. Taken together, these two documents imply the right approach: alternative access routes should exist, but they should not collapse back into weak visual tokens or manual guesswork. They still need to end in a digitised verification event. ([GOV.UK][5])
+
+This matters because digitally excluded people are not a marginal edge case. The consultation recognises that some people will need support or alternative routes, and the ICO's 2025 research shows why. Nearly half of digitally disengaged people had no or limited access to the internet or a device, and many were already under pressure to use digital tools they did not want to use. A serious public system should therefore treat alternative access as a first class route with its own threat model, not as an afterthought.
+
+The public dialogue on trust in digital identity services reinforces this. Participants saw accessibility, agency and involvement as one of the five core routes to trust, and wanted options that work for different levels of skill, background and circumstance. They also argued that people who have experienced barriers to proving identity, including people without a fixed address and people with experience of coercive control, should be involved in design and testing. ([GOV.UK][3])
+
+## Oversight should be operational, not ceremonial
+
+The consultation says strong governance and oversight are vital, and describes a mix of internal and external processes, independent scrutiny, Parliamentary accountability, and complaints handling. That is the right frame. ([GOV.UK][1])
+
+But oversight should not only mean what happens at the top of the system. It should also appear at the level of actual events. Who can issue. Who can check. Who can revoke. What gets recorded. How complaints are raised. How appeals work. What users can inspect. What providers are audited. What gets reported publicly. If those things are not explicit, then "governance" remains a word rather than a property of the system. This is an inference from the consultation's own governance chapter and from the government's public dialogue, where participants placed accountability and transparency at the core of trust. ([GOV.UK][3])
+
+<OversightLoop />
+
+The same dialogue also argued for ongoing public involvement rather than one off consultation. Participants said the public should sit on decision making and testing panels and be involved throughout development and rollout. That is worth taking seriously. A national identity system should not ask for trust once and then retreat into technical administration. ([GOV.UK][3])
+
+## A practical design stance
+
+I support the direction of the consultation, but only if the final system honours five hard boundaries.
+
+It should remain voluntary in practice, not just in law. It should allow holder choice without losing trust coherence. It should preserve enough evidence to resolve disputes without becoming a tracking layer. It should treat revocation as a due process problem, not just a security control. And it should build alternative access routes that remain digital, bounded and supportable. Those positions follow directly from the consultation, the government's own earlier trust work, and current public attitudes research. ([GOV.UK][3])
+
+A national digital identity will not fail because the signature was wrong. It will fail when a person, service, business or tribunal needs to understand what happened, and the system cannot explain itself. That is why replayability matters. Not as a slogan, but as the condition that turns digital identity from a neat credential into usable public infrastructure.
+
+## Sources
+
+Cabinet Office, *Making public services work for you with your digital identity* and related consultation materials.
+
+Department for Science, Innovation and Technology, *Digital ID scheme: explainer*. ([GOV.UK][5])
+
+Department for Science, Innovation and Technology, *Public dialogue on trust in digital identity services: a findings report*. ([GOV.UK][3])
+
+House of Commons Library, *Digital ID in the UK*, 23 March 2026.
+
+ICO, *Public Attitudes on Information Rights Survey 2025*.
+
+Ipsos, *57% of Britons support national ID card scheme, but have significant concerns over data security and implementation*, 1 August 2025. ([Ipsos][2])
+
+Office for Digital Identities and Attributes, *A way to prove who you are that is fit for the UK's digital economy*, 24 October 2024. ([enablingdigitalidentity.blog.gov.uk][4])
+
+[1]: https://www.gov.uk/government/consultations/making-public-services-work-for-you-with-your-digital-identity/making-public-services-work-for-you-with-your-digital-identity "Making public services work for you with your digital identity - GOV.UK"
+[2]: https://www.ipsos.com/en-uk/57-britons-support-national-id-card-scheme-have-significant-concerns-over-data-security-and "57% of Britons support national ID card scheme, but have significant concerns over data security and implementation | Ipsos"
+[3]: https://www.gov.uk/government/publications/public-dialogue-on-trust-in-digital-identity-services/public-dialogue-on-trust-in-digital-identity-services-a-findings-report "Public dialogue on trust in digital identity services: a findings report - GOV.UK"
+[4]: https://enablingdigitalidentity.blog.gov.uk/2024/10/24/a-way-to-prove-who-you-are-that-is-fit-for-the-uks-digital-economy/ "A way to prove who you are that is fit for the UK's digital economy – Enabling digital identity"
+[5]: https://www.gov.uk/government/publications/digital-id-scheme-explainer/digital-id-scheme-explainer "Digital ID scheme: explainer - GOV.UK"

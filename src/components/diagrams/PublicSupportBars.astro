@@ -1,0 +1,119 @@
+---
+// Figure 1: Public support and public concern are not the same thing
+// Interactive bar chart of Ipsos July 2025 findings. Two groups: support on top,
+// concern below. Tap or hover a row to surface the specific figure and context.
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden p-6 md:p-8" style="background: rgba(11,11,17,0.6);">
+
+    <div class="mb-6">
+      <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-1">Ipsos &middot; July 2025</p>
+      <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Public support and public concern are not the same thing</h3>
+    </div>
+
+    <div class="mb-6">
+      <p class="text-[11px] font-semibold tracking-[0.2em] uppercase mb-3" style="color: rgba(167,139,250,0.6);">Support</p>
+      <div id="psb-support" class="space-y-0"></div>
+    </div>
+
+    <div>
+      <p class="text-[11px] font-semibold tracking-[0.2em] uppercase mb-3" style="color: rgba(239,68,68,0.6);">Concern</p>
+      <div id="psb-concern" class="space-y-0"></div>
+    </div>
+
+    <div id="psb-tooltip" class="mt-6 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
+      <p id="psb-tooltip-text" class="text-sm text-text-secondary"></p>
+    </div>
+
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Support in principle is not the same thing as support after trade offs, and neither is the same thing as confidence that the state can hold personal data safely.
+  </p>
+</div>
+
+<script>
+interface Row {
+  label: string;
+  value: number;
+  note: string;
+  group: 'support' | 'concern';
+}
+
+const rows: Row[] = [
+  { group: 'support', label: 'Support national ID card scheme in principle', value: 57, note: '57 percent of Britons supported a national identity card scheme in principle — the highest headline figure in the Ipsos polling.' },
+  { group: 'support', label: 'Support digital ID cards after trade offs', value: 38, note: '38 percent in favour of digital ID cards once respondents considered trade offs. Support drops sharply when people think about specifics.' },
+  { group: 'support', label: 'Oppose digital ID cards after trade offs', value: 32, note: '32 percent opposed digital ID cards after considering trade offs. Opposition rises as the design becomes more specific.' },
+  { group: 'concern', label: 'Worried about civil liberties', value: 39, note: '39 percent expressed civil liberties concerns — the single largest concern category in the poll.' },
+  { group: 'concern', label: 'Worried data used without permission', value: 32, note: '32 percent worried that personal data could be used without their permission.' },
+  { group: 'concern', label: 'Worried data sold to private companies', value: 31, note: '31 percent worried that data could be sold to private companies.' },
+  { group: 'concern', label: 'Worried system is open to abuse', value: 31, note: '31 percent worried that the system could be open to abuse.' },
+  { group: 'concern', label: 'Not confident govt can hold data securely', value: 51, note: '51 percent were not confident the government could hold personal information securely — a ceiling that any public digital identity has to work underneath.' },
+];
+
+const supportContainer = document.getElementById('psb-support')!;
+const concernContainer = document.getElementById('psb-concern')!;
+const tooltip = document.getElementById('psb-tooltip')!;
+const tooltipText = document.getElementById('psb-tooltip-text')!;
+
+let activeRow: HTMLElement | null = null;
+
+function buildRow(row: Row) {
+  const el = document.createElement('div');
+  el.className = 'flex items-center gap-4 py-3 border-b border-border last:border-0 cursor-pointer group';
+  el.setAttribute('tabindex', '0');
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', `${row.label}: ${row.value} percent. Tap for detail.`);
+
+  const isSupport = row.group === 'support';
+  const rgb = isSupport ? '167,139,250' : '239,68,68';
+
+  el.innerHTML = `
+    <div class="flex-1 min-w-0">
+      <span class="text-sm text-text-secondary group-hover:text-text-primary transition-colors block truncate" style="font-family:'Syne',system-ui; font-weight:600;">${row.label}</span>
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <div class="w-20 md:w-40 h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.04);">
+        <div class="h-full rounded-full transition-all duration-500" style="width:${row.value}%; background: rgba(${rgb},0.6);"></div>
+      </div>
+      <span class="text-xs font-mono tabular-nums w-10 text-right" style="color: rgba(${rgb},0.85);">${row.value}%</span>
+    </div>
+  `;
+
+  function show() {
+    tooltip.style.opacity = '1';
+    tooltip.style.borderColor = `rgba(${rgb},0.3)`;
+    tooltipText.textContent = row.note;
+    tooltipText.style.color = `rgba(${rgb},0.85)`;
+    activeRow = el;
+  }
+
+  function hide() {
+    tooltip.style.opacity = '0';
+    activeRow = null;
+  }
+
+  el.addEventListener('mouseenter', show);
+  el.addEventListener('mouseleave', hide);
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeRow === el) hide(); else show();
+  });
+  el.addEventListener('focus', show);
+  el.addEventListener('blur', hide);
+
+  return el;
+}
+
+for (const row of rows) {
+  const container = row.group === 'support' ? supportContainer : concernContainer;
+  container.appendChild(buildRow(row));
+}
+
+document.addEventListener('click', () => {
+  if (activeRow) {
+    tooltip.style.opacity = '0';
+    activeRow = null;
+  }
+});
+</script>

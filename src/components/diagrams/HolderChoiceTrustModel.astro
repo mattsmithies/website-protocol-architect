@@ -1,0 +1,287 @@
+---
+// Figure 4: Holder choice inside a trust model
+// Hub-and-spoke diagram. The trust framework sits at the centre.
+// Issuer, certified holders, checkers, relying parties, and the person orbit it.
+// Tap any node to surface its role and the certification constraint that makes plurality safe.
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="mb-5">
+        <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-1">Trust architecture</p>
+        <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Holder choice inside a trust model</h3>
+      </div>
+
+      <canvas id="hctm-canvas" class="w-full" style="height: 480px; cursor: pointer;" role="img" aria-label="Hub-and-spoke trust model with the government's trust framework at the centre and issuer, certified holders, checkers, relying parties, and person as orbiting nodes."></canvas>
+
+      <div id="hctm-detail" class="mt-4 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
+        <p id="hctm-detail-label" class="text-[11px] font-semibold tracking-[0.2em] uppercase mb-2"></p>
+        <p id="hctm-detail-role" class="text-text-primary text-sm mb-2" style="font-family:'Syne',system-ui; font-weight:600;"></p>
+        <p id="hctm-detail-constraint" class="text-sm text-text-secondary"></p>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Authority to issue does not require a monopoly on presentation — but plurality only works if every certified holder preserves the same trust semantics.
+  </p>
+</div>
+
+<script>
+interface Node {
+  id: string;
+  label: string;
+  role: string;
+  constraint: string;
+  angle: number; // radians around centre
+  color: [number, number, number];
+}
+
+const canvas = document.getElementById('hctm-canvas') as HTMLCanvasElement;
+const detail = document.getElementById('hctm-detail')!;
+const detailLabel = document.getElementById('hctm-detail-label')!;
+const detailRole = document.getElementById('hctm-detail-role')!;
+const detailConstraint = document.getElementById('hctm-detail-constraint')!;
+
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const CYAN: [number, number, number] = [34, 211, 238];
+  const ROSE: [number, number, number] = [244, 114, 182];
+
+  const nodes: Node[] = [
+    {
+      id: 'issuer',
+      label: 'Issuer',
+      role: 'Government as authoritative issuer',
+      constraint: 'The state remains the source of identity claims. Certification does not delegate the issuing authority, only the presentation surface.',
+      angle: -Math.PI / 2,
+      color: VIOLET,
+    },
+    {
+      id: 'wallet',
+      label: 'GOV.UK Wallet',
+      role: 'First-party certified holder',
+      constraint: 'Default holder maintained by government. Must meet the same trust framework conditions as any other certified holder — not privileged by default.',
+      angle: -Math.PI / 2 + (2 * Math.PI) / 6,
+      color: BLUE,
+    },
+    {
+      id: 'third',
+      label: 'Third-party\nholder',
+      role: 'Certified alternative wallet',
+      constraint: 'Must be certified under the trust framework, entered on a government register, and hold a specific agreement with government. Preserves claim meaning, disclosure boundaries, and status semantics.',
+      angle: -Math.PI / 2 + (4 * Math.PI) / 6,
+      color: GREEN,
+    },
+    {
+      id: 'checker',
+      label: 'Checker',
+      role: 'Government or certified verification service',
+      constraint: 'Returns a minimal result plus a verification receipt. Cannot accumulate behavioural data across checks or share logs outside legally grounded scopes.',
+      angle: -Math.PI / 2 + (6 * Math.PI) / 6,
+      color: AMBER,
+    },
+    {
+      id: 'relying',
+      label: 'Relying party',
+      role: 'Business, service, or public body consuming a check',
+      constraint: 'Receives only the claims requested for the specific purpose. Retains evidence only for the legally justified window. Cannot replay the credential beyond its original purpose.',
+      angle: -Math.PI / 2 + (8 * Math.PI) / 6,
+      color: CYAN,
+    },
+    {
+      id: 'person',
+      label: 'Person',
+      role: 'Holder of the identity and authority over its use',
+      constraint: 'Controls which holder stores the credential, what is disclosed, and when. Can see their own verification history. Can delete the credential from any certified holder.',
+      angle: -Math.PI / 2 + (10 * Math.PI) / 6,
+      color: ROSE,
+    },
+  ];
+
+  let activeIndex = -1;
+  let animId = 0;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getLayout() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    const cx = w / 2;
+    const cy = h / 2;
+    const radius = Math.min(w, h) * (isNarrow ? 0.34 : 0.36);
+    const nodeHalfW = isNarrow ? 58 : 76;
+    const nodeHalfH = isNarrow ? 22 : 26;
+    return { w, h, isNarrow, cx, cy, radius, nodeHalfW, nodeHalfH };
+  }
+
+  function nodePos(n: Node, radius: number, cx: number, cy: number) {
+    return { x: cx + Math.cos(n.angle) * radius, y: cy + Math.sin(n.angle) * radius };
+  }
+
+  function drawRoundedRect(x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+  }
+
+  function render(now: number) {
+    const { w, h, isNarrow, cx, cy, radius, nodeHalfW, nodeHalfH } = getLayout();
+    const t = now * 0.001;
+    ctx.clearRect(0, 0, w, h);
+
+    // Spokes (drawn first, behind nodes)
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      const p = nodePos(n, radius, cx, cy);
+      const [r, g, b] = n.color;
+      const active = i === activeIndex;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = `rgba(${r},${g},${b},${active ? 0.55 : 0.18})`;
+      ctx.lineWidth = active ? 1.5 : 1;
+      ctx.stroke();
+
+      // Flowing particle along spoke
+      if (!prefersReducedMotion) {
+        const pt = ((t * 0.2 + i * 0.16) % 1);
+        const px = cx + (p.x - cx) * pt;
+        const py = cy + (p.y - cy) * pt;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${active ? 0.8 : 0.35})`;
+        ctx.fill();
+      }
+    }
+
+    // Hub — trust framework
+    const hubR = isNarrow ? 58 : 72;
+    const hubGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, hubR * 1.6);
+    hubGrad.addColorStop(0, 'rgba(167,139,250,0.10)');
+    hubGrad.addColorStop(1, 'rgba(167,139,250,0)');
+    ctx.fillStyle = hubGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, hubR * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, hubR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(167,139,250,0.08)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(167,139,250,0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.font = `600 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = 'rgba(167,139,250,0.6)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('TRUST FRAMEWORK', cx, cy - (isNarrow ? 6 : 8));
+    ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
+    ctx.fillStyle = 'rgba(232,232,240,0.55)';
+    ctx.fillText(isNarrow ? 'Certification &' : 'Certification,', cx, cy + (isNarrow ? 8 : 8));
+    ctx.fillText(isNarrow ? 'register' : 'register, agreements', cx, cy + (isNarrow ? 22 : 22));
+    ctx.textBaseline = 'alphabetic';
+
+    // Orbiting nodes
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      const p = nodePos(n, radius, cx, cy);
+      const [r, g, b] = n.color;
+      const active = i === activeIndex;
+      const alpha = active ? 1 : 0.85;
+
+      drawRoundedRect(p.x - nodeHalfW, p.y - nodeHalfH, nodeHalfW * 2, nodeHalfH * 2, 8);
+      ctx.fillStyle = `rgba(${r},${g},${b},${active ? 0.14 : 0.06})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.55})`;
+      ctx.lineWidth = active ? 1.8 : 1.2;
+      ctx.stroke();
+
+      if (active) {
+        ctx.shadowColor = `rgba(${r},${g},${b},0.25)`;
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.font = `600 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${alpha * 0.9})`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const lines = n.label.split('\n');
+      const lineH = isNarrow ? 13 : 15;
+      lines.forEach((line, j) => {
+        ctx.fillText(line, p.x, p.y + (j - (lines.length - 1) / 2) * lineH);
+      });
+      ctx.textBaseline = 'alphabetic';
+    }
+
+    if (!prefersReducedMotion) animId = requestAnimationFrame(render);
+  }
+
+  function hitTest(mx: number, my: number): number {
+    const { radius, cx, cy, nodeHalfW, nodeHalfH } = getLayout();
+    for (let i = 0; i < nodes.length; i++) {
+      const p = nodePos(nodes[i], radius, cx, cy);
+      if (Math.abs(mx - p.x) <= nodeHalfW && Math.abs(my - p.y) <= nodeHalfH) return i;
+    }
+    return -1;
+  }
+
+  function showDetail(i: number) {
+    activeIndex = i;
+    const n = nodes[i];
+    const [r, g, b] = n.color;
+    detail.style.opacity = '1';
+    detail.style.borderColor = `rgba(${r},${g},${b},0.3)`;
+    detailLabel.textContent = n.label.replace('\n', ' ');
+    detailLabel.style.color = `rgba(${r},${g},${b},0.8)`;
+    detailRole.textContent = n.role;
+    detailConstraint.textContent = n.constraint;
+    if (prefersReducedMotion) render(0);
+  }
+
+  function hideDetail() {
+    activeIndex = -1;
+    detail.style.opacity = '0';
+    if (prefersReducedMotion) render(0);
+  }
+
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const idx = hitTest(e.clientX - rect.left, e.clientY - rect.top);
+    if (idx >= 0) showDetail(idx);
+    else hideDetail();
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const idx = hitTest(e.clientX - rect.left, e.clientY - rect.top);
+    canvas.style.cursor = idx >= 0 ? 'pointer' : 'default';
+  });
+
+  resize();
+  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
+  if (!prefersReducedMotion) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(0);
+  }
+}
+</script>

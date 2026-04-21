@@ -11,4 +11,14 @@ const essays = defineCollection({
   }),
 });
 
-export const collections = { essays };
+const responses = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/responses' }),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string(),
+    date: z.string(),
+    order: z.number(),
+  }),
+});
+
+export const collections = { essays, responses };

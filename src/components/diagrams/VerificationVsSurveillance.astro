@@ -1,0 +1,130 @@
+---
+// Figure 2: Verification is not surveillance
+// Two-column contrast. Bounded verification vs surveillance drift.
+// Tap or hover any attribute for the design implication.
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden p-6 md:p-8" style="background: rgba(11,11,17,0.6);">
+
+    <div class="mb-6 md:mb-8">
+      <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-1">Design boundary</p>
+      <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Verification is not surveillance</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+
+      <!-- Left column — Bounded verification -->
+      <div class="rounded-xl border p-5 md:p-6" style="border-color: rgba(74,222,128,0.25); background: rgba(74,222,128,0.03);">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="w-1.5 h-1.5 rounded-full" style="background: rgba(74,222,128,0.8);"></span>
+          <span class="text-xs font-semibold tracking-[0.2em] uppercase" style="color: rgba(74,222,128,0.75);">Bounded verification</span>
+        </div>
+        <div id="vvs-bounded" class="space-y-0"></div>
+      </div>
+
+      <!-- Right column — Surveillance drift -->
+      <div class="rounded-xl border p-5 md:p-6" style="border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.03);">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="w-1.5 h-1.5 rounded-full" style="background: rgba(239,68,68,0.8);"></span>
+          <span class="text-xs font-semibold tracking-[0.2em] uppercase" style="color: rgba(239,68,68,0.75);">Surveillance drift</span>
+        </div>
+        <div id="vvs-drift" class="space-y-0"></div>
+      </div>
+
+    </div>
+
+    <div id="vvs-tooltip" class="mt-6 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
+      <p id="vvs-tooltip-label" class="text-xs font-semibold tracking-[0.2em] uppercase mb-2"></p>
+      <p id="vvs-tooltip-text" class="text-sm text-text-secondary"></p>
+    </div>
+
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    The same operational data can either resolve disputes or quietly become a behavioural record. The boundary has to be designed, not assumed.
+  </p>
+</div>
+
+<script>
+interface Item {
+  label: string;
+  note: string;
+  side: 'bounded' | 'drift';
+}
+
+const items: Item[] = [
+  { side: 'bounded', label: 'Selective disclosure', note: 'Only the claim the use case needs is shared — such as "over 18" rather than full date of birth. The system cannot reveal what it did not ask for.' },
+  { side: 'bounded', label: 'Minimal verification receipt', note: 'Each check produces a narrow evidence record: checker, relying party, claims requested, claims disclosed, result, time. Not a behavioural log.' },
+  { side: 'bounded', label: 'User visible history', note: 'The person can see what was checked, when, and by whom. Transparency flows to the holder first, not to the relying party.' },
+  { side: 'bounded', label: 'Purpose bound retention', note: 'Evidence is kept for the legally justified period and the specific dispute window, then discarded. Retention is a decision, not a default.' },
+  { side: 'bounded', label: 'Controlled third party access', note: 'Check logs are not routinely shared with third parties. Any access is scoped, auditable, and legally grounded.' },
+
+  { side: 'drift', label: 'Linked records across services', note: 'Identity presentations in different services become join keys. A profile builds silently across health, tax, travel, and work.' },
+  { side: 'drift', label: 'Retained check logs by default', note: 'Every verification event is stored indefinitely. The log becomes a passive activity trail rather than dispute evidence.' },
+  { side: 'drift', label: 'Third party log access', note: 'Relying parties, analytics vendors, and downstream systems gain access to check logs. The "360 degree view" starts to form.' },
+  { side: 'drift', label: 'Behavioural profiling', note: 'Patterns in check frequency, location, and purpose feed inference models. Identity data becomes behavioural data by accumulation.' },
+  { side: 'drift', label: 'Function creep', note: 'The system becomes mandatory in situations the original policy did not foresee. Each new use site normalises the next.' },
+];
+
+const boundedContainer = document.getElementById('vvs-bounded')!;
+const driftContainer = document.getElementById('vvs-drift')!;
+const tooltip = document.getElementById('vvs-tooltip')!;
+const tooltipLabel = document.getElementById('vvs-tooltip-label')!;
+const tooltipText = document.getElementById('vvs-tooltip-text')!;
+
+let active: HTMLElement | null = null;
+
+function buildItem(item: Item) {
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.className = 'w-full text-left flex items-start gap-3 py-3 border-b last:border-0 group cursor-pointer focus:outline-none';
+  el.style.borderColor = 'rgba(255,255,255,0.04)';
+  el.setAttribute('aria-label', `${item.label}. Tap for detail.`);
+
+  const rgb = item.side === 'bounded' ? '74,222,128' : '239,68,68';
+  const glyph = item.side === 'bounded' ? '+' : '−';
+
+  el.innerHTML = `
+    <span class="font-mono text-xs mt-[3px] shrink-0" style="color: rgba(${rgb},0.6);">${glyph}</span>
+    <span class="text-sm text-text-secondary group-hover:text-text-primary transition-colors" style="font-family:'Syne',system-ui; font-weight:600;">${item.label}</span>
+  `;
+
+  function show() {
+    tooltip.style.opacity = '1';
+    tooltip.style.borderColor = `rgba(${rgb},0.3)`;
+    tooltipLabel.textContent = item.side === 'bounded' ? 'Bounded verification' : 'Surveillance drift';
+    tooltipLabel.style.color = `rgba(${rgb},0.75)`;
+    tooltipText.textContent = item.note;
+    tooltipText.style.color = `rgba(${rgb},0.85)`;
+    active = el;
+  }
+
+  function hide() {
+    tooltip.style.opacity = '0';
+    active = null;
+  }
+
+  el.addEventListener('mouseenter', show);
+  el.addEventListener('mouseleave', hide);
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (active === el) hide(); else show();
+  });
+  el.addEventListener('focus', show);
+  el.addEventListener('blur', hide);
+
+  return el;
+}
+
+for (const item of items) {
+  const container = item.side === 'bounded' ? boundedContainer : driftContainer;
+  container.appendChild(buildItem(item));
+}
+
+document.addEventListener('click', () => {
+  if (active) {
+    tooltip.style.opacity = '0';
+    active = null;
+  }
+});
+</script>

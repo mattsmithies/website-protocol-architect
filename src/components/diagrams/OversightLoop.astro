@@ -1,0 +1,273 @@
+---
+// Figure 6: Oversight loop
+// Circular flow showing that governance should connect operational surfaces
+// rather than sit above them as an abstract box. Tap any node for its role.
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="mb-5">
+        <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-1">Governance surface</p>
+        <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Oversight loop</h3>
+      </div>
+
+      <canvas id="ol-canvas" class="w-full" style="height: 540px; cursor: pointer;" role="img" aria-label="Circular oversight loop connecting issuance, holder services, checkers, relying parties, complaints, appeals, reporting, independent scrutiny, Parliament, and users. Tap any node to see its role."></canvas>
+
+      <div id="ol-detail" class="mt-4 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
+        <p id="ol-detail-label" class="text-[11px] font-semibold tracking-[0.2em] uppercase mb-2"></p>
+        <p id="ol-detail-name" class="text-text-primary text-sm mb-2" style="font-family:'Syne',system-ui; font-weight:600;"></p>
+        <p id="ol-detail-desc" class="text-sm text-text-secondary"></p>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    Oversight is not a box that sits above the system. It is an operational loop that connects issuance, use, redress, and scrutiny back into design.
+  </p>
+</div>
+
+<script>
+interface LoopNode {
+  id: string;
+  label: string;
+  kind: 'operational' | 'redress' | 'scrutiny' | 'public';
+  role: string;
+  desc: string;
+}
+
+const canvas = document.getElementById('ol-canvas') as HTMLCanvasElement;
+const detail = document.getElementById('ol-detail')!;
+const detailLabel = document.getElementById('ol-detail-label')!;
+const detailName = document.getElementById('ol-detail-name')!;
+const detailDesc = document.getElementById('ol-detail-desc')!;
+
+if (canvas) {
+  const ctx = canvas.getContext('2d')!;
+
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const ROSE: [number, number, number] = [244, 114, 182];
+
+  const KIND_COLOR: Record<LoopNode['kind'], [number, number, number]> = {
+    operational: BLUE,
+    redress: AMBER,
+    scrutiny: VIOLET,
+    public: GREEN,
+  };
+
+  const nodes: LoopNode[] = [
+    { id: 'issuance',   label: 'Issuance',               kind: 'operational', role: 'Government as authoritative issuer', desc: 'The point at which identity claims enter the system. Issuance decisions, standards, and error rates should be visible downstream.' },
+    { id: 'holder',     label: 'Holder services',        kind: 'operational', role: 'Certified wallets and devices',       desc: 'Where credentials live. Certification and conformance failures here ripple into presentation, disclosure, and recovery.' },
+    { id: 'checker',    label: 'Checkers',               kind: 'operational', role: 'Government and certified verification services', desc: 'Every check produces an operational signal. Aggregate patterns belong in reporting, individual logs belong to the holder.' },
+    { id: 'relying',    label: 'Relying parties',        kind: 'operational', role: 'Services that consume checks',        desc: 'Treatment of holders, accessibility of alternatives, and downstream data handling all feed back into scrutiny.' },
+    { id: 'complaints', label: 'Complaints',             kind: 'redress',     role: 'First layer of redress',              desc: 'Complaints should be easy to raise at any point in the loop. Volumes and patterns are signal for design, not noise.' },
+    { id: 'appeals',    label: 'Appeals',                kind: 'redress',     role: 'Formal challenge route',              desc: 'Dispute resolution with due process. Revocation, suspension, and denial of alternative routes must all be appealable.' },
+    { id: 'reporting',  label: 'Reporting',              kind: 'scrutiny',    role: 'Public operational transparency',     desc: 'Regular, legible reporting on issuance, checks, revocations, complaints, and appeals. Not a compliance artefact; a trust surface.' },
+    { id: 'scrutiny',   label: 'Independent\nscrutiny',  kind: 'scrutiny',    role: 'External oversight bodies',           desc: 'Regulators, commissioners, and auditors with statutory access. Findings feed back into operational changes, not just reports.' },
+    { id: 'parliament', label: 'Parliament',             kind: 'scrutiny',    role: 'Democratic accountability',           desc: 'Parliamentary scrutiny of scope, function creep, and statutory basis. Changes to the system require visible legislative accountability.' },
+    { id: 'users',      label: 'Users',                  kind: 'public',      role: 'The people the system serves',        desc: 'Users should sit on design, testing, and oversight panels — not only as consultees at launch. The loop closes here.' },
+  ];
+
+  let activeIndex = -1;
+  let animId = 0;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getLayout() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const isNarrow = w < 500;
+    const cx = w / 2;
+    const cy = h / 2;
+    const radius = Math.min(w, h) * (isNarrow ? 0.37 : 0.40);
+    const nodeHalfW = isNarrow ? 54 : 68;
+    const nodeHalfH = isNarrow ? 22 : 26;
+    return { w, h, isNarrow, cx, cy, radius, nodeHalfW, nodeHalfH };
+  }
+
+  function nodeAngle(i: number) {
+    // Start at top (-PI/2) and wrap clockwise
+    return -Math.PI / 2 + (i * 2 * Math.PI) / nodes.length;
+  }
+
+  function nodePos(i: number) {
+    const { cx, cy, radius } = getLayout();
+    const a = nodeAngle(i);
+    return { x: cx + Math.cos(a) * radius, y: cy + Math.sin(a) * radius };
+  }
+
+  function drawRoundedRect(x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+  }
+
+  function render(now: number) {
+    const { w, h, isNarrow, cx, cy, radius, nodeHalfW, nodeHalfH } = getLayout();
+    const t = now * 0.001;
+    ctx.clearRect(0, 0, w, h);
+
+    // Ring — background circle showing the loop
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(167,139,250,0.12)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Centre label
+    ctx.font = `600 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = 'rgba(167,139,250,0.5)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('OVERSIGHT LOOP', cx, cy - (isNarrow ? 8 : 10));
+    ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
+    ctx.fillStyle = 'rgba(232,232,240,0.4)';
+    ctx.fillText('Operational surfaces', cx, cy + (isNarrow ? 8 : 8));
+    ctx.fillText('feed back into design', cx, cy + (isNarrow ? 22 : 22));
+    ctx.textBaseline = 'alphabetic';
+
+    // Connecting arcs between adjacent nodes
+    for (let i = 0; i < nodes.length; i++) {
+      const from = nodePos(i);
+      const toIdx = (i + 1) % nodes.length;
+      const to = nodePos(toIdx);
+      const isActive = i === activeIndex || toIdx === activeIndex;
+
+      // Arc segment along the ring
+      const startAngle = nodeAngle(i);
+      const endAngle = nodeAngle(toIdx);
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, startAngle, endAngle);
+      ctx.strokeStyle = `rgba(167,139,250,${isActive ? 0.55 : 0.22})`;
+      ctx.lineWidth = isActive ? 1.8 : 1.2;
+      ctx.stroke();
+
+      // Flowing particle along each segment
+      if (!prefersReducedMotion) {
+        const pt = ((t * 0.12 + i / nodes.length) % 1);
+        const a = startAngle + (endAngle - startAngle) * pt;
+        const px = cx + Math.cos(a) * radius;
+        const py = cy + Math.sin(a) * radius;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(167,139,250,0.55)';
+        ctx.fill();
+      }
+    }
+
+    // Nodes
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      const p = nodePos(i);
+      const [r, g, b] = KIND_COLOR[n.kind];
+      const active = i === activeIndex;
+      const alpha = active ? 1 : 0.85;
+
+      drawRoundedRect(p.x - nodeHalfW, p.y - nodeHalfH, nodeHalfW * 2, nodeHalfH * 2, 8);
+      ctx.fillStyle = `rgba(${r},${g},${b},${active ? 0.14 : 0.06})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.55})`;
+      ctx.lineWidth = active ? 1.8 : 1.2;
+      ctx.stroke();
+
+      if (active) {
+        ctx.shadowColor = `rgba(${r},${g},${b},0.3)`;
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.font = `600 ${isNarrow ? 10 : 11}px "Syne", system-ui`;
+      ctx.fillStyle = `rgba(232,232,240,${alpha * 0.9})`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const lines = n.label.split('\n');
+      const lineH = isNarrow ? 12 : 14;
+      lines.forEach((line, j) => {
+        ctx.fillText(line, p.x, p.y + (j - (lines.length - 1) / 2) * lineH);
+      });
+      ctx.textBaseline = 'alphabetic';
+    }
+
+    // Legend — small dots bottom left
+    ctx.font = `500 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
+    ctx.textAlign = 'left';
+    const legendY = h - 14;
+    const items: { color: [number, number, number]; label: string }[] = [
+      { color: BLUE, label: 'operational' },
+      { color: AMBER, label: 'redress' },
+      { color: VIOLET, label: 'scrutiny' },
+      { color: GREEN, label: 'public' },
+    ];
+    let lx = 20;
+    for (const it of items) {
+      ctx.fillStyle = `rgba(${it.color[0]},${it.color[1]},${it.color[2]},0.7)`;
+      ctx.fillText(`● ${it.label}`, lx, legendY);
+      lx += ctx.measureText(`● ${it.label}`).width + (isNarrow ? 8 : 14);
+    }
+
+    if (!prefersReducedMotion) animId = requestAnimationFrame(render);
+  }
+
+  function hitTest(mx: number, my: number): number {
+    const { nodeHalfW, nodeHalfH } = getLayout();
+    for (let i = 0; i < nodes.length; i++) {
+      const p = nodePos(i);
+      if (Math.abs(mx - p.x) <= nodeHalfW && Math.abs(my - p.y) <= nodeHalfH) return i;
+    }
+    return -1;
+  }
+
+  function showDetail(i: number) {
+    activeIndex = i;
+    const n = nodes[i];
+    const [r, g, b] = KIND_COLOR[n.kind];
+    detail.style.opacity = '1';
+    detail.style.borderColor = `rgba(${r},${g},${b},0.3)`;
+    detailLabel.textContent = n.kind.toUpperCase();
+    detailLabel.style.color = `rgba(${r},${g},${b},0.8)`;
+    detailName.textContent = `${n.label.replace('\n', ' ')} — ${n.role}`;
+    detailDesc.textContent = n.desc;
+    if (prefersReducedMotion) render(0);
+  }
+
+  function hideDetail() {
+    activeIndex = -1;
+    detail.style.opacity = '0';
+    if (prefersReducedMotion) render(0);
+  }
+
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const idx = hitTest(e.clientX - rect.left, e.clientY - rect.top);
+    if (idx >= 0) showDetail(idx);
+    else hideDetail();
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const idx = hitTest(e.clientX - rect.left, e.clientY - rect.top);
+    canvas.style.cursor = idx >= 0 ? 'pointer' : 'default';
+  });
+
+  resize();
+  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
+  if (!prefersReducedMotion) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(0);
+  }
+}
+</script>

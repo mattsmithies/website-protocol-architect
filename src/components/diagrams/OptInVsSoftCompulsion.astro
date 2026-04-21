@@ -1,0 +1,279 @@
+---
+// Figure 3: Real opt-in versus soft compulsion
+// Toggle shows two scenarios. In real opt-in, the decline path still reaches the service.
+// In soft compulsion, the decline path has friction, delays, and dead ends.
+---
+
+<div class="reveal my-12 md:my-16">
+  <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
+    <div class="p-6 md:p-8">
+
+      <div class="mb-4">
+        <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-1">Access to service</p>
+        <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Real opt in versus soft compulsion</h3>
+      </div>
+
+      <div class="flex items-center justify-center gap-3 mb-6" role="group" aria-label="Toggle between real opt-in and soft compulsion scenarios">
+        <button id="ovs-real" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="true" style="background: rgba(74,222,128,0.12); color: rgba(74,222,128,0.9); border: 1px solid rgba(74,222,128,0.3);">
+          Real opt in
+        </button>
+        <button id="ovs-soft" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all duration-300 cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
+          Soft compulsion
+        </button>
+      </div>
+
+      <canvas id="ovs-canvas" class="w-full" style="height: 520px;" role="img" aria-label="Two-path flow comparing real opt-in, where the decline path still reaches the service, against soft compulsion, where the decline path is blocked or friction laden."></canvas>
+
+      <div class="grid grid-cols-3 gap-4 mt-4 border-t border-border pt-4 text-center" aria-live="polite">
+        <div>
+          <p class="text-[11px] text-text-tertiary uppercase tracking-wider">Decline path reaches service</p>
+          <p class="text-sm font-display font-bold" id="ovs-m-reaches">—</p>
+        </div>
+        <div>
+          <p class="text-[11px] text-text-tertiary uppercase tracking-wider">Friction points</p>
+          <p class="text-sm font-display font-bold" id="ovs-m-friction">—</p>
+        </div>
+        <div>
+          <p class="text-[11px] text-text-tertiary uppercase tracking-wider">Legally voluntary</p>
+          <p class="text-sm font-display font-bold" id="ovs-m-legal">—</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-text-tertiary text-xs mt-3 text-center italic">
+    A system can be voluntary in law and coercive in practice. Opt out is only real when the declining path still reaches the service.
+  </p>
+</div>
+
+<script>
+const canvas = document.getElementById('ovs-canvas') as HTMLCanvasElement;
+const btnReal = document.getElementById('ovs-real') as HTMLButtonElement;
+const btnSoft = document.getElementById('ovs-soft') as HTMLButtonElement;
+
+if (canvas && btnReal && btnSoft) {
+  const ctx = canvas.getContext('2d')!;
+  const GREEN: [number, number, number] = [74, 222, 128];
+  const RED: [number, number, number] = [239, 68, 68];
+  const AMBER: [number, number, number] = [245, 158, 11];
+  const VIOLET: [number, number, number] = [167, 139, 250];
+  const BLUE: [number, number, number] = [56, 189, 248];
+
+  let mode: 'real' | 'soft' = 'real';
+  let animId = 0;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function drawNode(x: number, y: number, w: number, h: number, label: string, color: [number, number, number], alpha: number, dashed = false) {
+    const [r, g, b] = color;
+    const isNarrow = canvas.clientWidth < 500;
+    ctx.beginPath();
+    ctx.roundRect(x - w / 2, y - h / 2, w, h, 8);
+    ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.06})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.45})`;
+    ctx.lineWidth = 1.5;
+    if (dashed) ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = `600 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
+    ctx.fillStyle = `rgba(232,232,240,${alpha * 0.9})`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const lines = label.split('\n');
+    const lineH = isNarrow ? 14 : 16;
+    lines.forEach((line, i) => {
+      ctx.fillText(line, x, y + (i - (lines.length - 1) / 2) * lineH);
+    });
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  function drawEdge(x1: number, y1: number, x2: number, y2: number, color: [number, number, number], alpha: number, dashed: boolean) {
+    const [r, g, b] = color;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+    ctx.lineWidth = 1.2;
+    if (dashed) ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawBlockMark(x: number, y: number, size: number) {
+    ctx.strokeStyle = 'rgba(239,68,68,0.55)';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x - size, y - size);
+    ctx.lineTo(x + size, y + size);
+    ctx.moveTo(x + size, y - size);
+    ctx.lineTo(x - size, y + size);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+  }
+
+  function render(now: number) {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    const t = now * 0.001;
+    const isNarrow = w < 500;
+    ctx.clearRect(0, 0, w, h);
+
+    const cx = w / 2;
+    const nodeW = isNarrow ? 150 : 190;
+    const nodeH = isNarrow ? 42 : 46;
+    const topY = 50;
+    const splitY = 130;
+    const step1Y = 210;
+    const step2Y = 290;
+    const step3Y = 370;
+    const endY = 460;
+    const leftX = cx - (isNarrow ? 85 : 120);
+    const rightX = cx + (isNarrow ? 85 : 120);
+
+    // Top — "Need for a public service"
+    drawNode(cx, topY, isNarrow ? 220 : 280, nodeH, 'Citizen needs a public service', VIOLET, 0.9);
+
+    // Split fork
+    drawEdge(cx, topY + nodeH / 2, cx, splitY - 20, VIOLET, 0.3, false);
+    drawEdge(cx, splitY - 20, leftX, splitY, VIOLET, 0.3, false);
+    drawEdge(cx, splitY - 20, rightX, splitY, VIOLET, 0.3, false);
+
+    // Step 1 — path labels
+    drawNode(leftX, splitY, nodeW, nodeH, 'Accept digital ID', GREEN, 0.85);
+    const declineColor = mode === 'real' ? GREEN : AMBER;
+    drawNode(rightX, splitY, nodeW, nodeH, 'Decline digital ID', declineColor, 0.85);
+
+    // Step 2
+    drawEdge(leftX, splitY + nodeH / 2, leftX, step1Y - nodeH / 2, GREEN, 0.3, false);
+    drawNode(leftX, step1Y, nodeW, nodeH, 'Digital verification', GREEN, 0.85);
+
+    if (mode === 'real') {
+      drawEdge(rightX, splitY + nodeH / 2, rightX, step1Y - nodeH / 2, GREEN, 0.3, false);
+      drawNode(rightX, step1Y, nodeW, nodeH, isNarrow ? 'Alternative route' : 'Supported alternative route', GREEN, 0.85);
+    } else {
+      drawEdge(rightX, splitY + nodeH / 2, rightX, step1Y - nodeH / 2, AMBER, 0.3, true);
+      drawNode(rightX, step1Y, nodeW, nodeH, isNarrow ? 'No clear route' : 'No clear alternative route', AMBER, 0.85, true);
+    }
+
+    // Step 3
+    drawEdge(leftX, step1Y + nodeH / 2, leftX, step2Y - nodeH / 2, GREEN, 0.3, false);
+    drawNode(leftX, step2Y, nodeW, nodeH, 'Identity confirmed', GREEN, 0.85);
+
+    if (mode === 'real') {
+      drawEdge(rightX, step1Y + nodeH / 2, rightX, step2Y - nodeH / 2, GREEN, 0.3, false);
+      drawNode(rightX, step2Y, nodeW, nodeH, isNarrow ? 'Digitised check' : 'Digitised verification event', GREEN, 0.85);
+    } else {
+      drawEdge(rightX, step1Y + nodeH / 2, rightX, step2Y - nodeH / 2, RED, 0.3, true);
+      drawNode(rightX, step2Y, nodeW, nodeH, isNarrow ? 'Manual fallback' : 'Manual casework backlog', RED, 0.85, true);
+    }
+
+    // Step 4
+    drawEdge(leftX, step2Y + nodeH / 2, leftX, step3Y - nodeH / 2, GREEN, 0.3, false);
+    drawNode(leftX, step3Y, nodeW, nodeH, 'Service delivered', GREEN, 0.9);
+
+    if (mode === 'real') {
+      drawEdge(rightX, step2Y + nodeH / 2, rightX, step3Y - nodeH / 2, GREEN, 0.3, false);
+      drawNode(rightX, step3Y, nodeW, nodeH, 'Service delivered', GREEN, 0.9);
+    } else {
+      drawEdge(rightX, step2Y + nodeH / 2, rightX, step3Y - nodeH / 2, RED, 0.3, true);
+      drawNode(rightX, step3Y, nodeW, nodeH, isNarrow ? 'Delay or denial' : 'Delay, denial, or pressure to switch', RED, 0.9, true);
+      // Block mark overlay to emphasise failure
+      drawBlockMark(rightX + (nodeW / 2) - 12, step3Y, 5);
+    }
+
+    // Convergence arrow (only in real opt-in)
+    if (mode === 'real') {
+      drawEdge(leftX, step3Y + nodeH / 2, cx, endY - 22, GREEN, 0.3, false);
+      drawEdge(rightX, step3Y + nodeH / 2, cx, endY - 22, GREEN, 0.3, false);
+      drawNode(cx, endY, isNarrow ? 260 : 340, nodeH, isNarrow ? 'Essential services, appeal, support' : 'Essential services, complaints, appeal, human support', GREEN, 0.95);
+    } else {
+      drawEdge(leftX, step3Y + nodeH / 2, cx, endY - 22, GREEN, 0.3, false);
+      drawEdge(rightX, step3Y + nodeH / 2, cx - (isNarrow ? 60 : 80), endY - 22, RED, 0.3, true);
+      drawNode(cx, endY, isNarrow ? 260 : 340, nodeH, isNarrow ? 'Only digital path reaches service' : 'Only the digital path reliably reaches service', AMBER, 0.95);
+    }
+
+    // Flowing particles on decline path in real mode
+    if (!prefersReducedMotion) {
+      const segments = mode === 'real'
+        ? [
+          { x1: rightX, y1: splitY + nodeH / 2, x2: rightX, y2: step1Y - nodeH / 2 },
+          { x1: rightX, y1: step1Y + nodeH / 2, x2: rightX, y2: step2Y - nodeH / 2 },
+          { x1: rightX, y1: step2Y + nodeH / 2, x2: rightX, y2: step3Y - nodeH / 2 },
+          { x1: rightX, y1: step3Y + nodeH / 2, x2: cx, y2: endY - 22 },
+        ]
+        : [];
+      segments.forEach((seg, i) => {
+        const pt = ((t * 0.2 + i * 0.25) % 1);
+        const px = seg.x1 + (seg.x2 - seg.x1) * pt;
+        const py = seg.y1 + (seg.y2 - seg.y1) * pt;
+        ctx.beginPath();
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(74,222,128,0.6)';
+        ctx.fill();
+      });
+    }
+
+    if (!prefersReducedMotion) animId = requestAnimationFrame(render);
+  }
+
+  function updateMetrics(m: 'real' | 'soft') {
+    const r = document.getElementById('ovs-m-reaches')!;
+    const f = document.getElementById('ovs-m-friction')!;
+    const l = document.getElementById('ovs-m-legal')!;
+    if (m === 'real') {
+      r.textContent = 'Yes'; r.style.color = 'rgba(74,222,128,0.85)';
+      f.textContent = 'None'; f.style.color = 'rgba(74,222,128,0.85)';
+      l.textContent = 'Yes'; l.style.color = 'rgba(74,222,128,0.85)';
+    } else {
+      r.textContent = 'No'; r.style.color = 'rgba(239,68,68,0.85)';
+      f.textContent = 'Three or more'; f.style.color = 'rgba(239,68,68,0.85)';
+      l.textContent = 'Yes, but'; l.style.color = 'rgba(245,158,11,0.85)';
+    }
+  }
+
+  function setMode(m: 'real' | 'soft') {
+    mode = m;
+    updateMetrics(m);
+    btnReal.setAttribute('aria-selected', String(m === 'real'));
+    btnSoft.setAttribute('aria-selected', String(m === 'soft'));
+    if (m === 'real') {
+      btnReal.style.background = 'rgba(74,222,128,0.12)';
+      btnReal.style.color = 'rgba(74,222,128,0.9)';
+      btnReal.style.borderColor = 'rgba(74,222,128,0.3)';
+      btnSoft.style.background = 'transparent';
+      btnSoft.style.color = 'rgba(232,232,240,0.3)';
+      btnSoft.style.borderColor = 'rgba(255,255,255,0.06)';
+    } else {
+      btnSoft.style.background = 'rgba(239,68,68,0.12)';
+      btnSoft.style.color = 'rgba(239,68,68,0.9)';
+      btnSoft.style.borderColor = 'rgba(239,68,68,0.3)';
+      btnReal.style.background = 'transparent';
+      btnReal.style.color = 'rgba(232,232,240,0.3)';
+      btnReal.style.borderColor = 'rgba(255,255,255,0.06)';
+    }
+    if (prefersReducedMotion) render(0);
+  }
+
+  btnReal.addEventListener('click', () => setMode('real'));
+  btnSoft.addEventListener('click', () => setMode('soft'));
+
+  resize();
+  updateMetrics('real');
+  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
+  if (!prefersReducedMotion) {
+    animId = requestAnimationFrame(render);
+  } else {
+    render(0);
+  }
+}
+</script>

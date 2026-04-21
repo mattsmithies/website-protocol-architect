@@ -1,0 +1,58 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import '../../styles/global.css';
+
+export async function getStaticPaths() {
+  const responses = await getCollection('responses');
+  return responses.map((response) => ({
+    params: { slug: response.id },
+    props: { response },
+  }));
+}
+
+const { response } = Astro.props;
+const { Content } = await render(response);
+---
+
+<Layout title={`${response.data.title} — Matt Smithies`} description={response.data.summary}>
+  <Nav />
+  <main>
+    <article class="section-padding px-6">
+      <div class="max-w-3xl mx-auto">
+
+        <div class="reveal mb-12">
+          <a href="/#responses" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-6 inline-block">
+            &larr; Back
+          </a>
+          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+            Response &middot; {response.data.date}
+          </p>
+          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
+            {response.data.title}
+          </h1>
+          <p class="text-text-secondary text-lg leading-relaxed">
+            {response.data.summary}
+          </p>
+        </div>
+
+        <div class="reveal prose-custom space-y-6 text-text-secondary text-lg leading-relaxed">
+          <Content />
+        </div>
+
+      </div>
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { initScrollAnimations } from '../../scripts/scroll-animations';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+</script>

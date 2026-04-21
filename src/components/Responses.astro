@@ -1,15 +1,8 @@
 ---
 // Responses.astro — Public responses, consultation submissions, and technical interventions
+import { getCollection } from 'astro:content';
 
-const responses = [
-  {
-    title: "Making public services work for you with your digital identity",
-    summary:
-      "A response on revocation, checker accountability, holder choice, dispute resolution, and replayable verification in UK public digital identity design.",
-    date: "April 2026",
-    href: null,
-  },
-];
+const responses = (await getCollection('responses')).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <section id="responses" class="section-padding px-6">
@@ -28,39 +21,29 @@ const responses = [
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-      {responses.map((response, i) => {
-        const Card = response.href ? 'a' : 'div';
-        const props = response.href ? { href: response.href } : {};
-        return (
-          <Card
-            {...props}
-            class={`reveal glass-card p-7 flex flex-col transition-all duration-500 ${response.href ? 'group hover:border-signal/20' : ''}`}
-            style={`transition-delay: ${i * 60}ms`}
-          >
-            <span class="text-signal/50 text-xs font-semibold tracking-[0.2em] uppercase mb-4 block">
-              {response.date}
-            </span>
-            <h3 class={`text-text-primary font-display font-bold text-lg tracking-tight mb-3 ${response.href ? 'group-hover:text-signal transition-colors duration-300' : ''}`}>
-              {response.title}
-            </h3>
-            <p class="text-text-tertiary text-sm leading-relaxed mb-6">
-              {response.summary}
-            </p>
-            <div class="mt-auto flex items-center gap-2 text-text-tertiary text-xs font-medium">
-              {response.href ? (
-                <>
-                  <span class="group-hover:text-signal transition-colors duration-300">Read</span>
-                  <svg class="w-3 h-3 group-hover:translate-x-1 group-hover:text-signal transition-all duration-300" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M2 6h8M7 3l3 3-3 3" />
-                  </svg>
-                </>
-              ) : (
-                <span class="text-text-tertiary/60">Coming soon</span>
-              )}
-            </div>
-          </Card>
-        );
-      })}
+      {responses.map((response, i) => (
+        <a
+          href={`/responses/${response.id}`}
+          class="reveal glass-card p-7 group hover:border-signal/20 transition-all duration-500 flex flex-col"
+          style={`transition-delay: ${i * 60}ms`}
+        >
+          <span class="text-signal/50 text-xs font-semibold tracking-[0.2em] uppercase mb-4 block group-hover:text-signal/80 transition-colors">
+            {response.data.date}
+          </span>
+          <h3 class="text-text-primary font-display font-bold text-lg tracking-tight mb-3 group-hover:text-signal transition-colors duration-300">
+            {response.data.title}
+          </h3>
+          <p class="text-text-tertiary text-sm leading-relaxed mb-6">
+            {response.data.summary}
+          </p>
+          <div class="mt-auto flex items-center gap-2 text-text-tertiary group-hover:text-signal text-xs font-medium transition-colors duration-300">
+            <span>Read</span>
+            <svg class="w-3 h-3 group-hover:translate-x-1 transition-transform" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 6h8M7 3l3 3-3 3" />
+            </svg>
+          </div>
+        </a>
+      ))}
     </div>
 
   </div>
