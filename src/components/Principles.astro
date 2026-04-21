@@ -1,37 +1,10 @@
 ---
 const principles = [
-  {
-    title: "Model truth, not screens",
-    description: "Design the underlying truth model first. Interfaces are views onto structure, not the structure itself.",
-  },
-  {
-    title: "Make authority explicit",
-    description: "If a system has roles, permissions, or approvals, those should be first class objects, not buried in application logic.",
-  },
-  {
-    title: "Make time first class",
-    description: "Many system failures are temporal: expiry, ordering, validity windows, stale permissions, and delegated authority. Time is part of the model.",
-  },
-  {
-    title: "Separate record from view",
-    description: "The system of record and derived views serve different purposes. Conflating them creates brittleness and audit gaps.",
-  },
-  {
-    title: "Design for replayability",
-    description: "If a state cannot be replayed, it cannot be properly audited, debugged, or trusted.",
-  },
-  {
-    title: "Design economics as architecture",
-    description: "Token economies and incentive structures are not marketing layers. If usage, coordination, and incentives do not reinforce each other, the system weakens.",
-  },
-  {
-    title: "Prefer clear primitives",
-    description: "Complex systems should be composed from simple, explicit pieces. Fragile abstraction is worse than deliberate clarity.",
-  },
-  {
-    title: "Build for consequence",
-    description: "Architecture decisions compound. Optimise for the choices that are hardest to reverse and most expensive to get wrong.",
-  },
+  "Make authority explicit",
+  "Make time first class",
+  "Separate record from derived view",
+  "Design for replayability",
+  "Prefer clear primitives",
 ];
 ---
 
@@ -41,26 +14,23 @@ const principles = [
     <!-- Section Header -->
     <div class="reveal mb-16 md:mb-20 text-center">
       <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
-        Principles
+        Core principles
       </p>
-      <h2 class="text-gradient text-3xl md:text-4xl font-display font-bold tracking-tight mb-6">
-        How I think about systems
-      </h2>
     </div>
 
-    <!-- Principles Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <!-- Principles List -->
+    <div class="max-w-3xl mx-auto">
       {principles.map((principle, index) => (
         <div
-          class="reveal group py-6 px-1 border-t border-border hover:border-signal/30 transition-colors duration-500"
+          class="reveal group flex items-center gap-6 py-5 border-b border-border hover:border-signal/30 transition-colors duration-500 last:border-0"
           style={`transition-delay: ${index * 60}ms`}
         >
-          <h3 class="text-text-primary text-sm font-display font-semibold mb-3 group-hover:text-signal transition-colors duration-300">
-            {principle.title}
-          </h3>
-          <p class="text-text-tertiary text-sm leading-relaxed">
-            {principle.description}
-          </p>
+          <span class="text-signal/50 text-sm font-mono tabular-nums group-hover:text-signal transition-colors">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span class="text-text-primary text-lg md:text-xl font-display group-hover:text-signal transition-colors duration-300">
+            {principle}
+          </span>
         </div>
       ))}
     </div>

@@ -1,53 +1,33 @@
 ---
-// About.astro — Bio, headshot, operating model
-
-const principles = [
-  "Make authority explicit",
-  "Make time first-class",
-  "Design for replayability",
-  "Separate record from derived view",
-  "Align incentives with behaviour",
-];
+// About.astro — Short formal bio with headshot
 ---
 
 <section id="about" class="section-padding px-6">
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-5xl mx-auto">
 
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-16 lg:gap-24">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16 items-start">
 
       <!-- Left column: Bio -->
       <div class="lg:col-span-3 reveal">
-        <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
+        <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-8">
           About
         </p>
-        <h2 class="text-gradient text-3xl md:text-4xl font-display font-bold tracking-tight mb-8 leading-tight">
-          The layer beneath products, where authority and evidence become explicit
-        </h2>
 
-        <div class="space-y-5 text-text-secondary text-base leading-relaxed">
+        <div class="space-y-5 text-text-secondary text-lg leading-relaxed">
           <p>
-            I work on the layer beneath products &mdash; where authority, process, evidence, and incentives need to become explicit. That means designing systems that can hold their shape over time: authority models, provenance, workflow execution, token economies, and the structures that make complex coordination legible and durable.
+            Matt Smithies is a protocol architect focused on authority, verification, replayability, and digital trust systems.
           </p>
           <p>
-            I think in decade-scale systems, then reduce them into clear primitives, annual stages, and execution paths that teams can actually ship.
+            His work spans workflow execution, provenance, digital identity, and the design of systems that remain legible under dispute and over time.
           </p>
-          <p>
-            What makes my work unusual is the combination: systems architecture, authority design, workflow modelling, provenance, mechanism design, and commercial reality. Most teams split those concerns across different people. I work across the whole model.
+          <p class="text-text-tertiary">
+            Current role: DOVU. Public writing and responses published here are in a personal capacity.
           </p>
-        </div>
-
-        <!-- Social links -->
-        <div class="flex items-center gap-5 mt-8">
-          <a href="https://github.com/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">GitHub</a>
-          <a href="https://linkedin.com/in/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">LinkedIn</a>
-          <a href="https://dovu.earth" target="_blank" rel="noopener" class="text-text-tertiary text-sm hover:text-signal transition-colors">DOVU</a>
         </div>
       </div>
 
-      <!-- Right column: Photo + Operating model -->
-      <div class="lg:col-span-2 reveal space-y-6">
-
-        <!-- Headshot -->
+      <!-- Right column: Headshot -->
+      <div class="lg:col-span-2 reveal">
         <div class="glass-card p-2 overflow-hidden relative">
           <img
             src="/headshot.jpg"
@@ -58,21 +38,6 @@ const principles = [
           />
           <div class="absolute inset-0 rounded-xl bg-gradient-to-b from-signal/10 via-transparent to-void/60 mix-blend-screen pointer-events-none"></div>
         </div>
-
-        <!-- Operating model -->
-        <div class="glass-card p-8">
-          <h3 class="text-text-primary font-display font-semibold text-sm tracking-[0.15em] uppercase mb-6">
-            Operating model
-          </h3>
-          <ul class="space-y-0">
-            {principles.map((principle) => (
-              <li class="py-3 border-b border-border last:border-0">
-                <span class="text-text-secondary text-sm">{principle}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
       </div>
 
     </div>

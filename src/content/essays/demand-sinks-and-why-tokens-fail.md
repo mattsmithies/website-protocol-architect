@@ -1,7 +1,7 @@
 ---
 title: "Demand sinks, supply sinks, and why most tokens fail"
 category: "Token Economy"
-order: 5
+order: 6
 video: "/videos/Why_Most_Tokens_Fail.mp4"
 ---
 

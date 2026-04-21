@@ -1,7 +1,7 @@
 ---
 title: "Assets need containers before they need markets"
 category: "Meta Structures"
-order: 1
+order: 5
 video: "/videos/Assets_Need_Containers.mp4"
 ---
 
