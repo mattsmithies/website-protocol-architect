@@ -1,9 +1,9 @@
 ---
 title: "Making public services work for you with your digital identity"
-summary: "A structured response on revocation, checker accountability, holder choice, dispute resolution, and replayable verification in UK public digital identity design."
+summary: "A structured response on revocation, checker accountability, holder choice, dispute resolution, and verification records that can be reviewed later in UK public digital identity design."
 date: "April 2026"
 order: 1
-framing: "It addresses a live UK government consultation and focuses on revocation, checker accountability, holder choice, dispute resolution, and replayable verification."
+framing: "It addresses a live UK government consultation and focuses on revocation, checker accountability, holder choice, dispute resolution, and verification records that can be reviewed later."
 consultationQuestions:
   - ref: "2.2.Q2"
     label: "Revocation and ethical safeguards"
@@ -91,7 +91,7 @@ A system becomes coercive in practice long before it becomes compulsory in law. 
 
 Voluntary is a property of the pathways the state builds. It is not a property of the statute.
 
-## Holder choice is fine. Semantic drift is not
+## Holder choice is fine. Inconsistent rules across holders are not
 
 The consultation asks whether people should be able to store the national digital ID in holder services other than the GOV.UK Wallet. The answer is yes. The consultation already sketches the conditions: a third party holder must be certified under the trust framework, placed on a government register, and bound by a specific agreement with government. ([GOV.UK][1])
 
@@ -121,9 +121,13 @@ People should be able to understand what was checked, by whom, for what purpose,
 
 Privacy here is not a policy promise layered on top. It is part of the operating model. Transparency, purpose limitation, data minimisation, retention awareness, and accountability by design are properties the system either has or does not.
 
+Organisations operating the system should define and communicate the purpose of each check, the retention window, who receives the data, and the route for exercising rights before the processing takes place.
+
 <HolderVisibleEventHistory />
 
 This also means separating distinct operations that are often blurred together. Deletion from a user device, erasure of retained personal data, and administrative revocation of a credential are not the same thing. A trustworthy system should make those distinctions visible.
+
+Rights are not satisfied by a privacy notice alone. They need to be discoverable in the event history, retention logic, and challenge process of the system itself.
 
 ## Revocation is an exercise of power
 
@@ -157,15 +161,15 @@ The public dialogue already named the missing shape: users on design, testing, a
 
 ## Direct positions
 
-1. **Voluntary in practice, not just in law.** Alternative routes to essential services must be real, survivable, and free of compounding friction.
-2. **No tracking layer.** Verification evidence is narrow, purpose bound, visible to the holder, and not a cross service activity log.
-3. **Certified holder plurality.** Multiple certified holders under a single trust framework, with preserved disclosure and status semantics across all of them.
-4. **Minimal verification receipts.** Every check emits a replayable record sufficient for dispute and compliance, and nothing more.
-5. **Privacy rights as operating model.** Holders can see when their identity or data was checked, understand the purpose and retention, and exercise access, correction, restriction, objection, and erasure where the law allows.
-6. **Due process for revocation.** Active, suspended, revoked, expired, and reissued are distinct states, each with reasons, responsible authorities, and appeal routes. Deletion from a device, erasure of retained data, and administrative revocation are not the same operation.
-7. **Digitised alternative access with human support.** Alternative access is designed as a first class threat model, with casework for people the system will otherwise fail.
+1. **Voluntary in practice, not just in law.** Alternative routes to essential services should be real, usable, and free of compounding friction.
+2. **No tracking layer.** Verification evidence should be narrow, tied to a specific purpose, visible to the holder, and not a cross service activity log.
+3. **Certified holder plurality under stable rules.** Allow more than one certified holder under a single trust framework. The same disclosure rules and the same status meanings apply on every holder.
+4. **Minimal verification receipts.** Every check should produce a record sufficient for dispute and compliance, visible to the holder, and nothing more.
+5. **Privacy rights as operating model.** Holders should be able to see when their identity or data was checked, understand the purpose and retention, and exercise access, correction, restriction, objection, and erasure where the law allows.
+6. **Due process for revocation.** Treat active, suspended, revoked, expired, and reissued as distinct states, each with reasons, responsible authorities, and appeal routes. Deletion from a device, erasure of retained data, and administrative revocation are not the same operation.
+7. **Alternative access as a separate design problem.** Digital, assisted, and human routes each have their own fraud, privacy, and support considerations, and should be designed with the people who rely on them in the room.
 
-A national digital identity will not fail because the signature was wrong. It will fail when a person, service, business, or tribunal needs to understand what happened, and the system cannot explain itself. Replayability is the condition that turns digital identity into usable public infrastructure.
+A national digital identity will not fail because the signature was wrong. It will fail when a person, service, business, or tribunal needs to understand what happened, and the system cannot explain itself. The ability to reconstruct what was checked, by whom, for what purpose, and with what result is the condition that turns digital identity into usable public infrastructure.
 
 ## Sources
 

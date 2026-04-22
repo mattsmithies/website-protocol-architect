@@ -1,9 +1,8 @@
 ---
 // Figure: Holder choice inside a trust model
-// Three layers only — state authority, certified holder services, holder.
-// Compact invariants list beside the diagram.
-// Core message: plurality is compatible with trust only if the underlying
-// rules remain consistent.
+// Four-row invariants table. Policy-legible.
+// Core message: more than one holder surface is fine, as long as
+// the underlying rules stay the same across all of them.
 ---
 
 <div class="reveal my-12 md:my-16">
@@ -15,74 +14,30 @@
         <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Holder choice inside a trust model</h3>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-[1.4fr,1fr] gap-5 md:gap-6 items-center">
+      <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-3">
+        Invariants across every certified holder
+      </p>
 
-        <!-- Three layers -->
-        <div class="rounded-xl border border-border/60 p-4 md:p-5" style="background: rgba(11,11,17,0.4);">
-          <svg viewBox="0 0 500 360" class="w-full" role="img" aria-label="Three horizontal layers: state authority at the top, three certified holder services in the middle, and the holder at the bottom, connected by simple lines.">
-            <defs>
-              <marker id="hctm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M0,0 L10,5 L0,10 z" fill="rgba(167,139,250,0.7)"/>
-              </marker>
-            </defs>
+      <div class="divide-y divide-border/40">
 
-            <!-- Layer 1: State authority -->
-            <rect x="100" y="30" width="300" height="54" rx="10" fill="rgba(167,139,250,0.1)" stroke="rgba(167,139,250,0.6)" stroke-width="1.3"/>
-            <text x="250" y="54" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">State authority</text>
-            <text x="250" y="70" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">issuer of identity claims</text>
-
-            <!-- Arrows to holder services -->
-            <line x1="250" y1="84" x2="120" y2="130" stroke="rgba(167,139,250,0.4)" stroke-width="1.2" marker-end="url(#hctm-arrow)"/>
-            <line x1="250" y1="84" x2="250" y2="130" stroke="rgba(167,139,250,0.4)" stroke-width="1.2" marker-end="url(#hctm-arrow)"/>
-            <line x1="250" y1="84" x2="380" y2="130" stroke="rgba(167,139,250,0.4)" stroke-width="1.2" marker-end="url(#hctm-arrow)"/>
-
-            <!-- Layer 2: Certified holder services -->
-            <rect x="60" y="135" width="380" height="70" rx="10" fill="rgba(167,139,250,0.03)" stroke="rgba(167,139,250,0.25)" stroke-dasharray="4 3" stroke-width="1"/>
-            <text x="250" y="155" text-anchor="middle" fill="rgba(167,139,250,0.75)" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" letter-spacing="2">CERTIFIED HOLDER SERVICES</text>
-
-            <rect x="80" y="165" width="100" height="30" rx="6" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.55)" stroke-width="1.2"/>
-            <text x="130" y="184" text-anchor="middle" fill="rgba(232,232,240,0.85)" font-family="'Syne', system-ui" font-size="11" font-weight="500">GOV.UK Wallet</text>
-
-            <rect x="200" y="165" width="100" height="30" rx="6" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.55)" stroke-width="1.2"/>
-            <text x="250" y="184" text-anchor="middle" fill="rgba(232,232,240,0.85)" font-family="'Syne', system-ui" font-size="11" font-weight="500">Third-party</text>
-
-            <rect x="320" y="165" width="100" height="30" rx="6" fill="rgba(34,211,238,0.08)" stroke="rgba(34,211,238,0.55)" stroke-width="1.2"/>
-            <text x="370" y="184" text-anchor="middle" fill="rgba(232,232,240,0.85)" font-family="'Syne', system-ui" font-size="11" font-weight="500">Sector holder</text>
-
-            <!-- Arrows down to holder -->
-            <line x1="130" y1="205" x2="210" y2="265" stroke="rgba(167,139,250,0.35)" stroke-width="1" marker-end="url(#hctm-arrow)"/>
-            <line x1="250" y1="205" x2="250" y2="265" stroke="rgba(167,139,250,0.4)" stroke-width="1.1" marker-end="url(#hctm-arrow)"/>
-            <line x1="370" y1="205" x2="290" y2="265" stroke="rgba(167,139,250,0.35)" stroke-width="1" marker-end="url(#hctm-arrow)"/>
-
-            <!-- Layer 3: Holder -->
-            <rect x="150" y="270" width="200" height="54" rx="10" fill="rgba(244,114,182,0.1)" stroke="rgba(244,114,182,0.6)" stroke-width="1.3"/>
-            <text x="250" y="294" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Holder</text>
-            <text x="250" y="310" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">the person</text>
-
-          </svg>
+        <div class="grid grid-cols-[9rem,1fr] gap-4 py-3 md:py-4 items-start">
+          <div class="text-text-secondary text-sm font-display font-semibold">Disclosure rules</div>
+          <div class="text-text-tertiary text-sm leading-relaxed">The same claims are revealed in the same way. No holder may widen what is shared.</div>
         </div>
 
-        <!-- Invariants panel -->
-        <div>
-          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-4">Invariants across every holder</p>
-          <ul class="space-y-3 text-sm">
-            <li class="grid grid-cols-[8rem,1fr] gap-3 items-start">
-              <span class="font-mono text-xs text-text-tertiary pt-0.5">disclosure rules</span>
-              <span class="text-text-secondary text-xs leading-relaxed">the same claims are revealed in the same way</span>
-            </li>
-            <li class="grid grid-cols-[8rem,1fr] gap-3 items-start">
-              <span class="font-mono text-xs text-text-tertiary pt-0.5">status meanings</span>
-              <span class="text-text-secondary text-xs leading-relaxed">active, suspended, revoked mean the same thing</span>
-            </li>
-            <li class="grid grid-cols-[8rem,1fr] gap-3 items-start">
-              <span class="font-mono text-xs text-text-tertiary pt-0.5">trust semantics</span>
-              <span class="text-text-secondary text-xs leading-relaxed">one issuer, one framework, one signature chain</span>
-            </li>
-            <li class="grid grid-cols-[8rem,1fr] gap-3 items-start">
-              <span class="font-mono text-xs text-text-tertiary pt-0.5">audit visibility</span>
-              <span class="text-text-secondary text-xs leading-relaxed">every holder is inspectable under the same rules</span>
-            </li>
-          </ul>
+        <div class="grid grid-cols-[9rem,1fr] gap-4 py-3 md:py-4 items-start">
+          <div class="text-text-secondary text-sm font-display font-semibold">Status meanings</div>
+          <div class="text-text-tertiary text-sm leading-relaxed">Active, suspended, revoked, expired, and reissued mean the same thing on every holder.</div>
+        </div>
+
+        <div class="grid grid-cols-[9rem,1fr] gap-4 py-3 md:py-4 items-start">
+          <div class="text-text-secondary text-sm font-display font-semibold">Trust semantics</div>
+          <div class="text-text-tertiary text-sm leading-relaxed">One issuer, one framework, one set of signatures. A relying party does not need to know which holder was used.</div>
+        </div>
+
+        <div class="grid grid-cols-[9rem,1fr] gap-4 py-3 md:py-4 items-start">
+          <div class="text-text-secondary text-sm font-display font-semibold">Audit visibility</div>
+          <div class="text-text-tertiary text-sm leading-relaxed">Every holder is inspectable under the same rules. Certification is ongoing, not a one-time stamp.</div>
         </div>
 
       </div>
@@ -90,6 +45,6 @@
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    Choice of holder surface is compatible with trust only when the underlying rules remain consistent across every certified holder.
+    Choice of holder surface is compatible with trust only when the underlying rules remain the same across every certified holder.
   </p>
 </div>
