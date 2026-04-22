@@ -28,14 +28,25 @@ const { Content } = await render(response);
             &larr; Back
           </a>
           <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
-            Response &middot; {response.data.date}
+            Response {String(response.data.order).padStart(2, '0')} &middot; {response.data.date}
           </p>
           <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
             {response.data.title}
           </h1>
-          <p class="text-text-secondary text-lg leading-relaxed">
+          <p class="text-text-secondary text-lg leading-relaxed mb-8">
             {response.data.summary}
           </p>
+
+          <div class="border-l border-signal/30 pl-5 py-1 space-y-3 text-text-tertiary text-base leading-relaxed">
+            <p>
+              This response forms part of an ongoing public record of submissions on digital identity, authority, verification, and public digital infrastructure.
+            </p>
+            {response.data.framing && (
+              <p>
+                {response.data.framing}
+              </p>
+            )}
+          </div>
         </div>
 
         <div class="reveal prose-custom space-y-6 text-text-secondary text-lg leading-relaxed">

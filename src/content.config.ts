@@ -18,6 +18,7 @@ const responses = defineCollection({
     summary: z.string(),
     date: z.string(),
     order: z.number(),
+    framing: z.string().optional(),
   }),
 });
 

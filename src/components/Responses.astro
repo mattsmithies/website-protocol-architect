@@ -15,10 +15,19 @@ const responses = (await getCollection('responses')).sort((a, b) => a.data.order
       <h2 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight mb-6">
         Public responses
       </h2>
-      <p class="text-text-secondary text-lg max-w-2xl leading-relaxed">
-        Public responses, consultation submissions, and short technical interventions on live questions in identity, authority, verification, and public digital infrastructure.
-      </p>
+      <div class="text-text-secondary text-lg max-w-2xl leading-relaxed space-y-4">
+        <p>
+          Responses are structured submissions to live consultations, policy proposals, and technical questions.
+        </p>
+        <p>
+          They are published step by step as part of an ongoing public record on digital identity, authority, verification, and public digital infrastructure.
+        </p>
+      </div>
     </div>
+
+    <p class="reveal text-text-tertiary text-xs font-semibold tracking-[0.3em] uppercase mb-6">
+      A cumulative record of public interventions
+    </p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
       {responses.map((response, i) => (
@@ -27,9 +36,14 @@ const responses = (await getCollection('responses')).sort((a, b) => a.data.order
           class="reveal glass-card p-7 group hover:border-signal/20 transition-all duration-500 flex flex-col"
           style={`transition-delay: ${i * 60}ms`}
         >
-          <span class="text-signal/50 text-xs font-semibold tracking-[0.2em] uppercase mb-4 block group-hover:text-signal/80 transition-colors">
-            {response.data.date}
-          </span>
+          <div class="flex items-baseline justify-between mb-4">
+            <span class="text-signal/70 text-xs font-semibold tracking-[0.2em] uppercase block group-hover:text-signal transition-colors">
+              Response {String(response.data.order).padStart(2, '0')}
+            </span>
+            <span class="text-text-tertiary text-xs tracking-[0.15em] uppercase">
+              {response.data.date}
+            </span>
+          </div>
           <h3 class="text-text-primary font-display font-bold text-lg tracking-tight mb-3 group-hover:text-signal transition-colors duration-300">
             {response.data.title}
           </h3>
@@ -37,7 +51,7 @@ const responses = (await getCollection('responses')).sort((a, b) => a.data.order
             {response.data.summary}
           </p>
           <div class="mt-auto flex items-center gap-2 text-text-tertiary group-hover:text-signal text-xs font-medium transition-colors duration-300">
-            <span>Read</span>
+            <span>Read response</span>
             <svg class="w-3 h-3 group-hover:translate-x-1 transition-transform" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M2 6h8M7 3l3 3-3 3" />
             </svg>
