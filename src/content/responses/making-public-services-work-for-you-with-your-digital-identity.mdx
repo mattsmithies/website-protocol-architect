@@ -4,13 +4,26 @@ summary: "A structured response on revocation, checker accountability, holder ch
 date: "April 2026"
 order: 1
 framing: "It addresses a live UK government consultation and focuses on revocation, checker accountability, holder choice, dispute resolution, and replayable verification."
+consultationQuestions:
+  - ref: "2.2.Q2"
+    label: "Revocation and ethical safeguards"
+  - ref: "2.2.Q3"
+    label: "Holder services beyond the GOV.UK Wallet"
+  - ref: "2.2.Q4 and Q5"
+    label: "Government checker design and limits"
+  - ref: "4.5"
+    label: "Alternative access routes"
+  - ref: "5.4"
+    label: "Oversight and governance"
 ---
 
 import PublicSupportBars from '../../components/diagrams/PublicSupportBars.astro';
 import VerificationVsSurveillance from '../../components/diagrams/VerificationVsSurveillance.astro';
 import OptInVsSoftCompulsion from '../../components/diagrams/OptInVsSoftCompulsion.astro';
 import HolderChoiceTrustModel from '../../components/diagrams/HolderChoiceTrustModel.astro';
+import MinimalVerificationReceipt from '../../components/diagrams/MinimalVerificationReceipt.astro';
 import RevocationStateModel from '../../components/diagrams/RevocationStateModel.astro';
+import AlternativeAccessThreatModel from '../../components/diagrams/AlternativeAccessThreatModel.astro';
 import OversightLoop from '../../components/diagrams/OversightLoop.astro';
 
 *Response written in a personal capacity by Matt Smithies.*
@@ -85,9 +98,7 @@ The state's authority to issue does not require a monopoly on presentation. Hold
 
 <HolderChoiceTrustModel />
 
-This only works if the semantics hold across every certified holder. Each must preserve the meaning of the credential, the boundaries of disclosure, the integrity of the exchange, and the status semantics around suspension, revocation, and reissue. The holder is part of the trust surface.
-
-The failure mode is not user confusion. The failure mode is a certified holder that quietly relaxes a boundary, and a relying party that cannot tell.
+The holder is part of the trust surface. The failure mode is not user confusion. The failure mode is a certified holder that quietly relaxes a boundary, and a relying party that cannot tell.
 
 ## A checker that returns valid is not enough
 
@@ -95,11 +106,13 @@ The consultation proposes a Government Checker and expects most verification to 
 
 A checker that returns "valid" is not enough.
 
-Every successful or failed verification should produce a minimal verification receipt. It should record the checker, the relying party context, the claims requested, the claims disclosed, the result, the time, and a reference that allows the event to be understood later. This is replayable verification, not a behavioural log.
+<MinimalVerificationReceipt />
 
-The use case makes this unavoidable. The consultation presents digital right to work checks as a major use case and highlights the value of a digital audit trail for compliance and enforcement. ([GOV.UK][1]) A business that relies on a digital check for legal protection needs an output that is defensible later. A bare pass or fail is not defensible.
+Every successful or failed verification should emit a narrow evidence record: checker, relying party context, claims requested, claims disclosed, result, time, event reference. This is replayable verification, not a behavioural log.
 
-The privacy boundary still binds. The Commons Library distinguishes check records that only the holder can see, which is transparency, from check records that third parties can access and retain, which is surveillance risk. The correct design is minimal, purpose bound evidence, retained only where justified, visible to the holder, and governed by explicit access rules. Not a universal activity trail.
+The use case makes this unavoidable. The consultation presents digital right to work checks as a major use case and highlights the value of a digital audit trail for compliance and enforcement. ([GOV.UK][1]) A business that relies on a digital check for legal protection needs an output that is defensible later. A bare pass or fail is not.
+
+The privacy boundary still binds. A record of checks visible only to the holder is transparency; a record that third parties can access, retain, and join across services is surveillance. The receipt has to sit on the holder's side of that line.
 
 ## Revocation is an exercise of power
 
@@ -109,33 +122,27 @@ Revocation is not a silent state change. It is an exercise of power over a perso
 
 <RevocationStateModel />
 
-A mature model distinguishes between deletion by the holder, temporary suspension pending review, administrative revocation, expiry, recovery, and reissue. Treating them as the same event is a design error with due process consequences. ([GOV.UK][1])
-
-Any revocation or suspension must carry a legible reason, a responsible authority, a time of decision, a route to challenge, and clear downstream status handling. Without these, the system is an opaque gatekeeper. With them, it can be a public instrument that survives scrutiny.
+Without reasons, responsible authorities, defined decision times, and routes to challenge, the system is an opaque gatekeeper. With them, it can be a public instrument that survives scrutiny. ([GOV.UK][1])
 
 ## Alternative access is a separate threat model
 
-A physical card that is only visually checkable is not an alternative. The consultation says any alternative access route must still facilitate a digitised check and remain robust in terms of security, reliability, accuracy, and fraud prevention. It points to code displays, signed QR approaches, and mobile alternatives used internationally.
+A physical card that is only visually checkable is not an alternative. The consultation says any alternative access route must still facilitate a digitised check and remain robust in terms of security, reliability, accuracy, and fraud prevention. It points to code displays, signed QR approaches, and mobile alternatives used internationally. The 2026 explainer commits to physical alternatives for those without smartphones, face to face help during rollout and afterwards, and dedicated casework for difficult situations. ([GOV.UK][5])
 
-The 2026 explainer commits to physical alternatives for those without smartphones, face to face help during rollout and afterwards, and dedicated casework for difficult situations. ([GOV.UK][5])
+<AlternativeAccessThreatModel />
 
-Alternative access is not a downgrade route. It is a separate threat model. It needs its own fraud surface analysis, its own disclosure boundaries, its own revocation semantics, and its own replayable verification. If it collapses back into visual tokens or manual guesswork, it becomes the weakest surface in the system, and the one adversaries will target first.
+Alternative access is not a downgrade route. It is a separate threat model, with its own disclosure boundaries, fraud surface, verification method, revocation handling, and support model. If it collapses back into visual tokens or manual guesswork, it becomes the weakest surface in the system, and the one adversaries will target first.
 
-Digitally excluded people are not an edge case. The ICO's 2025 research found nearly half of digitally disengaged people had no or limited access to the internet or a device, and many were already under pressure to use digital tools they did not want to use. The public dialogue placed accessibility, agency, and involvement among the core routes to trust, and called for involvement from people who have experienced barriers to proving identity, including people without a fixed address and people with experience of coercive control. ([GOV.UK][3])
-
-Alternative access must be designed with those users inside the room, not annotated around them after the fact.
+Digitally excluded people are not an edge case. The ICO's 2025 research found nearly half of digitally disengaged people had no or limited access to the internet or a device, and many were already under pressure to use digital tools they did not want to use. The public dialogue called for involvement from people who have experienced barriers to proving identity — including people without a fixed address and people with experience of coercive control — in design, testing, and oversight. ([GOV.UK][3]) Alternative access must be designed with those users inside the room, not annotated around them after the fact.
 
 ## Oversight must exist at event level
 
 The consultation describes oversight as a mix of internal and external processes, independent scrutiny, Parliamentary accountability, and complaints handling. That is the frame. ([GOV.UK][1])
 
-Oversight at the top of the system is necessary. It is not sufficient.
-
-Oversight must be observable at the level of actual events. Who can issue. Who can check. Who can revoke. What gets recorded. How complaints are raised. How appeals work. What users can inspect. What providers are audited. What gets reported publicly. If those answers are not explicit, governance is a word rather than a property. ([GOV.UK][3])
+Oversight at the top of the system is necessary. It is not sufficient. It must be observable at the level of actual events — who can issue, who can check, who can revoke, what gets recorded, how complaints and appeals work, what users can inspect, what gets reported publicly. If those answers are not explicit, governance is a word rather than a property. ([GOV.UK][3])
 
 <OversightLoop />
 
-The public dialogue already named the missing shape: users on design, testing, and oversight panels, not consultees at launch. ([GOV.UK][3]) The oversight loop closes only when findings from complaints, appeals, scrutiny, and public reporting feed back into operational design. Anything less is performance.
+The public dialogue already named the missing shape: users on design, testing, and oversight panels, not consultees at launch. ([GOV.UK][3])
 
 ## Direct positions
 

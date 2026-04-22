@@ -47,6 +47,26 @@ const { Content } = await render(response);
               </p>
             )}
           </div>
+
+          {response.data.consultationQuestions && response.data.consultationQuestions.length > 0 && (
+            <div class="mt-10 rounded-xl border border-border/60 p-5 md:p-6" style="background: rgba(11,11,17,0.55);">
+              <p class="text-text-tertiary text-[11px] font-semibold tracking-[0.24em] uppercase mb-4">
+                Consultation questions addressed
+              </p>
+              <ul class="divide-y divide-border/40">
+                {response.data.consultationQuestions.map((q) => (
+                  <li class="flex items-baseline gap-4 py-2.5 text-sm">
+                    <span class="font-mono text-text-tertiary tracking-tight shrink-0 w-[5.5rem]">
+                      {q.ref}
+                    </span>
+                    <span class="text-text-secondary leading-snug">
+                      {q.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div class="reveal prose-custom space-y-6 text-text-secondary text-lg leading-relaxed">

@@ -1,287 +1,146 @@
 ---
-// Figure 4: Holder choice inside a trust model
-// Hub-and-spoke diagram. The trust framework sits at the centre.
-// Issuer, certified holders, checkers, relying parties, and the person orbit it.
-// Tap any node to surface its role and the certification constraint that makes plurality safe.
+// Figure: Holder choice inside a trust model
+// State authority issues. Multiple certified holder surfaces present.
+// One trust framework. Preserved semantics (disclosure rules, status meanings,
+// trust bindings) across every certified holder — plurality is compatible with
+// authority only when semantics remain intact.
+// Static SVG, standards-note tone.
 ---
 
 <div class="reveal my-12 md:my-16">
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
     <div class="p-6 md:p-8">
 
-      <div class="mb-5">
+      <div class="mb-6">
         <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-1">Trust architecture</p>
         <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Holder choice inside a trust model</h3>
       </div>
 
-      <canvas id="hctm-canvas" class="w-full" style="height: 480px; cursor: pointer;" role="img" aria-label="Hub-and-spoke trust model with the government's trust framework at the centre and issuer, certified holders, checkers, relying parties, and person as orbiting nodes."></canvas>
+      <div class="grid grid-cols-1 lg:grid-cols-[1.45fr,1fr] gap-5 md:gap-6">
 
-      <div id="hctm-detail" class="mt-4 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
-        <p id="hctm-detail-label" class="text-[11px] font-semibold tracking-[0.2em] uppercase mb-2"></p>
-        <p id="hctm-detail-role" class="text-text-primary text-sm mb-2" style="font-family:'Syne',system-ui; font-weight:600;"></p>
-        <p id="hctm-detail-constraint" class="text-sm text-text-secondary"></p>
+        <!-- SVG -->
+        <div class="rounded-xl border border-border/60 p-3 md:p-4" style="background: rgba(11,11,17,0.4);">
+          <svg viewBox="0 0 600 470" class="w-full" role="img" aria-label="Diagram with the state as authoritative issuer at the top, a single trust framework band in the middle, and multiple certified holder surfaces below. Preserved semantics — disclosure rules, status meanings, trust bindings — flow across all holders.">
+            <defs>
+              <marker id="hctm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="rgba(167,139,250,0.7)"/>
+              </marker>
+            </defs>
+
+            <!-- Issuer -->
+            <rect x="210" y="20" width="180" height="54" rx="8" fill="rgba(167,139,250,0.1)" stroke="rgba(167,139,250,0.6)" stroke-width="1.2"/>
+            <text x="300" y="43" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">State as issuer</text>
+            <text x="300" y="60" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">authoritative source of claims</text>
+
+            <!-- Arrow into trust framework -->
+            <line x1="300" y1="74" x2="300" y2="110" stroke="rgba(167,139,250,0.45)" stroke-width="1.2" marker-end="url(#hctm-arrow)"/>
+
+            <!-- Trust framework band -->
+            <rect x="40" y="115" width="520" height="90" rx="10" fill="rgba(167,139,250,0.06)" stroke="rgba(167,139,250,0.45)" stroke-width="1.2"/>
+            <text x="300" y="138" text-anchor="middle" fill="rgba(167,139,250,0.85)" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" letter-spacing="2">TRUST FRAMEWORK · ONE</text>
+            <text x="300" y="158" text-anchor="middle" fill="rgba(232,232,240,0.85)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Certification · register · specific agreements</text>
+
+            <!-- Preserved semantics line inside trust band -->
+            <line x1="75" y1="180" x2="525" y2="180" stroke="rgba(167,139,250,0.3)" stroke-dasharray="3 3" stroke-width="1"/>
+            <text x="300" y="196" text-anchor="middle" fill="rgba(232,232,240,0.65)" font-family="'Inter', system-ui" font-size="10" font-style="italic">
+              preserved across every certified holder
+            </text>
+
+            <!-- Semantic tags -->
+            <g font-family="'JetBrains Mono', monospace" font-size="9" fill="rgba(167,139,250,0.75)">
+              <text x="90" y="176">disclosure rules</text>
+              <text x="230" y="176">status meanings</text>
+              <text x="378" y="176">trust bindings</text>
+              <text x="490" y="176">audit</text>
+            </g>
+
+            <!-- Arrows down from framework to holders -->
+            <line x1="140" y1="205" x2="140" y2="240" stroke="rgba(167,139,250,0.4)" stroke-width="1.2" marker-end="url(#hctm-arrow)"/>
+            <line x1="300" y1="205" x2="300" y2="240" stroke="rgba(167,139,250,0.4)" stroke-width="1.2" marker-end="url(#hctm-arrow)"/>
+            <line x1="460" y1="205" x2="460" y2="240" stroke="rgba(167,139,250,0.4)" stroke-width="1.2" marker-end="url(#hctm-arrow)"/>
+
+            <!-- Certified holders row -->
+            <g>
+              <rect x="55" y="245" width="170" height="88" rx="10" fill="rgba(56,189,248,0.06)" stroke="rgba(56,189,248,0.5)" stroke-width="1.2"/>
+              <text x="140" y="268" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">GOV.UK Wallet</text>
+              <text x="140" y="284" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">first-party holder</text>
+              <line x1="75" y1="298" x2="205" y2="298" stroke="rgba(56,189,248,0.2)" stroke-width="0.8"/>
+              <text x="140" y="313" text-anchor="middle" fill="rgba(56,189,248,0.75)" font-family="'JetBrains Mono', monospace" font-size="9">same disclosure rules</text>
+              <text x="140" y="326" text-anchor="middle" fill="rgba(56,189,248,0.75)" font-family="'JetBrains Mono', monospace" font-size="9">same status semantics</text>
+            </g>
+
+            <g>
+              <rect x="215" y="245" width="170" height="88" rx="10" fill="rgba(74,222,128,0.06)" stroke="rgba(74,222,128,0.5)" stroke-width="1.2"/>
+              <text x="300" y="268" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Third-party holder</text>
+              <text x="300" y="284" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">certified alternative wallet</text>
+              <line x1="235" y1="298" x2="365" y2="298" stroke="rgba(74,222,128,0.2)" stroke-width="0.8"/>
+              <text x="300" y="313" text-anchor="middle" fill="rgba(74,222,128,0.75)" font-family="'JetBrains Mono', monospace" font-size="9">same disclosure rules</text>
+              <text x="300" y="326" text-anchor="middle" fill="rgba(74,222,128,0.75)" font-family="'JetBrains Mono', monospace" font-size="9">same status semantics</text>
+            </g>
+
+            <g>
+              <rect x="375" y="245" width="170" height="88" rx="10" fill="rgba(34,211,238,0.06)" stroke="rgba(34,211,238,0.5)" stroke-width="1.2"/>
+              <text x="460" y="268" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Sector holder</text>
+              <text x="460" y="284" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">e.g. bank · telco · employer</text>
+              <line x1="395" y1="298" x2="525" y2="298" stroke="rgba(34,211,238,0.2)" stroke-width="0.8"/>
+              <text x="460" y="313" text-anchor="middle" fill="rgba(34,211,238,0.75)" font-family="'JetBrains Mono', monospace" font-size="9">same disclosure rules</text>
+              <text x="460" y="326" text-anchor="middle" fill="rgba(34,211,238,0.75)" font-family="'JetBrains Mono', monospace" font-size="9">same status semantics</text>
+            </g>
+
+            <!-- Downstream: checkers and relying parties -->
+            <line x1="140" y1="333" x2="140" y2="360" stroke="rgba(232,232,240,0.3)" stroke-width="1" marker-end="url(#hctm-arrow)"/>
+            <line x1="300" y1="333" x2="300" y2="360" stroke="rgba(232,232,240,0.3)" stroke-width="1" marker-end="url(#hctm-arrow)"/>
+            <line x1="460" y1="333" x2="460" y2="360" stroke="rgba(232,232,240,0.3)" stroke-width="1" marker-end="url(#hctm-arrow)"/>
+
+            <rect x="40" y="365" width="520" height="56" rx="10" fill="rgba(245,158,11,0.05)" stroke="rgba(245,158,11,0.4)" stroke-width="1.2"/>
+            <text x="300" y="388" text-anchor="middle" fill="rgba(232,232,240,0.85)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Checkers and relying parties see the same trust semantics from every holder</text>
+            <text x="300" y="406" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">the relying party does not need to know which holder was used</text>
+
+            <!-- Failure arrow: semantic drift -->
+            <text x="300" y="450" text-anchor="middle" fill="rgba(239,68,68,0.8)" font-family="'JetBrains Mono', monospace" font-size="10">
+              failure mode: a certified holder quietly relaxes a boundary — relying party cannot tell
+            </text>
+          </svg>
+        </div>
+
+        <!-- Preserved semantics panel -->
+        <div class="rounded-xl border border-border/60 p-4 md:p-5" style="background: rgba(11,11,17,0.4);">
+          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-4">
+            Preserved across every certified holder
+          </p>
+
+          <ul class="space-y-4 text-sm">
+            <li>
+              <p class="text-text-secondary font-display font-semibold text-xs tracking-wide mb-1">Disclosure rules</p>
+              <p class="text-text-tertiary text-xs leading-relaxed">Selective disclosure is enforced the same way on every holder. No certified wallet may widen what is revealed.</p>
+            </li>
+            <li>
+              <p class="text-text-secondary font-display font-semibold text-xs tracking-wide mb-1">Status meanings</p>
+              <p class="text-text-tertiary text-xs leading-relaxed">Active, suspended, revoked, expired, deleted mean the same thing on every holder. No local reinterpretation.</p>
+            </li>
+            <li>
+              <p class="text-text-secondary font-display font-semibold text-xs tracking-wide mb-1">Trust bindings</p>
+              <p class="text-text-tertiary text-xs leading-relaxed">The same issuer signatures, key rotation rules, and status endpoints bind every holder to the same authority.</p>
+            </li>
+            <li>
+              <p class="text-text-secondary font-display font-semibold text-xs tracking-wide mb-1">Audit surface</p>
+              <p class="text-text-tertiary text-xs leading-relaxed">Every certified holder is inspectable under the same rules. Certification is ongoing, not a one-time stamp.</p>
+            </li>
+          </ul>
+
+          <div class="mt-5 pt-4 border-t border-border/40">
+            <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-2">Plurality works only when</p>
+            <p class="text-xs text-text-secondary leading-relaxed">
+              All four of the above are identical across every certified holder. If one holder drifts, authority fragments and the relying party has no way to tell.
+            </p>
+          </div>
+        </div>
+
       </div>
 
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    Authority to issue does not require a monopoly on presentation — but plurality only works if every certified holder preserves the same trust semantics.
+    Authority to issue does not require a monopoly on presentation. Plurality is compatible with authority only when disclosure rules, status meanings, and trust bindings remain intact across every certified holder.
   </p>
 </div>
-
-<script>
-interface Node {
-  id: string;
-  label: string;
-  role: string;
-  constraint: string;
-  angle: number; // radians around centre
-  color: [number, number, number];
-}
-
-const canvas = document.getElementById('hctm-canvas') as HTMLCanvasElement;
-const detail = document.getElementById('hctm-detail')!;
-const detailLabel = document.getElementById('hctm-detail-label')!;
-const detailRole = document.getElementById('hctm-detail-role')!;
-const detailConstraint = document.getElementById('hctm-detail-constraint')!;
-
-if (canvas) {
-  const ctx = canvas.getContext('2d')!;
-
-  const VIOLET: [number, number, number] = [167, 139, 250];
-  const BLUE: [number, number, number] = [56, 189, 248];
-  const GREEN: [number, number, number] = [74, 222, 128];
-  const AMBER: [number, number, number] = [245, 158, 11];
-  const CYAN: [number, number, number] = [34, 211, 238];
-  const ROSE: [number, number, number] = [244, 114, 182];
-
-  const nodes: Node[] = [
-    {
-      id: 'issuer',
-      label: 'Issuer',
-      role: 'Government as authoritative issuer',
-      constraint: 'The state remains the source of identity claims. Certification does not delegate the issuing authority, only the presentation surface.',
-      angle: -Math.PI / 2,
-      color: VIOLET,
-    },
-    {
-      id: 'wallet',
-      label: 'GOV.UK Wallet',
-      role: 'First-party certified holder',
-      constraint: 'Default holder maintained by government. Must meet the same trust framework conditions as any other certified holder — not privileged by default.',
-      angle: -Math.PI / 2 + (2 * Math.PI) / 6,
-      color: BLUE,
-    },
-    {
-      id: 'third',
-      label: 'Third-party\nholder',
-      role: 'Certified alternative wallet',
-      constraint: 'Must be certified under the trust framework, entered on a government register, and hold a specific agreement with government. Preserves claim meaning, disclosure boundaries, and status semantics.',
-      angle: -Math.PI / 2 + (4 * Math.PI) / 6,
-      color: GREEN,
-    },
-    {
-      id: 'checker',
-      label: 'Checker',
-      role: 'Government or certified verification service',
-      constraint: 'Returns a minimal result plus a verification receipt. Cannot accumulate behavioural data across checks or share logs outside legally grounded scopes.',
-      angle: -Math.PI / 2 + (6 * Math.PI) / 6,
-      color: AMBER,
-    },
-    {
-      id: 'relying',
-      label: 'Relying party',
-      role: 'Business, service, or public body consuming a check',
-      constraint: 'Receives only the claims requested for the specific purpose. Retains evidence only for the legally justified window. Cannot replay the credential beyond its original purpose.',
-      angle: -Math.PI / 2 + (8 * Math.PI) / 6,
-      color: CYAN,
-    },
-    {
-      id: 'person',
-      label: 'Person',
-      role: 'Holder of the identity and authority over its use',
-      constraint: 'Controls which holder stores the credential, what is disclosed, and when. Can see their own verification history. Can delete the credential from any certified holder.',
-      angle: -Math.PI / 2 + (10 * Math.PI) / 6,
-      color: ROSE,
-    },
-  ];
-
-  let activeIndex = -1;
-  let animId = 0;
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  function getLayout() {
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    const isNarrow = w < 500;
-    const cx = w / 2;
-    const cy = h / 2;
-    const radius = Math.min(w, h) * (isNarrow ? 0.34 : 0.36);
-    const nodeHalfW = isNarrow ? 58 : 76;
-    const nodeHalfH = isNarrow ? 22 : 26;
-    return { w, h, isNarrow, cx, cy, radius, nodeHalfW, nodeHalfH };
-  }
-
-  function nodePos(n: Node, radius: number, cx: number, cy: number) {
-    return { x: cx + Math.cos(n.angle) * radius, y: cy + Math.sin(n.angle) * radius };
-  }
-
-  function drawRoundedRect(x: number, y: number, w: number, h: number, r: number) {
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, r);
-  }
-
-  function render(now: number) {
-    const { w, h, isNarrow, cx, cy, radius, nodeHalfW, nodeHalfH } = getLayout();
-    const t = now * 0.001;
-    ctx.clearRect(0, 0, w, h);
-
-    // Spokes (drawn first, behind nodes)
-    for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i];
-      const p = nodePos(n, radius, cx, cy);
-      const [r, g, b] = n.color;
-      const active = i === activeIndex;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = `rgba(${r},${g},${b},${active ? 0.55 : 0.18})`;
-      ctx.lineWidth = active ? 1.5 : 1;
-      ctx.stroke();
-
-      // Flowing particle along spoke
-      if (!prefersReducedMotion) {
-        const pt = ((t * 0.2 + i * 0.16) % 1);
-        const px = cx + (p.x - cx) * pt;
-        const py = cy + (p.y - cy) * pt;
-        ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${g},${b},${active ? 0.8 : 0.35})`;
-        ctx.fill();
-      }
-    }
-
-    // Hub — trust framework
-    const hubR = isNarrow ? 58 : 72;
-    const hubGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, hubR * 1.6);
-    hubGrad.addColorStop(0, 'rgba(167,139,250,0.10)');
-    hubGrad.addColorStop(1, 'rgba(167,139,250,0)');
-    ctx.fillStyle = hubGrad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, hubR * 1.6, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, hubR, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(167,139,250,0.08)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(167,139,250,0.45)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.font = `600 ${isNarrow ? 10 : 11}px "JetBrains Mono", monospace`;
-    ctx.fillStyle = 'rgba(167,139,250,0.6)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('TRUST FRAMEWORK', cx, cy - (isNarrow ? 6 : 8));
-    ctx.font = `400 ${isNarrow ? 10 : 11}px "Inter", system-ui`;
-    ctx.fillStyle = 'rgba(232,232,240,0.55)';
-    ctx.fillText(isNarrow ? 'Certification &' : 'Certification,', cx, cy + (isNarrow ? 8 : 8));
-    ctx.fillText(isNarrow ? 'register' : 'register, agreements', cx, cy + (isNarrow ? 22 : 22));
-    ctx.textBaseline = 'alphabetic';
-
-    // Orbiting nodes
-    for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i];
-      const p = nodePos(n, radius, cx, cy);
-      const [r, g, b] = n.color;
-      const active = i === activeIndex;
-      const alpha = active ? 1 : 0.85;
-
-      drawRoundedRect(p.x - nodeHalfW, p.y - nodeHalfH, nodeHalfW * 2, nodeHalfH * 2, 8);
-      ctx.fillStyle = `rgba(${r},${g},${b},${active ? 0.14 : 0.06})`;
-      ctx.fill();
-      ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.55})`;
-      ctx.lineWidth = active ? 1.8 : 1.2;
-      ctx.stroke();
-
-      if (active) {
-        ctx.shadowColor = `rgba(${r},${g},${b},0.25)`;
-        ctx.shadowBlur = 12;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-      }
-
-      ctx.font = `600 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
-      ctx.fillStyle = `rgba(232,232,240,${alpha * 0.9})`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const lines = n.label.split('\n');
-      const lineH = isNarrow ? 13 : 15;
-      lines.forEach((line, j) => {
-        ctx.fillText(line, p.x, p.y + (j - (lines.length - 1) / 2) * lineH);
-      });
-      ctx.textBaseline = 'alphabetic';
-    }
-
-    if (!prefersReducedMotion) animId = requestAnimationFrame(render);
-  }
-
-  function hitTest(mx: number, my: number): number {
-    const { radius, cx, cy, nodeHalfW, nodeHalfH } = getLayout();
-    for (let i = 0; i < nodes.length; i++) {
-      const p = nodePos(nodes[i], radius, cx, cy);
-      if (Math.abs(mx - p.x) <= nodeHalfW && Math.abs(my - p.y) <= nodeHalfH) return i;
-    }
-    return -1;
-  }
-
-  function showDetail(i: number) {
-    activeIndex = i;
-    const n = nodes[i];
-    const [r, g, b] = n.color;
-    detail.style.opacity = '1';
-    detail.style.borderColor = `rgba(${r},${g},${b},0.3)`;
-    detailLabel.textContent = n.label.replace('\n', ' ');
-    detailLabel.style.color = `rgba(${r},${g},${b},0.8)`;
-    detailRole.textContent = n.role;
-    detailConstraint.textContent = n.constraint;
-    if (prefersReducedMotion) render(0);
-  }
-
-  function hideDetail() {
-    activeIndex = -1;
-    detail.style.opacity = '0';
-    if (prefersReducedMotion) render(0);
-  }
-
-  canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const idx = hitTest(e.clientX - rect.left, e.clientY - rect.top);
-    if (idx >= 0) showDetail(idx);
-    else hideDetail();
-  });
-
-  canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const idx = hitTest(e.clientX - rect.left, e.clientY - rect.top);
-    canvas.style.cursor = idx >= 0 ? 'pointer' : 'default';
-  });
-
-  resize();
-  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
-  if (!prefersReducedMotion) {
-    animId = requestAnimationFrame(render);
-  } else {
-    render(0);
-  }
-}
-</script>

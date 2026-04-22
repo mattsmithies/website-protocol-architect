@@ -19,6 +19,9 @@ const responses = defineCollection({
     date: z.string(),
     order: z.number(),
     framing: z.string().optional(),
+    consultationQuestions: z
+      .array(z.object({ ref: z.string(), label: z.string() }))
+      .optional(),
   }),
 });
 

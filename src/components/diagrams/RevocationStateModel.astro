@@ -1,366 +1,171 @@
 ---
-// Figure 5: Revocation state model
-// State machine for a digital identity credential. Separate states for
-// active, deleted by holder, suspended, revoked, expired, recovered, and reissued.
-// Tap a state or a transition for its semantics.
+// Figure: Revocation state model
+// Lifecycle state machine. Separate states — Active, Suspended, Revoked,
+// Expired, Deleted from device, Recovered, Reissued.
+// Every transition visibly carries: reason, responsible authority, time,
+// route to challenge. Deletion by the holder is structurally distinct
+// from suspension or revocation by an authority.
 ---
 
 <div class="reveal my-12 md:my-16">
   <div class="rounded-2xl border border-border overflow-hidden" style="background: rgba(11,11,17,0.6);">
     <div class="p-6 md:p-8">
 
-      <div class="mb-5">
+      <div class="mb-6">
         <p class="text-text-tertiary text-xs font-semibold tracking-[0.2em] uppercase mb-1">Credential lifecycle</p>
         <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Revocation state model</h3>
       </div>
 
-      <canvas id="rsm-canvas" class="w-full" style="height: 520px; cursor: pointer;" role="img" aria-label="State machine showing separate states for active, deleted by holder, suspended, revoked, expired, recovered, and reissued credentials, with transitions between them."></canvas>
+      <!-- State machine SVG -->
+      <div class="w-full overflow-x-auto">
+        <svg viewBox="0 0 920 480" class="w-full min-w-[720px]" role="img" aria-label="State machine for a credential with distinct states for active, suspended, revoked, expired, deleted from device, recovered, and reissued. Transitions labelled with reason, authority, and challenge route.">
+          <defs>
+            <marker id="rsm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="rgba(232,232,240,0.55)"/>
+            </marker>
+            <marker id="rsm-arrow-holder" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="rgba(244,114,182,0.75)"/>
+            </marker>
+            <marker id="rsm-arrow-admin" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="rgba(245,158,11,0.85)"/>
+            </marker>
+            <marker id="rsm-arrow-auto" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="rgba(160,160,180,0.7)"/>
+            </marker>
+          </defs>
 
-      <div id="rsm-detail" class="mt-4 p-4 rounded-lg border border-border transition-all duration-300" style="opacity: 0; background: rgba(11,11,17,0.8);">
-        <p id="rsm-detail-label" class="text-[11px] font-semibold tracking-[0.2em] uppercase mb-2"></p>
-        <p id="rsm-detail-name" class="text-text-primary text-sm mb-2" style="font-family:'Syne',system-ui; font-weight:600;"></p>
-        <p id="rsm-detail-desc" class="text-sm text-text-secondary"></p>
+          <!-- Holder-domain background -->
+          <rect x="30" y="30" width="250" height="420" rx="12" fill="rgba(244,114,182,0.03)" stroke="rgba(244,114,182,0.2)" stroke-dasharray="4 3" stroke-width="1"/>
+          <text x="50" y="50" fill="rgba(244,114,182,0.65)" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" letter-spacing="2">HOLDER DOMAIN</text>
+
+          <!-- Authority-domain background -->
+          <rect x="300" y="30" width="590" height="420" rx="12" fill="rgba(245,158,11,0.03)" stroke="rgba(245,158,11,0.2)" stroke-dasharray="4 3" stroke-width="1"/>
+          <text x="320" y="50" fill="rgba(245,158,11,0.65)" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" letter-spacing="2">AUTHORITY DOMAIN</text>
+
+          <!-- Active state -->
+          <g>
+            <rect x="400" y="90" width="160" height="50" rx="10" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.55)" stroke-width="1.3"/>
+            <text x="480" y="113" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Active</text>
+            <text x="480" y="128" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">valid · checkable</text>
+          </g>
+
+          <!-- Deleted from device (holder side) -->
+          <g>
+            <rect x="70" y="200" width="170" height="50" rx="10" fill="rgba(244,114,182,0.08)" stroke="rgba(244,114,182,0.55)" stroke-width="1.3"/>
+            <text x="155" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Deleted from device</text>
+            <text x="155" y="238" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">admin record unchanged</text>
+          </g>
+
+          <!-- Suspended (admin) -->
+          <g>
+            <rect x="400" y="200" width="160" height="50" rx="10" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.3"/>
+            <text x="480" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Suspended</text>
+            <text x="480" y="238" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">hold pending review</text>
+          </g>
+
+          <!-- Expired -->
+          <g>
+            <rect x="720" y="200" width="160" height="50" rx="10" fill="rgba(160,160,180,0.08)" stroke="rgba(160,160,180,0.55)" stroke-width="1.3"/>
+            <text x="800" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Expired</text>
+            <text x="800" y="238" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">validity window ended</text>
+          </g>
+
+          <!-- Recovered -->
+          <g>
+            <rect x="70" y="340" width="170" height="50" rx="10" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.3"/>
+            <text x="155" y="363" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Recovered</text>
+            <text x="155" y="378" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">restored on new device</text>
+          </g>
+
+          <!-- Revoked -->
+          <g>
+            <rect x="400" y="340" width="160" height="50" rx="10" fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.55)" stroke-width="1.3"/>
+            <text x="480" y="363" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Revoked</text>
+            <text x="480" y="378" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">administrative termination</text>
+          </g>
+
+          <!-- Reissued -->
+          <g>
+            <rect x="720" y="340" width="160" height="50" rx="10" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.3"/>
+            <text x="800" y="363" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Reissued</text>
+            <text x="800" y="378" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">fresh credential</text>
+          </g>
+
+          <!-- Transitions -->
+
+          <!-- Active → Deleted (holder, dashed) -->
+          <path d="M 400 125 Q 280 160 240 200" fill="none" stroke="rgba(244,114,182,0.65)" stroke-width="1.3" stroke-dasharray="5 3" marker-end="url(#rsm-arrow-holder)"/>
+          <text x="265" y="152" fill="rgba(244,114,182,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">holder deletes</text>
+          <text x="265" y="165" fill="rgba(244,114,182,0.65)" font-family="'JetBrains Mono', monospace" font-size="8.5">holder · now · no challenge needed</text>
+
+          <!-- Active → Suspended (admin) -->
+          <line x1="480" y1="140" x2="480" y2="200" stroke="rgba(245,158,11,0.75)" stroke-width="1.3" marker-end="url(#rsm-arrow-admin)"/>
+          <text x="490" y="170" fill="rgba(245,158,11,0.9)" font-family="'JetBrains Mono', monospace" font-size="9.5">admin suspends</text>
+          <text x="490" y="183" fill="rgba(245,158,11,0.7)" font-family="'JetBrains Mono', monospace" font-size="8.5">reason · authority · time · appeal</text>
+
+          <!-- Active → Expired (auto) -->
+          <path d="M 560 125 Q 650 160 720 200" fill="none" stroke="rgba(160,160,180,0.6)" stroke-width="1.2" marker-end="url(#rsm-arrow-auto)"/>
+          <text x="605" y="155" fill="rgba(160,160,180,0.8)" font-family="'JetBrains Mono', monospace" font-size="9.5">validity ends</text>
+          <text x="605" y="168" fill="rgba(160,160,180,0.6)" font-family="'JetBrains Mono', monospace" font-size="8.5">automatic · predictable · notice</text>
+
+          <!-- Suspended → Active (review clears) -->
+          <path d="M 430 200 Q 390 170 430 140" fill="none" stroke="rgba(245,158,11,0.7)" stroke-width="1.2" marker-end="url(#rsm-arrow-admin)"/>
+          <text x="320" y="195" fill="rgba(245,158,11,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">review clears</text>
+
+          <!-- Suspended → Revoked (review confirms) -->
+          <line x1="480" y1="250" x2="480" y2="340" stroke="rgba(239,68,68,0.7)" stroke-width="1.3" marker-end="url(#rsm-arrow-admin)"/>
+          <text x="490" y="285" fill="rgba(239,68,68,0.9)" font-family="'JetBrains Mono', monospace" font-size="9.5">review confirms</text>
+          <text x="490" y="298" fill="rgba(239,68,68,0.7)" font-family="'JetBrains Mono', monospace" font-size="8.5">reason · authority · time · appeal</text>
+
+          <!-- Deleted → Recovered (holder) -->
+          <line x1="155" y1="250" x2="155" y2="340" stroke="rgba(167,139,250,0.65)" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#rsm-arrow)"/>
+          <text x="13" y="295" fill="rgba(167,139,250,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">holder recovers</text>
+          <text x="13" y="308" fill="rgba(167,139,250,0.6)" font-family="'JetBrains Mono', monospace" font-size="8.5">recovery proof required</text>
+
+          <!-- Recovered → Active (loopback) -->
+          <path d="M 240 340 Q 340 220 400 125" fill="none" stroke="rgba(167,139,250,0.5)" stroke-width="1.1" stroke-dasharray="4 3" marker-end="url(#rsm-arrow)"/>
+
+          <!-- Expired → Reissued (renewal) -->
+          <line x1="800" y1="250" x2="800" y2="340" stroke="rgba(160,160,180,0.6)" stroke-width="1.2" marker-end="url(#rsm-arrow-auto)"/>
+          <text x="810" y="295" fill="rgba(160,160,180,0.8)" font-family="'JetBrains Mono', monospace" font-size="9.5">renewal</text>
+
+          <!-- Revoked → Reissued (successful appeal) -->
+          <line x1="560" y1="365" x2="720" y2="365" stroke="rgba(167,139,250,0.65)" stroke-width="1.2" marker-end="url(#rsm-arrow)"/>
+          <text x="590" y="356" fill="rgba(167,139,250,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">successful appeal</text>
+          <text x="590" y="369" fill="rgba(167,139,250,0.6)" font-family="'JetBrains Mono', monospace" font-size="8.5">previous record stays revoked</text>
+
+          <!-- Boundary note -->
+          <rect x="30" y="400" width="250" height="40" rx="6" fill="rgba(244,114,182,0.05)" stroke="rgba(244,114,182,0.25)"/>
+          <text x="155" y="417" text-anchor="middle" fill="rgba(244,114,182,0.85)" font-family="'Syne', system-ui" font-size="10" font-weight="600">Deletion ≠ revocation</text>
+          <text x="155" y="430" text-anchor="middle" fill="rgba(232,232,240,0.65)" font-family="'Inter', system-ui" font-size="9">holder action, not administrative termination</text>
+        </svg>
+      </div>
+
+      <!-- Transition carries — legend -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-5 border-t border-border/40">
+        <div>
+          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-3">Every authority transition carries</p>
+          <ul class="space-y-2 text-xs text-text-secondary">
+            <li class="grid grid-cols-[5.5rem,1fr] gap-3"><span class="font-mono text-text-tertiary">Reason</span><span>a legible ground, not a category code</span></li>
+            <li class="grid grid-cols-[5.5rem,1fr] gap-3"><span class="font-mono text-text-tertiary">Authority</span><span>the named body responsible for the decision</span></li>
+            <li class="grid grid-cols-[5.5rem,1fr] gap-3"><span class="font-mono text-text-tertiary">Time</span><span>when the decision was taken and when it took effect</span></li>
+            <li class="grid grid-cols-[5.5rem,1fr] gap-3"><span class="font-mono text-text-tertiary">Challenge</span><span>a route to appeal with a defined response time</span></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-3">Actor key</p>
+          <ul class="space-y-2 text-xs text-text-secondary">
+            <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background: rgba(244,114,182,0.8);"></span> holder action — no administrative effect</li>
+            <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background: rgba(245,158,11,0.85);"></span> admin action — must carry all four above</li>
+            <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background: rgba(160,160,180,0.8);"></span> automatic — scheduled, predictable</li>
+            <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background: rgba(167,139,250,0.8);"></span> recovery — restores or reissues</li>
+          </ul>
+        </div>
       </div>
 
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    Deletion, suspension, and revocation are not the same event. Each transition should carry a legible reason, a responsible authority, a time, and a route to challenge.
+    Deletion by the holder is not the same event as suspension or revocation by an authority. Treating them as one state is a design error with due-process consequences.
   </p>
 </div>
-
-<script>
-interface State {
-  id: string;
-  label: string;
-  kind: 'state' | 'holder' | 'admin' | 'terminal' | 'recovery';
-  x: number; // fraction of width
-  y: number; // fraction of height
-  desc: string;
-}
-
-interface Transition {
-  from: string;
-  to: string;
-  label: string;
-  desc: string;
-  kind: 'holder' | 'admin' | 'auto';
-}
-
-const canvas = document.getElementById('rsm-canvas') as HTMLCanvasElement;
-const detail = document.getElementById('rsm-detail')!;
-const detailLabel = document.getElementById('rsm-detail-label')!;
-const detailName = document.getElementById('rsm-detail-name')!;
-const detailDesc = document.getElementById('rsm-detail-desc')!;
-
-if (canvas) {
-  const ctx = canvas.getContext('2d')!;
-
-  const GREEN: [number, number, number] = [74, 222, 128];
-  const AMBER: [number, number, number] = [245, 158, 11];
-  const RED: [number, number, number] = [239, 68, 68];
-  const BLUE: [number, number, number] = [56, 189, 248];
-  const VIOLET: [number, number, number] = [167, 139, 250];
-  const DIM: [number, number, number] = [160, 160, 180];
-
-  const KIND_COLOR: Record<State['kind'], [number, number, number]> = {
-    state: GREEN,
-    holder: BLUE,
-    admin: AMBER,
-    terminal: RED,
-    recovery: VIOLET,
-  };
-
-  const states: State[] = [
-    { id: 'active',    label: 'Active',            kind: 'state',    x: 0.50, y: 0.18, desc: 'Credential is valid and checkable. Verification succeeds. Holder controls presentation and disclosure.' },
-    { id: 'deleted',   label: 'Deleted by holder', kind: 'holder',   x: 0.18, y: 0.40, desc: 'Removed from the holder device at the person’s request. Does not affect administrative validity. Can be reissued on request.' },
-    { id: 'suspended', label: 'Suspended',         kind: 'admin',    x: 0.50, y: 0.46, desc: 'Temporary hold pending review. No new checks succeed. Must carry a reason, a responsible authority, and a route to challenge.' },
-    { id: 'expired',   label: 'Expired',           kind: 'state',    x: 0.82, y: 0.40, desc: 'Reached end of validity window. Automatic, not punitive. Holder receives notice and a path to renewal.' },
-    { id: 'revoked',   label: 'Revoked',           kind: 'terminal', x: 0.50, y: 0.75, desc: 'Administrative termination, limited to circumstances such as confirmed fraudulent use. Requires due process and an appeal route.' },
-    { id: 'recovered', label: 'Recovered',         kind: 'recovery', x: 0.18, y: 0.75, desc: 'Restored after lost or stolen device, or after a suspension review. Returns the credential to active state on a new device.' },
-    { id: 'reissued',  label: 'Reissued',          kind: 'recovery', x: 0.82, y: 0.75, desc: 'A fresh credential issued after expiry, revocation appeal, or deletion. Previous credential remains in its terminal state on the record.' },
-  ];
-
-  const transitions: Transition[] = [
-    { from: 'active',    to: 'deleted',   kind: 'holder', label: 'Holder deletes',    desc: 'The person deletes the credential from their device. The administrative record is unchanged.' },
-    { from: 'active',    to: 'suspended', kind: 'admin',  label: 'Admin suspends',    desc: 'Under a defined reason, an authority places the credential on hold pending review. Must be appealable.' },
-    { from: 'active',    to: 'expired',   kind: 'auto',   label: 'Validity ends',     desc: 'The credential reaches the end of its validity window. Transition is automatic and predictable.' },
-    { from: 'suspended', to: 'active',    kind: 'admin',  label: 'Review clears',     desc: 'Review finds no grounds for continued action. The credential returns to active with a record of the review.' },
-    { from: 'suspended', to: 'revoked',   kind: 'admin',  label: 'Review confirms',   desc: 'Review confirms grounds for revocation. The credential moves to a terminal state with the reason on record.' },
-    { from: 'revoked',   to: 'reissued',  kind: 'admin',  label: 'Successful appeal', desc: 'After an appeal or correction, a new credential is issued. The previous credential stays revoked in the record.' },
-    { from: 'deleted',   to: 'recovered', kind: 'holder', label: 'Holder recovers',   desc: 'The person restores the credential on a new device. Requires recovery proof, not re-enrolment from scratch.' },
-    { from: 'expired',   to: 'reissued',  kind: 'auto',   label: 'Renewal',           desc: 'The holder renews the credential. A new credential replaces the expired one in active use.' },
-  ];
-
-  let activeStateIdx = -1;
-  let activeTransIdx = -1;
-  let animId = 0;
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  function getLayout() {
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    const isNarrow = w < 500;
-    const padX = isNarrow ? 20 : 40;
-    const padY = 40;
-    const usableW = w - padX * 2;
-    const usableH = h - padY * 2;
-    const nodeHalfW = isNarrow ? 60 : 75;
-    const nodeHalfH = isNarrow ? 22 : 24;
-    return { w, h, isNarrow, padX, padY, usableW, usableH, nodeHalfW, nodeHalfH };
-  }
-
-  function statePos(s: State) {
-    const { padX, padY, usableW, usableH } = getLayout();
-    return { x: padX + s.x * usableW, y: padY + s.y * usableH };
-  }
-
-  function drawRoundedRect(x: number, y: number, w: number, h: number, r: number) {
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, r);
-  }
-
-  function drawArrow(x1: number, y1: number, x2: number, y2: number, color: [number, number, number], alpha: number, dashed: boolean) {
-    const [r, g, b] = color;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
-    ctx.lineWidth = 1.2;
-    if (dashed) ctx.setLineDash([5, 4]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Arrowhead
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    const head = 7;
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - head * Math.cos(angle - Math.PI / 7), y2 - head * Math.sin(angle - Math.PI / 7));
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - head * Math.cos(angle + Math.PI / 7), y2 - head * Math.sin(angle + Math.PI / 7));
-    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha + 0.15})`;
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-  }
-
-  function endpointOnBorder(from: { x: number; y: number }, to: { x: number; y: number }, halfW: number, halfH: number, outward = true) {
-    // Compute where a line from `from` meets the rectangle border of node `to`.
-    const dx = (outward ? to.x - from.x : from.x - to.x);
-    const dy = (outward ? to.y - from.y : from.y - to.y);
-    const scaleX = halfW / Math.abs(dx || 0.0001);
-    const scaleY = halfH / Math.abs(dy || 0.0001);
-    const scale = Math.min(scaleX, scaleY);
-    const ox = (outward ? to.x : from.x) - dx * scale;
-    const oy = (outward ? to.y : from.y) - dy * scale;
-    return { x: ox, y: oy };
-  }
-
-  function transitionColor(kind: Transition['kind']): [number, number, number] {
-    if (kind === 'holder') return BLUE;
-    if (kind === 'admin') return AMBER;
-    return DIM;
-  }
-
-  function render(now: number) {
-    const { w, h, isNarrow, nodeHalfW, nodeHalfH } = getLayout();
-    const t = now * 0.001;
-    ctx.clearRect(0, 0, w, h);
-
-    // Draw transitions first (behind nodes)
-    const posMap = new Map(states.map(s => [s.id, statePos(s)]));
-    for (let ti = 0; ti < transitions.length; ti++) {
-      const tr = transitions[ti];
-      const pFrom = posMap.get(tr.from)!;
-      const pTo = posMap.get(tr.to)!;
-      const color = transitionColor(tr.kind);
-      const active = ti === activeTransIdx;
-      const alpha = active ? 0.75 : 0.3;
-      const dashed = tr.kind === 'holder';
-
-      const start = endpointOnBorder(pFrom, pTo, nodeHalfW, nodeHalfH, false);
-      const end = endpointOnBorder(pFrom, pTo, nodeHalfW, nodeHalfH, true);
-      drawArrow(start.x, start.y, end.x, end.y, color, alpha, dashed);
-
-      // Label at midpoint
-      const mx = (start.x + end.x) / 2;
-      const my = (start.y + end.y) / 2;
-      ctx.font = `500 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
-      ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${active ? 0.9 : 0.5})`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const label = tr.label.toUpperCase();
-      // Background pad so text is readable over the line
-      const textW = ctx.measureText(label).width;
-      ctx.fillStyle = 'rgba(11,11,17,0.9)';
-      drawRoundedRect(mx - textW / 2 - 4, my - (isNarrow ? 7 : 8), textW + 8, isNarrow ? 14 : 16, 3);
-      ctx.fill();
-      ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${active ? 0.9 : 0.55})`;
-      ctx.fillText(label, mx, my);
-      ctx.textBaseline = 'alphabetic';
-
-      // Flowing particle for active transition or subtle ambient
-      if (!prefersReducedMotion && active) {
-        const pt = ((t * 0.5) % 1);
-        const px = start.x + (end.x - start.x) * pt;
-        const py = start.y + (end.y - start.y) * pt;
-        ctx.beginPath();
-        ctx.arc(px, py, 3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},0.85)`;
-        ctx.fill();
-      }
-    }
-
-    // Draw nodes
-    for (let i = 0; i < states.length; i++) {
-      const s = states[i];
-      const p = posMap.get(s.id)!;
-      const [r, g, b] = KIND_COLOR[s.kind];
-      const active = i === activeStateIdx;
-
-      drawRoundedRect(p.x - nodeHalfW, p.y - nodeHalfH, nodeHalfW * 2, nodeHalfH * 2, 10);
-      ctx.fillStyle = `rgba(${r},${g},${b},${active ? 0.16 : 0.08})`;
-      ctx.fill();
-      ctx.strokeStyle = `rgba(${r},${g},${b},${active ? 0.7 : 0.4})`;
-      ctx.lineWidth = active ? 1.8 : 1.2;
-      ctx.stroke();
-
-      if (active) {
-        ctx.shadowColor = `rgba(${r},${g},${b},0.3)`;
-        ctx.shadowBlur = 12;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-      }
-
-      ctx.font = `600 ${isNarrow ? 11 : 12}px "Syne", system-ui`;
-      ctx.fillStyle = `rgba(232,232,240,${active ? 0.95 : 0.85})`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(s.label, p.x, p.y);
-      ctx.textBaseline = 'alphabetic';
-    }
-
-    // Legend
-    ctx.font = `500 ${isNarrow ? 9 : 10}px "JetBrains Mono", monospace`;
-    ctx.textAlign = 'left';
-    const legendY = h - 18;
-    const items = [
-      { color: BLUE, label: 'holder action' },
-      { color: AMBER, label: 'admin action' },
-      { color: DIM, label: 'automatic' },
-    ];
-    let lx = 20;
-    for (const it of items) {
-      ctx.fillStyle = `rgba(${it.color[0]},${it.color[1]},${it.color[2]},0.7)`;
-      ctx.fillText(`● ${it.label}`, lx, legendY);
-      lx += ctx.measureText(`● ${it.label}`).width + (isNarrow ? 10 : 18);
-    }
-
-    if (!prefersReducedMotion) animId = requestAnimationFrame(render);
-  }
-
-  function hitTestState(mx: number, my: number): number {
-    const { nodeHalfW, nodeHalfH } = getLayout();
-    for (let i = 0; i < states.length; i++) {
-      const p = statePos(states[i]);
-      if (Math.abs(mx - p.x) <= nodeHalfW && Math.abs(my - p.y) <= nodeHalfH) return i;
-    }
-    return -1;
-  }
-
-  function hitTestTransition(mx: number, my: number): number {
-    const { nodeHalfW, nodeHalfH } = getLayout();
-    const threshold = 10;
-    for (let ti = 0; ti < transitions.length; ti++) {
-      const tr = transitions[ti];
-      const pFrom = statePos(states.find(s => s.id === tr.from)!);
-      const pTo = statePos(states.find(s => s.id === tr.to)!);
-      const start = endpointOnBorder(pFrom, pTo, nodeHalfW, nodeHalfH, false);
-      const end = endpointOnBorder(pFrom, pTo, nodeHalfW, nodeHalfH, true);
-      // Distance from point to segment
-      const dx = end.x - start.x;
-      const dy = end.y - start.y;
-      const lengthSq = dx * dx + dy * dy;
-      if (lengthSq < 1) continue;
-      const tparam = Math.max(0, Math.min(1, ((mx - start.x) * dx + (my - start.y) * dy) / lengthSq));
-      const px = start.x + tparam * dx;
-      const py = start.y + tparam * dy;
-      const d = Math.hypot(mx - px, my - py);
-      if (d < threshold) return ti;
-    }
-    return -1;
-  }
-
-  function showState(i: number) {
-    activeStateIdx = i;
-    activeTransIdx = -1;
-    const s = states[i];
-    const [r, g, b] = KIND_COLOR[s.kind];
-    detail.style.opacity = '1';
-    detail.style.borderColor = `rgba(${r},${g},${b},0.3)`;
-    detailLabel.textContent = 'State';
-    detailLabel.style.color = `rgba(${r},${g},${b},0.8)`;
-    detailName.textContent = s.label;
-    detailDesc.textContent = s.desc;
-    if (prefersReducedMotion) render(0);
-  }
-
-  function showTransition(i: number) {
-    activeTransIdx = i;
-    activeStateIdx = -1;
-    const tr = transitions[i];
-    const color = transitionColor(tr.kind);
-    detail.style.opacity = '1';
-    detail.style.borderColor = `rgba(${color[0]},${color[1]},${color[2]},0.3)`;
-    detailLabel.textContent = 'Transition';
-    detailLabel.style.color = `rgba(${color[0]},${color[1]},${color[2]},0.8)`;
-    detailName.textContent = tr.label;
-    detailDesc.textContent = tr.desc;
-    if (prefersReducedMotion) render(0);
-  }
-
-  function hide() {
-    activeStateIdx = -1;
-    activeTransIdx = -1;
-    detail.style.opacity = '0';
-    if (prefersReducedMotion) render(0);
-  }
-
-  canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const sIdx = hitTestState(mx, my);
-    if (sIdx >= 0) { showState(sIdx); return; }
-    const tIdx = hitTestTransition(mx, my);
-    if (tIdx >= 0) { showTransition(tIdx); return; }
-    hide();
-  });
-
-  canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const sIdx = hitTestState(mx, my);
-    if (sIdx >= 0) { canvas.style.cursor = 'pointer'; return; }
-    const tIdx = hitTestTransition(mx, my);
-    canvas.style.cursor = tIdx >= 0 ? 'pointer' : 'default';
-  });
-
-  resize();
-  window.addEventListener('resize', () => { resize(); if (prefersReducedMotion) render(0); });
-  if (!prefersReducedMotion) {
-    animId = requestAnimationFrame(render);
-  } else {
-    render(0);
-  }
-}
-</script>
