@@ -1,9 +1,9 @@
 ---
-// Figure: Bounded verification — system boundary
-// Actors: Holder, Issuer, Certified holder service, Checker, Relying party,
-// Public service, Oversight / redress.
-// Flows: necessary data, evidence retention, holder inspection.
-// Explicit boundary box: what must NOT become a cross-service behavioural record.
+// Figure: Bounded verification is not surveillance
+// Four actors: Holder, Checker, Public service, Oversight.
+// Issuer as a light supporting node.
+// Shows only what must flow, what the holder can inspect,
+// and what must not become a cross-service behavioural record.
 ---
 
 <div class="reveal my-12 md:my-16">
@@ -15,145 +15,77 @@
         <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Bounded verification is not surveillance</h3>
       </div>
 
-      <!-- SVG system diagram -->
       <div class="w-full overflow-x-auto">
-        <svg viewBox="0 0 920 520" class="w-full min-w-[720px]" role="img" aria-label="System boundary diagram showing holder, issuer, certified holder service, checker, relying party, public service, and oversight function. Flows show necessary data paths, evidence retained, holder inspection route, and the boundary that prevents a cross-service behavioural record.">
+        <svg viewBox="0 0 760 340" class="w-full min-w-[560px]" role="img" aria-label="Four-actor system diagram: holder, checker, public service, and oversight. Shows required flow, a holder inspection path, and a forbidden zone that cannot become a cross-service behavioural record.">
           <defs>
             <marker id="vvs-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="rgba(232,232,240,0.55)"/>
+              <path d="M0,0 L10,5 L0,10 z" fill="rgba(232,232,240,0.6)"/>
             </marker>
-            <marker id="vvs-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="rgba(74,222,128,0.75)"/>
-            </marker>
-            <marker id="vvs-arrow-forbid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="rgba(239,68,68,0.7)"/>
+            <marker id="vvs-arrow-holder" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="rgba(244,114,182,0.7)"/>
             </marker>
           </defs>
 
-          <!-- Forbidden zone background -->
-          <rect x="40" y="360" width="840" height="130" rx="12"
-            fill="rgba(239,68,68,0.04)" stroke="rgba(239,68,68,0.25)" stroke-dasharray="5 4" />
-          <text x="60" y="385" fill="rgba(239,68,68,0.75)" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" letter-spacing="2">
-            BOUNDARY — MUST NOT BECOME A CROSS SERVICE BEHAVIOURAL RECORD
-          </text>
+          <!-- Issuer — light supporting node -->
+          <g opacity="0.7">
+            <rect x="40" y="30" width="150" height="42" rx="8" fill="rgba(167,139,250,0.05)" stroke="rgba(167,139,250,0.35)" stroke-dasharray="4 3" stroke-width="1"/>
+            <text x="115" y="55" text-anchor="middle" fill="rgba(232,232,240,0.65)" font-family="'Syne', system-ui" font-size="11" font-weight="500">Issuer · supporting</text>
+          </g>
+          <line x1="115" y1="72" x2="115" y2="130" stroke="rgba(167,139,250,0.3)" stroke-dasharray="3 3" stroke-width="1"/>
 
-          <!-- Nodes -->
-          <!-- Row 1: Issuer, Holder, Certified holder service -->
+          <!-- Core row: Holder → Checker → Public service -->
           <g>
-            <rect x="60" y="60" width="180" height="54" rx="8"
-              fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.2"/>
-            <text x="150" y="83" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Issuer</text>
-            <text x="150" y="100" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">government as authority</text>
+            <rect x="40" y="140" width="150" height="56" rx="8" fill="rgba(244,114,182,0.08)" stroke="rgba(244,114,182,0.55)" stroke-width="1.2"/>
+            <text x="115" y="165" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Holder</text>
+            <text x="115" y="182" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">the person</text>
           </g>
 
           <g>
-            <rect x="370" y="60" width="180" height="54" rx="8"
-              fill="rgba(244,114,182,0.08)" stroke="rgba(244,114,182,0.55)" stroke-width="1.2"/>
-            <text x="460" y="83" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Holder</text>
-            <text x="460" y="100" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">the person</text>
+            <rect x="305" y="140" width="150" height="56" rx="8" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.2"/>
+            <text x="380" y="165" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Checker</text>
+            <text x="380" y="182" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">verification service</text>
           </g>
 
           <g>
-            <rect x="680" y="60" width="180" height="54" rx="8"
-              fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.55)" stroke-width="1.2"/>
-            <text x="770" y="79" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Certified holder</text>
-            <text x="770" y="95" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">service</text>
-            <text x="770" y="108" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">wallet · third-party surface</text>
+            <rect x="570" y="140" width="150" height="56" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.55)" stroke-width="1.2"/>
+            <text x="645" y="165" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Public service</text>
+            <text x="645" y="182" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">or relying party</text>
           </g>
 
-          <!-- Row 2: Checker, Relying party, Public service -->
+          <!-- Forward flows -->
+          <line x1="190" y1="168" x2="305" y2="168" stroke="rgba(232,232,240,0.55)" stroke-width="1.3" marker-end="url(#vvs-arrow)"/>
+          <text x="247" y="158" text-anchor="middle" fill="rgba(232,232,240,0.75)" font-family="'JetBrains Mono', monospace" font-size="10">claims</text>
+
+          <line x1="455" y1="168" x2="570" y2="168" stroke="rgba(232,232,240,0.55)" stroke-width="1.3" marker-end="url(#vvs-arrow)"/>
+          <text x="512" y="158" text-anchor="middle" fill="rgba(232,232,240,0.75)" font-family="'JetBrains Mono', monospace" font-size="10">result</text>
+
+          <!-- Holder inspection back channel -->
+          <path d="M 305 195 Q 220 225 190 195" fill="none" stroke="rgba(244,114,182,0.7)" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#vvs-arrow-holder)"/>
+          <text x="247" y="235" text-anchor="middle" fill="rgba(244,114,182,0.85)" font-family="'JetBrains Mono', monospace" font-size="10">holder can inspect</text>
+
+          <!-- Oversight node -->
           <g>
-            <rect x="60" y="200" width="180" height="54" rx="8"
-              fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.2"/>
-            <text x="150" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Checker</text>
-            <text x="150" y="240" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">gov or certified verification</text>
+            <rect x="305" y="265" width="150" height="48" rx="8" fill="rgba(167,139,250,0.1)" stroke="rgba(167,139,250,0.6)" stroke-width="1.2"/>
+            <text x="380" y="288" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Oversight · redress</text>
+            <text x="380" y="304" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">complaints · appeal · audit</text>
           </g>
 
-          <g>
-            <rect x="370" y="200" width="180" height="54" rx="8"
-              fill="rgba(34,211,238,0.08)" stroke="rgba(34,211,238,0.55)" stroke-width="1.2"/>
-            <text x="460" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Relying party</text>
-            <text x="460" y="240" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">business · service · public body</text>
-          </g>
+          <!-- Oversight connections (dashed, light) -->
+          <line x1="380" y1="196" x2="380" y2="265" stroke="rgba(167,139,250,0.4)" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="180" y1="196" x2="330" y2="265" stroke="rgba(167,139,250,0.25)" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="605" y1="196" x2="435" y2="265" stroke="rgba(167,139,250,0.25)" stroke-width="1" stroke-dasharray="3 3"/>
 
-          <g>
-            <rect x="680" y="200" width="180" height="54" rx="8"
-              fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.55)" stroke-width="1.2"/>
-            <text x="770" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Public service</text>
-            <text x="770" y="240" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">outcome delivery</text>
-          </g>
-
-          <!-- Oversight at bottom -->
-          <g>
-            <rect x="335" y="425" width="250" height="50" rx="8"
-              fill="rgba(167,139,250,0.1)" stroke="rgba(167,139,250,0.6)" stroke-width="1.2"/>
-            <text x="460" y="447" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Oversight · redress</text>
-            <text x="460" y="463" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">complaints · appeal · audit · reporting</text>
-          </g>
-
-          <!-- FLOWS — necessary data paths -->
-
-          <!-- Issuer → Holder: credential (one-time at enrolment) -->
-          <line x1="240" y1="87" x2="370" y2="87" stroke="rgba(232,232,240,0.55)" stroke-width="1.2" marker-end="url(#vvs-arrow)"/>
-          <text x="305" y="77" text-anchor="middle" fill="rgba(232,232,240,0.75)" font-family="'JetBrains Mono', monospace" font-size="9.5">credential</text>
-
-          <!-- Holder ↔ Certified holder service: storage / disclosure -->
-          <line x1="550" y1="87" x2="680" y2="87" stroke="rgba(232,232,240,0.55)" stroke-width="1.2" marker-end="url(#vvs-arrow)" marker-start="url(#vvs-arrow)"/>
-          <text x="615" y="77" text-anchor="middle" fill="rgba(232,232,240,0.75)" font-family="'JetBrains Mono', monospace" font-size="9.5">store · present</text>
-
-          <!-- Holder → Checker: selective claims via holder service -->
-          <line x1="460" y1="114" x2="155" y2="200" stroke="rgba(74,222,128,0.7)" stroke-width="1.3" marker-end="url(#vvs-arrow-accent)"/>
-          <text x="275" y="145" fill="rgba(74,222,128,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">claims (selective)</text>
-
-          <!-- Checker ↔ Issuer: status check -->
-          <line x1="150" y1="200" x2="150" y2="114" stroke="rgba(232,232,240,0.55)" stroke-width="1.2" marker-end="url(#vvs-arrow)" marker-start="url(#vvs-arrow)"/>
-          <text x="60" y="165" fill="rgba(232,232,240,0.75)" font-family="'JetBrains Mono', monospace" font-size="9.5">status</text>
-
-          <!-- Checker → Relying party: minimal result -->
-          <line x1="240" y1="227" x2="370" y2="227" stroke="rgba(74,222,128,0.7)" stroke-width="1.3" marker-end="url(#vvs-arrow-accent)"/>
-          <text x="305" y="218" text-anchor="middle" fill="rgba(74,222,128,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">result · receipt</text>
-
-          <!-- Relying party → Public service -->
-          <line x1="550" y1="227" x2="680" y2="227" stroke="rgba(232,232,240,0.55)" stroke-width="1.2" marker-end="url(#vvs-arrow)"/>
-          <text x="615" y="218" text-anchor="middle" fill="rgba(232,232,240,0.75)" font-family="'JetBrains Mono', monospace" font-size="9.5">deliver outcome</text>
-
-          <!-- Holder inspection: from holder down to checker receipts -->
-          <path d="M 400 114 Q 300 165 190 200" fill="none" stroke="rgba(244,114,182,0.65)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#vvs-arrow)"/>
-          <text x="295" y="185" fill="rgba(244,114,182,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">holder can inspect</text>
-
-          <!-- Redress: from relying party / checker down to oversight -->
-          <line x1="460" y1="254" x2="460" y2="425" stroke="rgba(167,139,250,0.55)" stroke-width="1.1" stroke-dasharray="3 3" marker-end="url(#vvs-arrow)"/>
-          <line x1="200" y1="254" x2="380" y2="425" stroke="rgba(167,139,250,0.4)" stroke-width="1" stroke-dasharray="3 3"/>
-          <line x1="720" y1="254" x2="540" y2="425" stroke="rgba(167,139,250,0.4)" stroke-width="1" stroke-dasharray="3 3"/>
-          <text x="480" y="340" fill="rgba(167,139,250,0.8)" font-family="'JetBrains Mono', monospace" font-size="9.5">complaints · appeal · audit</text>
-
-          <!-- FORBIDDEN arrows inside boundary zone — cross-service joining -->
-          <line x1="200" y1="400" x2="720" y2="400" stroke="rgba(239,68,68,0.55)" stroke-width="1.2" stroke-dasharray="2 3"/>
-          <line x1="200" y1="400" x2="200" y2="410" stroke="rgba(239,68,68,0.55)" stroke-width="1.2"/>
-          <line x1="720" y1="400" x2="720" y2="410" stroke="rgba(239,68,68,0.55)" stroke-width="1.2"/>
-          <text x="460" y="395" text-anchor="middle" fill="rgba(239,68,68,0.8)" font-family="'JetBrains Mono', monospace" font-size="9.5">cross service join keys ✗  · retained logs ✗  · third party log access ✗</text>
+          <!-- Forbidden boundary -->
+          <rect x="570" y="260" width="150" height="58" rx="8" fill="rgba(239,68,68,0.04)" stroke="rgba(239,68,68,0.35)" stroke-dasharray="4 3" stroke-width="1"/>
+          <text x="645" y="282" text-anchor="middle" fill="rgba(239,68,68,0.8)" font-family="'Syne', system-ui" font-size="11" font-weight="600">Must not become</text>
+          <text x="645" y="296" text-anchor="middle" fill="rgba(239,68,68,0.7)" font-family="'Inter', system-ui" font-size="10">a cross service</text>
+          <text x="645" y="310" text-anchor="middle" fill="rgba(239,68,68,0.7)" font-family="'Inter', system-ui" font-size="10">behavioural record</text>
         </svg>
-      </div>
-
-      <!-- Legend / retention rules -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6 pt-5 border-t border-border/40">
-        <div>
-          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-2">Necessary data flow</p>
-          <p class="text-xs text-text-secondary leading-relaxed">Credential, selective claims, status, result, receipt. Each step carries only what the use case needs.</p>
-        </div>
-        <div>
-          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-2">Evidence retained</p>
-          <p class="text-xs text-text-secondary leading-relaxed">Minimal receipt at the checker, scoped to dispute and compliance windows. Not a behavioural log.</p>
-        </div>
-        <div>
-          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-2">Holder can inspect</p>
-          <p class="text-xs text-text-secondary leading-relaxed">Who checked, when, what was disclosed, what the result was. Transparency flows to the person first.</p>
-        </div>
       </div>
 
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    A record of checks visible to the holder is transparency. A record that third parties can access, retain, and join across services is surveillance. The boundary is a design decision, not an emergent property.
+    Bounded verification is not surveillance. The difference is a design decision, not an emergent property.
   </p>
 </div>

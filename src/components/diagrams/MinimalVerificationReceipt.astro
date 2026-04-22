@@ -1,9 +1,6 @@
 ---
 // Figure: Minimal verification receipt
-// Sequence-style diagram showing a bounded verification event.
-// Left column: actors (Holder, Checker, Relying party, Holder inbox).
-// Right column: what is NOT created by the event.
-// Static SVG, monochrome, standards-note tone.
+// Five-step sequence. Holder-visible receipt, with a short "Not created" note below.
 ---
 
 <div class="reveal my-12 md:my-16">
@@ -15,136 +12,66 @@
         <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Minimal verification receipt</h3>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-[1.35fr,1fr] gap-5 md:gap-6">
-
-        <!-- Sequence column -->
-        <div class="rounded-xl border border-border/60 p-4 md:p-5" style="background: rgba(11,11,17,0.4);">
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary">What happens</span>
-            <span class="text-[10px] font-mono text-text-tertiary">t₀ → t₆</span>
+      <ol class="space-y-0 divide-y divide-border/40">
+        <li class="grid grid-cols-[2rem,1fr] gap-4 py-3 items-start">
+          <span class="font-mono text-xs text-text-tertiary pt-1">01</span>
+          <div>
+            <p class="text-text-secondary text-sm font-display font-semibold">Present credential</p>
+            <p class="text-text-tertiary text-xs leading-relaxed">holder → checker</p>
           </div>
-
-          <!-- Actor headings -->
-          <div class="grid grid-cols-4 gap-2 mb-3 text-[10px] font-mono text-text-tertiary">
-            <div class="text-center">HOLDER</div>
-            <div class="text-center">CHECKER</div>
-            <div class="text-center">RELYING<br/>PARTY</div>
-            <div class="text-center">HOLDER<br/>INBOX</div>
+        </li>
+        <li class="grid grid-cols-[2rem,1fr] gap-4 py-3 items-start">
+          <span class="font-mono text-xs text-text-tertiary pt-1">02</span>
+          <div>
+            <p class="text-text-secondary text-sm font-display font-semibold">Request minimum claims</p>
+            <p class="text-text-tertiary text-xs leading-relaxed">checker asks only what the use case requires</p>
           </div>
-
-          <!-- Steps -->
-          <ol class="space-y-2.5 text-sm">
-            <li class="grid grid-cols-[1.25rem,1fr] gap-2 items-start">
-              <span class="font-mono text-[11px] text-text-tertiary pt-0.5">01</span>
-              <div>
-                <div class="flex items-center gap-2 text-text-secondary">
-                  <span class="font-semibold">Presents credential</span>
-                  <span class="text-text-tertiary font-mono text-[10px]">holder → checker</span>
-                </div>
-              </div>
-            </li>
-            <li class="grid grid-cols-[1.25rem,1fr] gap-2 items-start">
-              <span class="font-mono text-[11px] text-text-tertiary pt-0.5">02</span>
-              <div>
-                <div class="flex items-center gap-2 text-text-secondary">
-                  <span class="font-semibold">Requests only required claims</span>
-                  <span class="text-text-tertiary font-mono text-[10px]">checker → holder</span>
-                </div>
-              </div>
-            </li>
-            <li class="grid grid-cols-[1.25rem,1fr] gap-2 items-start">
-              <span class="font-mono text-[11px] text-text-tertiary pt-0.5">03</span>
-              <div>
-                <div class="flex items-center gap-2 text-text-secondary">
-                  <span class="font-semibold">Approves disclosure</span>
-                  <span class="text-text-tertiary font-mono text-[10px]">holder → checker</span>
-                </div>
-              </div>
-            </li>
-            <li class="grid grid-cols-[1.25rem,1fr] gap-2 items-start">
-              <span class="font-mono text-[11px] text-text-tertiary pt-0.5">04</span>
-              <div>
-                <div class="flex items-center gap-2 text-text-secondary">
-                  <span class="font-semibold">Verifies status and integrity</span>
-                  <span class="text-text-tertiary font-mono text-[10px]">checker → issuer status</span>
-                </div>
-              </div>
-            </li>
-            <li class="grid grid-cols-[1.25rem,1fr] gap-2 items-start">
-              <span class="font-mono text-[11px] text-text-tertiary pt-0.5">05</span>
-              <div>
-                <div class="flex items-center gap-2 text-text-secondary">
-                  <span class="font-semibold">Result returned to relying party</span>
-                  <span class="text-text-tertiary font-mono text-[10px]">checker → relying party</span>
-                </div>
-              </div>
-            </li>
-            <li class="grid grid-cols-[1.25rem,1fr] gap-2 items-start">
-              <span class="font-mono text-[11px] text-text-tertiary pt-0.5">06</span>
-              <div>
-                <div class="flex items-start gap-2 text-text-secondary">
-                  <span class="font-semibold shrink-0">Minimal verification receipt emitted</span>
-                </div>
-                <p class="text-text-tertiary text-xs mt-1 leading-relaxed">
-                  Checker · relying party context · claims requested · claims disclosed · result · time · event reference
-                </p>
-              </div>
-            </li>
-            <li class="grid grid-cols-[1.25rem,1fr] gap-2 items-start">
-              <span class="font-mono text-[11px] text-text-tertiary pt-0.5">07</span>
-              <div>
-                <div class="flex items-center gap-2 text-text-secondary">
-                  <span class="font-semibold">Holder can inspect the event later</span>
-                  <span class="text-text-tertiary font-mono text-[10px]">holder inbox</span>
-                </div>
-              </div>
-            </li>
-          </ol>
-        </div>
-
-        <!-- Boundary column — what is NOT created -->
-        <div class="rounded-xl border p-4 md:p-5" style="border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.03);">
-          <div class="flex items-center gap-2 mb-4">
-            <span class="w-1.5 h-1.5 rounded-full" style="background: rgba(239,68,68,0.7);"></span>
-            <span class="text-[10px] font-semibold tracking-[0.2em] uppercase" style="color: rgba(239,68,68,0.75);">Not created by this event</span>
+        </li>
+        <li class="grid grid-cols-[2rem,1fr] gap-4 py-3 items-start">
+          <span class="font-mono text-xs text-text-tertiary pt-1">03</span>
+          <div>
+            <p class="text-text-secondary text-sm font-display font-semibold">Approve disclosure</p>
+            <p class="text-text-tertiary text-xs leading-relaxed">holder consents on the holder service</p>
           </div>
-
-          <ul class="space-y-3 text-sm text-text-secondary">
-            <li class="grid grid-cols-[0.9rem,1fr] gap-2 items-start">
-              <span class="font-mono text-xs mt-0.5" style="color: rgba(239,68,68,0.6);">−</span>
-              <span>No universal behaviour log</span>
-            </li>
-            <li class="grid grid-cols-[0.9rem,1fr] gap-2 items-start">
-              <span class="font-mono text-xs mt-0.5" style="color: rgba(239,68,68,0.6);">−</span>
-              <span>No unnecessary cross service trace</span>
-            </li>
-            <li class="grid grid-cols-[0.9rem,1fr] gap-2 items-start">
-              <span class="font-mono text-xs mt-0.5" style="color: rgba(239,68,68,0.6);">−</span>
-              <span>No open ended third party retention</span>
-            </li>
-            <li class="grid grid-cols-[0.9rem,1fr] gap-2 items-start">
-              <span class="font-mono text-xs mt-0.5" style="color: rgba(239,68,68,0.6);">−</span>
-              <span>No disclosure beyond the claims the use case requires</span>
-            </li>
-            <li class="grid grid-cols-[0.9rem,1fr] gap-2 items-start">
-              <span class="font-mono text-xs mt-0.5" style="color: rgba(239,68,68,0.6);">−</span>
-              <span>No profile surface visible to other relying parties</span>
-            </li>
-          </ul>
-
-          <div class="mt-5 pt-4 border-t border-border/40">
-            <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-2">Receipt is</p>
-            <p class="text-xs text-text-secondary leading-relaxed">
-              Narrow, purpose bound, visible to the holder first, retained only for the legally justified window, scoped to dispute and compliance use.
-            </p>
+        </li>
+        <li class="grid grid-cols-[2rem,1fr] gap-4 py-3 items-start">
+          <span class="font-mono text-xs text-text-tertiary pt-1">04</span>
+          <div>
+            <p class="text-text-secondary text-sm font-display font-semibold">Verify</p>
+            <p class="text-text-tertiary text-xs leading-relaxed">checker confirms status and integrity against the issuer</p>
           </div>
-        </div>
+        </li>
+        <li class="grid grid-cols-[2rem,1fr] gap-4 py-3 items-start">
+          <span class="font-mono text-xs text-text-tertiary pt-1">05</span>
+          <div>
+            <p class="text-text-secondary text-sm font-display font-semibold">Emit holder-visible receipt</p>
+            <p class="text-text-tertiary text-xs leading-relaxed">checker · purpose · claims disclosed · result · time · retention</p>
+          </div>
+        </li>
+      </ol>
 
+      <!-- Not created note -->
+      <div class="mt-6 pt-5 border-t border-border/50">
+        <p class="text-[10px] font-semibold tracking-[0.2em] uppercase mb-3" style="color: rgba(239,68,68,0.75);">Not created by this event</p>
+        <ul class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-text-secondary">
+          <li class="grid grid-cols-[0.9rem,1fr] gap-2 items-start">
+            <span class="font-mono text-xs mt-0.5" style="color: rgba(239,68,68,0.6);">−</span>
+            <span>No universal behaviour log</span>
+          </li>
+          <li class="grid grid-cols-[0.9rem,1fr] gap-2 items-start">
+            <span class="font-mono text-xs mt-0.5" style="color: rgba(239,68,68,0.6);">−</span>
+            <span>No unnecessary cross service trace</span>
+          </li>
+          <li class="grid grid-cols-[0.9rem,1fr] gap-2 items-start">
+            <span class="font-mono text-xs mt-0.5" style="color: rgba(239,68,68,0.6);">−</span>
+            <span>No open ended retention</span>
+          </li>
+        </ul>
       </div>
 
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    Replayable verification requires a minimal receipt, not just a pass or fail. The receipt is the evidence a dispute or audit can reach for later.
+    Replayable verification requires a minimal receipt, not just a pass or fail.
   </p>
 </div>

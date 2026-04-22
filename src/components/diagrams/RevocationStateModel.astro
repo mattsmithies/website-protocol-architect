@@ -1,10 +1,8 @@
 ---
 // Figure: Revocation state model
-// Lifecycle state machine. Separate states — Active, Suspended, Revoked,
-// Expired, Deleted from device, Recovered, Reissued.
-// Every transition visibly carries: reason, responsible authority, time,
-// route to challenge. Deletion by the holder is structurally distinct
-// from suspension or revocation by an authority.
+// Five core states — Active, Suspended, Revoked, Expired, Reissued.
+// Minimal transitions. Note below the diagram (not inside it) about
+// deletion, erasure, and administrative revocation being distinct operations.
 ---
 
 <div class="reveal my-12 md:my-16">
@@ -16,156 +14,69 @@
         <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Revocation state model</h3>
       </div>
 
-      <!-- State machine SVG -->
       <div class="w-full overflow-x-auto">
-        <svg viewBox="0 0 920 480" class="w-full min-w-[720px]" role="img" aria-label="State machine for a credential with distinct states for active, suspended, revoked, expired, deleted from device, recovered, and reissued. Transitions labelled with reason, authority, and challenge route.">
+        <svg viewBox="0 0 780 260" class="w-full min-w-[620px]" role="img" aria-label="State machine with five states: active, suspended, revoked, expired, reissued, linked by minimal transitions.">
           <defs>
             <marker id="rsm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="rgba(232,232,240,0.55)"/>
-            </marker>
-            <marker id="rsm-arrow-holder" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="rgba(244,114,182,0.75)"/>
-            </marker>
-            <marker id="rsm-arrow-admin" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="rgba(245,158,11,0.85)"/>
-            </marker>
-            <marker id="rsm-arrow-auto" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="rgba(160,160,180,0.7)"/>
+              <path d="M0,0 L10,5 L0,10 z" fill="rgba(232,232,240,0.6)"/>
             </marker>
           </defs>
 
-          <!-- Holder-domain background -->
-          <rect x="30" y="30" width="250" height="420" rx="12" fill="rgba(244,114,182,0.03)" stroke="rgba(244,114,182,0.2)" stroke-dasharray="4 3" stroke-width="1"/>
-          <text x="50" y="50" fill="rgba(244,114,182,0.65)" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" letter-spacing="2">HOLDER DOMAIN</text>
-
-          <!-- Authority-domain background -->
-          <rect x="300" y="30" width="590" height="420" rx="12" fill="rgba(245,158,11,0.03)" stroke="rgba(245,158,11,0.2)" stroke-dasharray="4 3" stroke-width="1"/>
-          <text x="320" y="50" fill="rgba(245,158,11,0.65)" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" letter-spacing="2">AUTHORITY DOMAIN</text>
-
-          <!-- Active state -->
+          <!-- Active -->
           <g>
-            <rect x="400" y="90" width="160" height="50" rx="10" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.55)" stroke-width="1.3"/>
-            <text x="480" y="113" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Active</text>
-            <text x="480" y="128" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">valid · checkable</text>
+            <rect x="40" y="100" width="140" height="54" rx="10" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.6)" stroke-width="1.3"/>
+            <text x="110" y="125" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Active</text>
+            <text x="110" y="141" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">valid · checkable</text>
           </g>
 
-          <!-- Deleted from device (holder side) -->
+          <!-- Suspended -->
           <g>
-            <rect x="70" y="200" width="170" height="50" rx="10" fill="rgba(244,114,182,0.08)" stroke="rgba(244,114,182,0.55)" stroke-width="1.3"/>
-            <text x="155" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Deleted from device</text>
-            <text x="155" y="238" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">admin record unchanged</text>
-          </g>
-
-          <!-- Suspended (admin) -->
-          <g>
-            <rect x="400" y="200" width="160" height="50" rx="10" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.3"/>
-            <text x="480" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Suspended</text>
-            <text x="480" y="238" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">hold pending review</text>
-          </g>
-
-          <!-- Expired -->
-          <g>
-            <rect x="720" y="200" width="160" height="50" rx="10" fill="rgba(160,160,180,0.08)" stroke="rgba(160,160,180,0.55)" stroke-width="1.3"/>
-            <text x="800" y="223" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Expired</text>
-            <text x="800" y="238" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">validity window ended</text>
-          </g>
-
-          <!-- Recovered -->
-          <g>
-            <rect x="70" y="340" width="170" height="50" rx="10" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.3"/>
-            <text x="155" y="363" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Recovered</text>
-            <text x="155" y="378" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">restored on new device</text>
+            <rect x="230" y="40" width="140" height="54" rx="10" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.3"/>
+            <text x="300" y="64" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Suspended</text>
+            <text x="300" y="80" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">hold pending review</text>
           </g>
 
           <!-- Revoked -->
           <g>
-            <rect x="400" y="340" width="160" height="50" rx="10" fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.55)" stroke-width="1.3"/>
-            <text x="480" y="363" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Revoked</text>
-            <text x="480" y="378" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">administrative termination</text>
+            <rect x="230" y="170" width="140" height="54" rx="10" fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.55)" stroke-width="1.3"/>
+            <text x="300" y="194" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Revoked</text>
+            <text x="300" y="210" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">administrative termination</text>
+          </g>
+
+          <!-- Expired -->
+          <g>
+            <rect x="420" y="100" width="140" height="54" rx="10" fill="rgba(160,160,180,0.08)" stroke="rgba(160,160,180,0.55)" stroke-width="1.3"/>
+            <text x="490" y="125" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Expired</text>
+            <text x="490" y="141" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">validity ended</text>
           </g>
 
           <!-- Reissued -->
           <g>
-            <rect x="720" y="340" width="160" height="50" rx="10" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.3"/>
-            <text x="800" y="363" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Reissued</text>
-            <text x="800" y="378" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">fresh credential</text>
+            <rect x="610" y="100" width="140" height="54" rx="10" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.3"/>
+            <text x="680" y="125" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">Reissued</text>
+            <text x="680" y="141" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">fresh credential</text>
           </g>
 
-          <!-- Transitions -->
-
-          <!-- Active → Deleted (holder, dashed) -->
-          <path d="M 400 125 Q 280 160 240 200" fill="none" stroke="rgba(244,114,182,0.65)" stroke-width="1.3" stroke-dasharray="5 3" marker-end="url(#rsm-arrow-holder)"/>
-          <text x="265" y="152" fill="rgba(244,114,182,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">holder deletes</text>
-          <text x="265" y="165" fill="rgba(244,114,182,0.65)" font-family="'JetBrains Mono', monospace" font-size="8.5">holder · now · no challenge needed</text>
-
-          <!-- Active → Suspended (admin) -->
-          <line x1="480" y1="140" x2="480" y2="200" stroke="rgba(245,158,11,0.75)" stroke-width="1.3" marker-end="url(#rsm-arrow-admin)"/>
-          <text x="490" y="170" fill="rgba(245,158,11,0.9)" font-family="'JetBrains Mono', monospace" font-size="9.5">admin suspends</text>
-          <text x="490" y="183" fill="rgba(245,158,11,0.7)" font-family="'JetBrains Mono', monospace" font-size="8.5">reason · authority · time · appeal</text>
-
-          <!-- Active → Expired (auto) -->
-          <path d="M 560 125 Q 650 160 720 200" fill="none" stroke="rgba(160,160,180,0.6)" stroke-width="1.2" marker-end="url(#rsm-arrow-auto)"/>
-          <text x="605" y="155" fill="rgba(160,160,180,0.8)" font-family="'JetBrains Mono', monospace" font-size="9.5">validity ends</text>
-          <text x="605" y="168" fill="rgba(160,160,180,0.6)" font-family="'JetBrains Mono', monospace" font-size="8.5">automatic · predictable · notice</text>
-
-          <!-- Suspended → Active (review clears) -->
-          <path d="M 430 200 Q 390 170 430 140" fill="none" stroke="rgba(245,158,11,0.7)" stroke-width="1.2" marker-end="url(#rsm-arrow-admin)"/>
-          <text x="320" y="195" fill="rgba(245,158,11,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">review clears</text>
-
-          <!-- Suspended → Revoked (review confirms) -->
-          <line x1="480" y1="250" x2="480" y2="340" stroke="rgba(239,68,68,0.7)" stroke-width="1.3" marker-end="url(#rsm-arrow-admin)"/>
-          <text x="490" y="285" fill="rgba(239,68,68,0.9)" font-family="'JetBrains Mono', monospace" font-size="9.5">review confirms</text>
-          <text x="490" y="298" fill="rgba(239,68,68,0.7)" font-family="'JetBrains Mono', monospace" font-size="8.5">reason · authority · time · appeal</text>
-
-          <!-- Deleted → Recovered (holder) -->
-          <line x1="155" y1="250" x2="155" y2="340" stroke="rgba(167,139,250,0.65)" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#rsm-arrow)"/>
-          <text x="13" y="295" fill="rgba(167,139,250,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">holder recovers</text>
-          <text x="13" y="308" fill="rgba(167,139,250,0.6)" font-family="'JetBrains Mono', monospace" font-size="8.5">recovery proof required</text>
-
-          <!-- Recovered → Active (loopback) -->
-          <path d="M 240 340 Q 340 220 400 125" fill="none" stroke="rgba(167,139,250,0.5)" stroke-width="1.1" stroke-dasharray="4 3" marker-end="url(#rsm-arrow)"/>
-
-          <!-- Expired → Reissued (renewal) -->
-          <line x1="800" y1="250" x2="800" y2="340" stroke="rgba(160,160,180,0.6)" stroke-width="1.2" marker-end="url(#rsm-arrow-auto)"/>
-          <text x="810" y="295" fill="rgba(160,160,180,0.8)" font-family="'JetBrains Mono', monospace" font-size="9.5">renewal</text>
-
-          <!-- Revoked → Reissued (successful appeal) -->
-          <line x1="560" y1="365" x2="720" y2="365" stroke="rgba(167,139,250,0.65)" stroke-width="1.2" marker-end="url(#rsm-arrow)"/>
-          <text x="590" y="356" fill="rgba(167,139,250,0.85)" font-family="'JetBrains Mono', monospace" font-size="9.5">successful appeal</text>
-          <text x="590" y="369" fill="rgba(167,139,250,0.6)" font-family="'JetBrains Mono', monospace" font-size="8.5">previous record stays revoked</text>
-
-          <!-- Boundary note -->
-          <rect x="30" y="400" width="250" height="40" rx="6" fill="rgba(244,114,182,0.05)" stroke="rgba(244,114,182,0.25)"/>
-          <text x="155" y="417" text-anchor="middle" fill="rgba(244,114,182,0.85)" font-family="'Syne', system-ui" font-size="10" font-weight="600">Deletion ≠ revocation</text>
-          <text x="155" y="430" text-anchor="middle" fill="rgba(232,232,240,0.65)" font-family="'Inter', system-ui" font-size="9">holder action, not administrative termination</text>
+          <!-- Minimal transitions -->
+          <!-- Active → Suspended -->
+          <line x1="170" y1="115" x2="230" y2="75" stroke="rgba(232,232,240,0.55)" stroke-width="1.2" marker-end="url(#rsm-arrow)"/>
+          <!-- Suspended → Revoked -->
+          <line x1="300" y1="94" x2="300" y2="170" stroke="rgba(232,232,240,0.55)" stroke-width="1.2" marker-end="url(#rsm-arrow)"/>
+          <!-- Suspended → Active (cleared) -->
+          <path d="M 230 75 Q 195 95 170 115" fill="none" stroke="rgba(232,232,240,0.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#rsm-arrow)"/>
+          <!-- Active → Expired -->
+          <line x1="180" y1="127" x2="420" y2="127" stroke="rgba(232,232,240,0.55)" stroke-width="1.2" marker-end="url(#rsm-arrow)"/>
+          <!-- Expired → Reissued -->
+          <line x1="560" y1="127" x2="610" y2="127" stroke="rgba(232,232,240,0.55)" stroke-width="1.2" marker-end="url(#rsm-arrow)"/>
+          <!-- Revoked → Reissued (successful appeal, dashed) -->
+          <path d="M 370 197 Q 525 220 680 154" fill="none" stroke="rgba(232,232,240,0.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#rsm-arrow)"/>
         </svg>
-      </div>
-
-      <!-- Transition carries — legend -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-5 border-t border-border/40">
-        <div>
-          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-3">Every authority transition carries</p>
-          <ul class="space-y-2 text-xs text-text-secondary">
-            <li class="grid grid-cols-[5.5rem,1fr] gap-3"><span class="font-mono text-text-tertiary">Reason</span><span>a legible ground, not a category code</span></li>
-            <li class="grid grid-cols-[5.5rem,1fr] gap-3"><span class="font-mono text-text-tertiary">Authority</span><span>the named body responsible for the decision</span></li>
-            <li class="grid grid-cols-[5.5rem,1fr] gap-3"><span class="font-mono text-text-tertiary">Time</span><span>when the decision was taken and when it took effect</span></li>
-            <li class="grid grid-cols-[5.5rem,1fr] gap-3"><span class="font-mono text-text-tertiary">Challenge</span><span>a route to appeal with a defined response time</span></li>
-          </ul>
-        </div>
-        <div>
-          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-3">Actor key</p>
-          <ul class="space-y-2 text-xs text-text-secondary">
-            <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background: rgba(244,114,182,0.8);"></span> holder action — no administrative effect</li>
-            <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background: rgba(245,158,11,0.85);"></span> admin action — must carry all four above</li>
-            <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background: rgba(160,160,180,0.8);"></span> automatic — scheduled, predictable</li>
-            <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full" style="background: rgba(167,139,250,0.8);"></span> recovery — restores or reissues</li>
-          </ul>
-        </div>
       </div>
 
     </div>
   </div>
-  <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    Deletion by the holder is not the same event as suspension or revocation by an authority. Treating them as one state is a design error with due-process consequences.
+
+  <p class="text-text-tertiary text-sm mt-4 max-w-3xl mx-auto leading-relaxed">
+    Deletion from a device, erasure of retained personal data, and administrative revocation of credential validity are different operations and should not be collapsed into one concept.
   </p>
 </div>

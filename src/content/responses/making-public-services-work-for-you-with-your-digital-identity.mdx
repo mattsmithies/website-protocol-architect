@@ -22,6 +22,7 @@ import VerificationVsSurveillance from '../../components/diagrams/VerificationVs
 import OptInVsSoftCompulsion from '../../components/diagrams/OptInVsSoftCompulsion.astro';
 import HolderChoiceTrustModel from '../../components/diagrams/HolderChoiceTrustModel.astro';
 import MinimalVerificationReceipt from '../../components/diagrams/MinimalVerificationReceipt.astro';
+import HolderVisibleEventHistory from '../../components/diagrams/HolderVisibleEventHistory.astro';
 import RevocationStateModel from '../../components/diagrams/RevocationStateModel.astro';
 import AlternativeAccessThreatModel from '../../components/diagrams/AlternativeAccessThreatModel.astro';
 import OversightLoop from '../../components/diagrams/OversightLoop.astro';
@@ -108,11 +109,21 @@ A checker that returns "valid" is not enough.
 
 <MinimalVerificationReceipt />
 
-Every successful or failed verification should emit a narrow evidence record: checker, relying party context, claims requested, claims disclosed, result, time, event reference. This is replayable verification, not a behavioural log.
+The use case makes this unavoidable. The consultation presents digital right to work checks as a major use case and highlights the value of a digital audit trail for compliance and enforcement. ([GOV.UK][1]) A business relying on a digital check for legal protection needs an output that is defensible later. A bare pass or fail is not.
 
-The use case makes this unavoidable. The consultation presents digital right to work checks as a major use case and highlights the value of a digital audit trail for compliance and enforcement. ([GOV.UK][1]) A business that relies on a digital check for legal protection needs an output that is defensible later. A bare pass or fail is not.
+A record of checks visible only to the holder is transparency. A record that third parties can access, retain, and join across services is surveillance. The receipt has to sit on the holder's side of that line.
 
-The privacy boundary still binds. A record of checks visible only to the holder is transparency; a record that third parties can access, retain, and join across services is surveillance. The receipt has to sit on the holder's side of that line.
+## Privacy rights must be built into the fabric
+
+A public digital identity system should not only minimise disclosure at the point of check. It should make privacy and data protection rights legible in practice.
+
+People should be able to understand what was checked, by whom, for what purpose, what was retained, and for how long. They should have a practical route to access that information, challenge it where necessary, and seek correction, restriction, objection, or erasure where the law allows.
+
+Privacy here is not a policy promise layered on top. It is part of the operating model. Transparency, purpose limitation, data minimisation, retention awareness, and accountability by design are properties the system either has or does not.
+
+<HolderVisibleEventHistory />
+
+This also means separating distinct operations that are often blurred together. Deletion from a user device, erasure of retained personal data, and administrative revocation of a credential are not the same thing. A trustworthy system should make those distinctions visible.
 
 ## Revocation is an exercise of power
 
@@ -130,9 +141,9 @@ A physical card that is only visually checkable is not an alternative. The consu
 
 <AlternativeAccessThreatModel />
 
-Alternative access is not a downgrade route. It is a separate threat model, with its own disclosure boundaries, fraud surface, verification method, revocation handling, and support model. If it collapses back into visual tokens or manual guesswork, it becomes the weakest surface in the system, and the one adversaries will target first.
+If alternative access collapses back into visual tokens or manual guesswork, it becomes the weakest surface in the system, and the one adversaries will target first.
 
-Digitally excluded people are not an edge case. The ICO's 2025 research found nearly half of digitally disengaged people had no or limited access to the internet or a device, and many were already under pressure to use digital tools they did not want to use. The public dialogue called for involvement from people who have experienced barriers to proving identity — including people without a fixed address and people with experience of coercive control — in design, testing, and oversight. ([GOV.UK][3]) Alternative access must be designed with those users inside the room, not annotated around them after the fact.
+Digitally excluded people are not an edge case. The ICO's 2025 research found nearly half of digitally disengaged people had no or limited access to the internet or a device, and many were already under pressure to use digital tools they did not want to use. The public dialogue called for involvement from people who have experienced barriers to proving identity — including people without a fixed address and those with experience of coercive control — in design, testing, and oversight. ([GOV.UK][3]) Alternative access must be designed with those users inside the room, not annotated around them after the fact.
 
 ## Oversight must exist at event level
 
@@ -150,8 +161,9 @@ The public dialogue already named the missing shape: users on design, testing, a
 2. **No tracking layer.** Verification evidence is narrow, purpose bound, visible to the holder, and not a cross service activity log.
 3. **Certified holder plurality.** Multiple certified holders under a single trust framework, with preserved disclosure and status semantics across all of them.
 4. **Minimal verification receipts.** Every check emits a replayable record sufficient for dispute and compliance, and nothing more.
-5. **Due process for revocation.** Deletion, suspension, revocation, expiry, recovery, and reissue are distinct states, each with reasons, responsible authorities, and appeal routes.
-6. **Digitised alternative access with human support.** Alternative access is designed as a first class threat model, with casework for people the system will otherwise fail.
+5. **Privacy rights as operating model.** Holders can see when their identity or data was checked, understand the purpose and retention, and exercise access, correction, restriction, objection, and erasure where the law allows.
+6. **Due process for revocation.** Active, suspended, revoked, expired, and reissued are distinct states, each with reasons, responsible authorities, and appeal routes. Deletion from a device, erasure of retained data, and administrative revocation are not the same operation.
+7. **Digitised alternative access with human support.** Alternative access is designed as a first class threat model, with casework for people the system will otherwise fail.
 
 A national digital identity will not fail because the signature was wrong. It will fail when a person, service, business, or tribunal needs to understand what happened, and the system cannot explain itself. Replayability is the condition that turns digital identity into usable public infrastructure.
 

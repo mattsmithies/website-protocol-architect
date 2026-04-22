@@ -1,9 +1,8 @@
 ---
 // Figure: Real opt in versus soft compulsion
-// Two paths reaching the same service outcome, side by side.
-// Decline path explicitly labels the six coercion-in-practice friction points.
-// Toggle collapses both into the "same outcome" comparison.
-// Static SVG, standards-note tone.
+// Two simple paths converging on the same service outcome.
+// Side list of six friction points that convert a voluntary system
+// into one that is coercive in practice.
 ---
 
 <div class="reveal my-12 md:my-16">
@@ -15,113 +14,62 @@
         <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Real opt in versus soft compulsion</h3>
       </div>
 
-      <div class="flex items-center gap-3 mb-6" role="tablist" aria-label="Toggle between real opt in and soft compulsion scenarios">
-        <button id="ovs-real" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all cursor-pointer" role="tab" aria-selected="true" style="background: rgba(74,222,128,0.12); color: rgba(74,222,128,0.9); border: 1px solid rgba(74,222,128,0.3);">
-          Real opt in
-        </button>
-        <button id="ovs-soft" class="px-4 py-2 rounded-full text-xs font-display font-semibold transition-all cursor-pointer" role="tab" aria-selected="false" style="background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);">
-          Soft compulsion
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-[1.4fr,1fr] gap-5 md:gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-[1.35fr,1fr] gap-5 md:gap-6 items-center">
 
         <!-- Path diagram -->
         <div class="rounded-xl border border-border/60 p-4 md:p-5" style="background: rgba(11,11,17,0.4);">
-          <svg viewBox="0 0 560 520" class="w-full" role="img" aria-label="Two-column pathway: a digital path and a decline path. In real opt in both paths reach the same service outcome. In soft compulsion the decline path is burdened with extra time, repeated checks, lower quality service, exception queues, manual handling, and inaccessible support.">
+          <svg viewBox="0 0 460 340" class="w-full" role="img" aria-label="Two paths — digital and decline — both reaching the same service outcome. Friction accumulates on the decline path when a system is voluntary in law but coercive in practice.">
             <defs>
               <marker id="ovs-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M0,0 L10,5 L0,10 z" fill="rgba(232,232,240,0.55)"/>
-              </marker>
-              <marker id="ovs-arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M0,0 L10,5 L0,10 z" fill="rgba(245,158,11,0.75)"/>
+                <path d="M0,0 L10,5 L0,10 z" fill="rgba(232,232,240,0.6)"/>
               </marker>
             </defs>
 
             <!-- Start -->
-            <rect x="180" y="20" width="200" height="46" rx="8" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.2"/>
-            <text x="280" y="42" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Citizen needs a public service</text>
-            <text x="280" y="57" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">benefit · licence · document · care</text>
+            <rect x="130" y="20" width="200" height="42" rx="8" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.2"/>
+            <text x="230" y="45" text-anchor="middle" fill="rgba(232,232,240,0.85)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Citizen needs a service</text>
 
-            <!-- Fork arrows -->
-            <line x1="280" y1="66" x2="280" y2="90" stroke="rgba(167,139,250,0.4)" stroke-width="1.2"/>
-            <line x1="280" y1="90" x2="140" y2="120" stroke="rgba(74,222,128,0.5)" stroke-width="1.2"/>
-            <line x1="280" y1="90" x2="420" y2="120" stroke="rgba(232,232,240,0.4)" stroke-width="1.2"/>
+            <line x1="230" y1="62" x2="230" y2="80" stroke="rgba(167,139,250,0.4)" stroke-width="1.2"/>
+            <line x1="230" y1="80" x2="110" y2="110" stroke="rgba(167,139,250,0.4)" stroke-width="1.2"/>
+            <line x1="230" y1="80" x2="350" y2="110" stroke="rgba(167,139,250,0.4)" stroke-width="1.2"/>
 
-            <!-- Digital path column -->
-            <g>
-              <rect x="50" y="120" width="180" height="40" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.5)" stroke-width="1.2"/>
-              <text x="140" y="144" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Accept digital ID</text>
+            <!-- Digital path -->
+            <rect x="30" y="115" width="160" height="42" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.55)" stroke-width="1.2"/>
+            <text x="110" y="140" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Digital path</text>
 
-              <line x1="140" y1="160" x2="140" y2="185" stroke="rgba(74,222,128,0.5)" stroke-width="1.2" marker-end="url(#ovs-arrow)"/>
-              <rect x="50" y="190" width="180" height="40" rx="8" fill="rgba(74,222,128,0.06)" stroke="rgba(74,222,128,0.4)" stroke-width="1.2"/>
-              <text x="140" y="214" text-anchor="middle" fill="rgba(232,232,240,0.85)" font-family="'Syne', system-ui" font-size="12" font-weight="500">Digital verification</text>
+            <line x1="110" y1="157" x2="110" y2="180" stroke="rgba(74,222,128,0.5)" stroke-width="1.2" marker-end="url(#ovs-arrow)"/>
+            <rect x="30" y="185" width="160" height="42" rx="8" fill="rgba(74,222,128,0.05)" stroke="rgba(74,222,128,0.4)" stroke-width="1.2"/>
+            <text x="110" y="210" text-anchor="middle" fill="rgba(232,232,240,0.8)" font-family="'Syne', system-ui" font-size="12">Verify · present · proceed</text>
 
-              <line x1="140" y1="230" x2="140" y2="255" stroke="rgba(74,222,128,0.5)" stroke-width="1.2" marker-end="url(#ovs-arrow)"/>
-              <rect x="50" y="260" width="180" height="40" rx="8" fill="rgba(74,222,128,0.06)" stroke="rgba(74,222,128,0.4)" stroke-width="1.2"/>
-              <text x="140" y="284" text-anchor="middle" fill="rgba(232,232,240,0.85)" font-family="'Syne', system-ui" font-size="12" font-weight="500">Identity confirmed</text>
+            <!-- Decline path -->
+            <rect x="270" y="115" width="160" height="42" rx="8" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.2"/>
+            <text x="350" y="140" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Decline path</text>
 
-              <line x1="140" y1="300" x2="140" y2="325" stroke="rgba(74,222,128,0.5)" stroke-width="1.2" marker-end="url(#ovs-arrow)"/>
-              <rect x="50" y="330" width="180" height="40" rx="8" fill="rgba(74,222,128,0.1)" stroke="rgba(74,222,128,0.6)" stroke-width="1.2"/>
-              <text x="140" y="354" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Service delivered</text>
-            </g>
+            <line x1="350" y1="157" x2="350" y2="180" stroke="rgba(245,158,11,0.5)" stroke-width="1.2" marker-end="url(#ovs-arrow)"/>
+            <rect x="270" y="185" width="160" height="42" rx="8" fill="rgba(245,158,11,0.05)" stroke="rgba(245,158,11,0.4)" stroke-width="1.2"/>
+            <text x="350" y="210" text-anchor="middle" fill="rgba(232,232,240,0.8)" font-family="'Syne', system-ui" font-size="12">Alternative · assisted</text>
 
-            <!-- Decline path column -->
-            <g id="ovs-decline-group">
-              <rect x="330" y="120" width="180" height="40" rx="8" id="ovs-decline-top-rect"
-                fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.5)" stroke-width="1.2"/>
-              <text x="420" y="144" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Decline digital ID</text>
+            <!-- Converge -->
+            <line x1="110" y1="227" x2="230" y2="265" stroke="rgba(74,222,128,0.45)" stroke-width="1.2"/>
+            <line x1="350" y1="227" x2="230" y2="265" stroke="rgba(245,158,11,0.45)" stroke-width="1.2"/>
 
-              <line x1="420" y1="160" x2="420" y2="185" id="ovs-decline-arrow-1" stroke="rgba(74,222,128,0.5)" stroke-width="1.2" marker-end="url(#ovs-arrow)"/>
-              <rect x="330" y="190" width="180" height="40" rx="8" id="ovs-decline-step-2"
-                fill="rgba(74,222,128,0.06)" stroke="rgba(74,222,128,0.4)" stroke-width="1.2"/>
-              <text x="420" y="214" text-anchor="middle" fill="rgba(232,232,240,0.85)" id="ovs-decline-step-2-label" font-family="'Syne', system-ui" font-size="12" font-weight="500">Supported alternative route</text>
-
-              <line x1="420" y1="230" x2="420" y2="255" id="ovs-decline-arrow-2" stroke="rgba(74,222,128,0.5)" stroke-width="1.2" marker-end="url(#ovs-arrow)"/>
-              <rect x="330" y="260" width="180" height="40" rx="8" id="ovs-decline-step-3"
-                fill="rgba(74,222,128,0.06)" stroke="rgba(74,222,128,0.4)" stroke-width="1.2"/>
-              <text x="420" y="284" text-anchor="middle" fill="rgba(232,232,240,0.85)" id="ovs-decline-step-3-label" font-family="'Syne', system-ui" font-size="12" font-weight="500">Digitised verification</text>
-
-              <line x1="420" y1="300" x2="420" y2="325" id="ovs-decline-arrow-3" stroke="rgba(74,222,128,0.5)" stroke-width="1.2" marker-end="url(#ovs-arrow)"/>
-              <rect x="330" y="330" width="180" height="40" rx="8" id="ovs-decline-step-4"
-                fill="rgba(74,222,128,0.1)" stroke="rgba(74,222,128,0.6)" stroke-width="1.2"/>
-              <text x="420" y="354" text-anchor="middle" fill="rgba(232,232,240,0.9)" id="ovs-decline-step-4-label" font-family="'Syne', system-ui" font-size="12" font-weight="600">Service delivered</text>
-            </g>
-
-            <!-- Converge / diverge to outcome -->
-            <line x1="140" y1="370" x2="280" y2="420" stroke="rgba(74,222,128,0.5)" stroke-width="1.2"/>
-            <line x1="420" y1="370" x2="280" y2="420" id="ovs-converge-right" stroke="rgba(74,222,128,0.5)" stroke-width="1.2"/>
-            <rect x="100" y="430" width="360" height="54" rx="8" id="ovs-outcome-rect"
-              fill="rgba(74,222,128,0.1)" stroke="rgba(74,222,128,0.6)" stroke-width="1.2"/>
-            <text x="280" y="453" text-anchor="middle" fill="rgba(232,232,240,0.9)" id="ovs-outcome-label-1" font-family="'Syne', system-ui" font-size="12" font-weight="600">Same service outcome</text>
-            <text x="280" y="470" text-anchor="middle" fill="rgba(232,232,240,0.55)" id="ovs-outcome-label-2" font-family="'Inter', system-ui" font-size="10">essential services · complaints · appeal · human support</text>
+            <rect x="100" y="270" width="260" height="48" rx="8" fill="rgba(74,222,128,0.1)" stroke="rgba(74,222,128,0.6)" stroke-width="1.3"/>
+            <text x="230" y="292" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">Equal service outcome</text>
+            <text x="230" y="307" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">the test for a real opt in</text>
           </svg>
         </div>
 
-        <!-- Friction points panel -->
-        <div class="rounded-xl border p-4 md:p-5" id="ovs-friction-panel" style="border-color: rgba(245,158,11,0.22); background: rgba(245,158,11,0.03);">
-          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase mb-3" id="ovs-friction-label" style="color: rgba(245,158,11,0.75);">
-            Where coercion appears in practice
-          </p>
-          <p class="text-xs text-text-tertiary mb-4 leading-relaxed" id="ovs-friction-sub">
-            Six friction points that convert a technical option into practical exclusion.
-          </p>
-
-          <ul class="space-y-3 text-sm text-text-secondary" id="ovs-friction-list">
+        <!-- Friction points -->
+        <div>
+          <p class="text-[10px] font-semibold tracking-[0.2em] uppercase mb-3" style="color: rgba(245,158,11,0.75);">Where voluntary becomes coercive</p>
+          <ul class="space-y-2 text-sm text-text-secondary">
             <li class="grid grid-cols-[1.4rem,1fr] gap-2 items-start"><span class="font-mono text-xs mt-0.5 text-text-tertiary">01</span><span>Extra time at every step</span></li>
             <li class="grid grid-cols-[1.4rem,1fr] gap-2 items-start"><span class="font-mono text-xs mt-0.5 text-text-tertiary">02</span><span>Repeated checks and re-verification</span></li>
             <li class="grid grid-cols-[1.4rem,1fr] gap-2 items-start"><span class="font-mono text-xs mt-0.5 text-text-tertiary">03</span><span>Lower quality service from the non-digital route</span></li>
             <li class="grid grid-cols-[1.4rem,1fr] gap-2 items-start"><span class="font-mono text-xs mt-0.5 text-text-tertiary">04</span><span>Exception queues and escalation bottlenecks</span></li>
-            <li class="grid grid-cols-[1.4rem,1fr] gap-2 items-start"><span class="font-mono text-xs mt-0.5 text-text-tertiary">05</span><span>Manual handling that depends on staff discretion</span></li>
-            <li class="grid grid-cols-[1.4rem,1fr] gap-2 items-start"><span class="font-mono text-xs mt-0.5 text-text-tertiary">06</span><span>Inaccessible support — phone hours, distant offices, no advocacy</span></li>
+            <li class="grid grid-cols-[1.4rem,1fr] gap-2 items-start"><span class="font-mono text-xs mt-0.5 text-text-tertiary">05</span><span>Manual handling dependent on staff discretion</span></li>
+            <li class="grid grid-cols-[1.4rem,1fr] gap-2 items-start"><span class="font-mono text-xs mt-0.5 text-text-tertiary">06</span><span>Inaccessible support</span></li>
           </ul>
-
-          <div class="mt-5 pt-4 border-t border-border/40">
-            <p class="text-[10px] font-semibold tracking-[0.2em] uppercase text-text-tertiary mb-2">Operational test</p>
-            <p class="text-xs text-text-secondary leading-relaxed">
-              If any of these friction points exists on the decline path and not on the digital path, the system is voluntary in law and coercive in practice.
-            </p>
-          </div>
         </div>
 
       </div>
@@ -129,107 +77,6 @@
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    A system can be voluntary in statute and coercive in operation. Opt out is only real when the declining path reaches the same outcome without compounding friction.
+    A system can be voluntary in statute and coercive in operation. Opt out is only real when the declining path reaches the same outcome.
   </p>
 </div>
-
-<script>
-const btnReal = document.getElementById('ovs-real') as HTMLButtonElement | null;
-const btnSoft = document.getElementById('ovs-soft') as HTMLButtonElement | null;
-
-if (btnReal && btnSoft) {
-  const decline = {
-    topRect: document.getElementById('ovs-decline-top-rect'),
-    arrow1: document.getElementById('ovs-decline-arrow-1'),
-    step2Rect: document.getElementById('ovs-decline-step-2'),
-    step2Label: document.getElementById('ovs-decline-step-2-label'),
-    arrow2: document.getElementById('ovs-decline-arrow-2'),
-    step3Rect: document.getElementById('ovs-decline-step-3'),
-    step3Label: document.getElementById('ovs-decline-step-3-label'),
-    arrow3: document.getElementById('ovs-decline-arrow-3'),
-    step4Rect: document.getElementById('ovs-decline-step-4'),
-    step4Label: document.getElementById('ovs-decline-step-4-label'),
-    convergeRight: document.getElementById('ovs-converge-right'),
-    outcomeRect: document.getElementById('ovs-outcome-rect'),
-    outcomeLabel1: document.getElementById('ovs-outcome-label-1'),
-    outcomeLabel2: document.getElementById('ovs-outcome-label-2'),
-  };
-  const panel = document.getElementById('ovs-friction-panel')!;
-  const label = document.getElementById('ovs-friction-label')!;
-  const sub = document.getElementById('ovs-friction-sub')!;
-
-  const GREEN_FILL = 'rgba(74,222,128,0.06)';
-  const GREEN_FILL_STRONG = 'rgba(74,222,128,0.1)';
-  const GREEN_STROKE = 'rgba(74,222,128,0.4)';
-  const GREEN_STROKE_STRONG = 'rgba(74,222,128,0.5)';
-  const GREEN_STROKE_BRIGHT = 'rgba(74,222,128,0.6)';
-
-  const AMBER_FILL = 'rgba(245,158,11,0.06)';
-  const AMBER_FILL_STRONG = 'rgba(245,158,11,0.12)';
-  const AMBER_STROKE = 'rgba(245,158,11,0.45)';
-  const AMBER_STROKE_STRONG = 'rgba(245,158,11,0.6)';
-
-  function setAttrs(el: Element | null, attrs: Record<string, string>) {
-    if (!el) return;
-    for (const k in attrs) el.setAttribute(k, attrs[k]);
-  }
-
-  function setText(el: Element | null, t: string) { if (el) el.textContent = t; }
-
-  function apply(mode: 'real' | 'soft') {
-    if (mode === 'real') {
-      setAttrs(decline.topRect, { fill: GREEN_FILL_STRONG, stroke: GREEN_STROKE_STRONG });
-      setAttrs(decline.arrow1, { stroke: GREEN_STROKE_STRONG });
-      setAttrs(decline.step2Rect, { fill: GREEN_FILL, stroke: GREEN_STROKE });
-      setText(decline.step2Label, 'Supported alternative route');
-      setAttrs(decline.arrow2, { stroke: GREEN_STROKE_STRONG });
-      setAttrs(decline.step3Rect, { fill: GREEN_FILL, stroke: GREEN_STROKE });
-      setText(decline.step3Label, 'Digitised verification');
-      setAttrs(decline.arrow3, { stroke: GREEN_STROKE_STRONG });
-      setAttrs(decline.step4Rect, { fill: GREEN_FILL_STRONG, stroke: GREEN_STROKE_BRIGHT });
-      setText(decline.step4Label, 'Service delivered');
-      setAttrs(decline.convergeRight, { stroke: GREEN_STROKE_STRONG });
-      setAttrs(decline.outcomeRect, { fill: GREEN_FILL_STRONG, stroke: GREEN_STROKE_BRIGHT });
-      setText(decline.outcomeLabel1, 'Same service outcome');
-      setText(decline.outcomeLabel2, 'essential services · complaints · appeal · human support');
-      panel.setAttribute('style', 'border-color: rgba(74,222,128,0.22); background: rgba(74,222,128,0.03);');
-      label.setAttribute('style', 'color: rgba(74,222,128,0.75);');
-      label.textContent = 'Decline path reaches the service';
-      sub.textContent = 'The declining path carries no compounding friction. All six practical tests below return false.';
-    } else {
-      setAttrs(decline.topRect, { fill: AMBER_FILL_STRONG, stroke: AMBER_STROKE_STRONG });
-      setAttrs(decline.arrow1, { stroke: AMBER_STROKE_STRONG });
-      setAttrs(decline.step2Rect, { fill: AMBER_FILL, stroke: AMBER_STROKE });
-      setText(decline.step2Label, 'Unclear alternative route');
-      setAttrs(decline.arrow2, { stroke: AMBER_STROKE });
-      setAttrs(decline.step3Rect, { fill: AMBER_FILL, stroke: AMBER_STROKE });
-      setText(decline.step3Label, 'Manual handling · friction accrues');
-      setAttrs(decline.arrow3, { stroke: AMBER_STROKE });
-      setAttrs(decline.step4Rect, { fill: 'rgba(239,68,68,0.08)', stroke: 'rgba(239,68,68,0.55)' });
-      setText(decline.step4Label, 'Delay · denial · pressure to switch');
-      setAttrs(decline.convergeRight, { stroke: 'rgba(239,68,68,0.4)' });
-      setAttrs(decline.outcomeRect, { fill: AMBER_FILL_STRONG, stroke: AMBER_STROKE_STRONG });
-      setText(decline.outcomeLabel1, 'Only the digital path reliably reaches service');
-      setText(decline.outcomeLabel2, 'the decline path is voluntary in name, coercive in operation');
-      panel.setAttribute('style', 'border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05);');
-      label.setAttribute('style', 'color: rgba(245,158,11,0.85);');
-      label.textContent = 'Where coercion appears in practice';
-      sub.textContent = 'Six friction points that convert a technical option into practical exclusion.';
-    }
-
-    btnReal.setAttribute('aria-selected', String(mode === 'real'));
-    btnSoft.setAttribute('aria-selected', String(mode === 'soft'));
-    if (mode === 'real') {
-      btnReal.setAttribute('style', 'background: rgba(74,222,128,0.12); color: rgba(74,222,128,0.9); border: 1px solid rgba(74,222,128,0.3);');
-      btnSoft.setAttribute('style', 'background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);');
-    } else {
-      btnSoft.setAttribute('style', 'background: rgba(245,158,11,0.14); color: rgba(245,158,11,0.95); border: 1px solid rgba(245,158,11,0.35);');
-      btnReal.setAttribute('style', 'background: transparent; color: rgba(232,232,240,0.3); border: 1px solid rgba(255,255,255,0.06);');
-    }
-  }
-
-  btnReal.addEventListener('click', () => apply('real'));
-  btnSoft.addEventListener('click', () => apply('soft'));
-  apply('real');
-}
-</script>

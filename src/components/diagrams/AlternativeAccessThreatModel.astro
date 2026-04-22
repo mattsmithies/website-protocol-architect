@@ -1,8 +1,7 @@
 ---
 // Figure: Alternative access is a separate threat model
-// Three columns — primary digital, alternative digitised, human casework.
-// Five rows — disclosure boundary, fraud surface, verification method,
-// revocation handling, support model.
+// Three simple routes (digital, assisted, human) × three rows
+// (verification method, support model, privacy risk).
 // Point: each route is its own design problem, not a fallback.
 ---
 
@@ -15,64 +14,44 @@
         <h3 class="text-text-primary font-display font-bold text-lg tracking-tight">Alternative access is a separate threat model</h3>
       </div>
 
-      <!-- Route headers -->
-      <div class="grid grid-cols-[10rem,1fr,1fr,1fr] gap-3 mb-3 pb-3 border-b border-border/50">
+      <!-- Column headers -->
+      <div class="grid grid-cols-[8rem,1fr,1fr,1fr] gap-3 mb-3 pb-3 border-b border-border/50">
         <div></div>
         <div class="text-center">
-          <p class="text-[10px] font-mono tracking-[0.15em] uppercase text-text-tertiary mb-1">Route 01</p>
-          <p class="text-xs font-display font-semibold text-text-primary">Primary digital</p>
+          <p class="text-xs font-display font-semibold text-text-primary">Digital route</p>
         </div>
         <div class="text-center">
-          <p class="text-[10px] font-mono tracking-[0.15em] uppercase text-text-tertiary mb-1">Route 02</p>
-          <p class="text-xs font-display font-semibold text-text-primary">Alternative digitised</p>
+          <p class="text-xs font-display font-semibold text-text-primary">Assisted route</p>
         </div>
         <div class="text-center">
-          <p class="text-[10px] font-mono tracking-[0.15em] uppercase text-text-tertiary mb-1">Route 03</p>
-          <p class="text-xs font-display font-semibold text-text-primary">Human support · casework</p>
+          <p class="text-xs font-display font-semibold text-text-primary">Human route</p>
         </div>
       </div>
 
-      <!-- Dimension rows -->
       <div class="divide-y divide-border/40 text-sm">
 
-        <!-- Row: Disclosure boundary -->
-        <div class="grid grid-cols-[10rem,1fr,1fr,1fr] gap-3 py-3 md:py-4">
-          <div class="text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary pt-1">Disclosure boundary</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Selective claim disclosure, enforced by the wallet and checker protocol.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Signed code or QR, scoped to a single check, carrying only the claims required.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Bounded by a defined evidence list and a case officer’s logged purpose.</div>
-        </div>
-
-        <!-- Row: Fraud surface -->
-        <div class="grid grid-cols-[10rem,1fr,1fr,1fr] gap-3 py-3 md:py-4">
-          <div class="text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary pt-1">Fraud surface</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Device compromise, phishing of the wallet flow, relying-party impersonation.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Replay of codes or QR artefacts, screenshotting, social engineering at the counter.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Impersonation in person, forged supporting evidence, casework capture by bad actors.</div>
-        </div>
-
         <!-- Row: Verification method -->
-        <div class="grid grid-cols-[10rem,1fr,1fr,1fr] gap-3 py-3 md:py-4">
+        <div class="grid grid-cols-[8rem,1fr,1fr,1fr] gap-3 py-3 md:py-4">
           <div class="text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary pt-1">Verification method</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Cryptographic check against issuer status and a live checker endpoint.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Digitised check against the same issuer status, via the alternative artefact.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Protocolised officer check against documented evidence, not visual guesswork.</div>
-        </div>
-
-        <!-- Row: Revocation handling -->
-        <div class="grid grid-cols-[10rem,1fr,1fr,1fr] gap-3 py-3 md:py-4">
-          <div class="text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary pt-1">Revocation handling</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Status check refreshes on every verification. Revoked credentials fail closed.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Artefact bound to credential status; revocation invalidates future presentations.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Case record reflects current status; officers cannot override a revoked credential.</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Cryptographic check on a live endpoint.</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Digitised check via a signed code or QR.</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Protocolised officer check against defined evidence.</div>
         </div>
 
         <!-- Row: Support model -->
-        <div class="grid grid-cols-[10rem,1fr,1fr,1fr] gap-3 py-3 md:py-4">
+        <div class="grid grid-cols-[8rem,1fr,1fr,1fr] gap-3 py-3 md:py-4">
           <div class="text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary pt-1">Support model</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Self service with helpline escalation; failure modes documented.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Face to face help during rollout and afterwards; accessible at point of use.</div>
-          <div class="text-text-secondary text-xs md:text-sm leading-snug">Dedicated casework for coercive control, no fixed address, disability, digital exclusion.</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Self service with helpline escalation.</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Face to face help at point of use.</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Dedicated casework for people the system will otherwise fail.</div>
+        </div>
+
+        <!-- Row: Privacy risk -->
+        <div class="grid grid-cols-[8rem,1fr,1fr,1fr] gap-3 py-3 md:py-4">
+          <div class="text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary pt-1">Privacy risk</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Retention and linkage across relying parties.</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Replay of codes · over-disclosure at the counter.</div>
+          <div class="text-text-secondary text-xs md:text-sm leading-snug">Casework records that outlast their purpose.</div>
         </div>
 
       </div>
@@ -80,6 +59,6 @@
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    Alternative access is not a degraded fallback. Each route carries its own disclosure rules, fraud surface, revocation semantics, and support model — and must be designed with those users in the room.
+    Each route is a separate design problem, not a degraded fallback.
   </p>
 </div>

@@ -1,8 +1,7 @@
 ---
 // Figure: Oversight loop
-// Procedural loop: issuance → use → complaint → review → appeal →
-// audit/reporting → design or policy change → back into issuance.
-// Oversight as operational loop acting on real events, not a box above the system.
+// Clean five-step horizontal loop. Use → Complaint → Review → Appeal
+// → Audit and change → back into Use.
 ---
 
 <div class="reveal my-12 md:my-16">
@@ -15,130 +14,57 @@
       </div>
 
       <div class="w-full overflow-x-auto">
-        <svg viewBox="0 0 900 460" class="w-full min-w-[720px]" role="img" aria-label="Procedural oversight loop. Issuance feeds use. Use surfaces complaints. Complaints trigger review. Review produces appeals. Appeals and aggregate data feed audit and reporting. Audit and reporting drive design and policy change, which closes the loop back into issuance.">
+        <svg viewBox="0 0 840 200" class="w-full min-w-[640px]" role="img" aria-label="Five-step loop: use, complaint, review, appeal, audit and change, with an arrow returning to use.">
           <defs>
             <marker id="ol-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="rgba(167,139,250,0.8)"/>
+              <path d="M0,0 L10,5 L0,10 z" fill="rgba(167,139,250,0.75)"/>
             </marker>
           </defs>
 
-          <!-- Nodes, arranged in a rectangular procedural loop -->
-
-          <!-- Top row: issuance, use -->
+          <!-- Steps -->
           <g>
-            <rect x="60" y="70" width="180" height="60" rx="10" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.55)" stroke-width="1.3"/>
-            <text x="150" y="95" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">01 · Issuance</text>
-            <text x="150" y="113" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">credentials enter the system</text>
+            <rect x="30" y="60" width="140" height="60" rx="10" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.55)" stroke-width="1.3"/>
+            <text x="100" y="85" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">01 · Use</text>
+            <text x="100" y="102" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">checks · services</text>
           </g>
-
-          <g>
-            <rect x="360" y="70" width="180" height="60" rx="10" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.55)" stroke-width="1.3"/>
-            <text x="450" y="95" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">02 · Use</text>
-            <text x="450" y="113" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">checks · verifications · service delivery</text>
-          </g>
+          <line x1="170" y1="90" x2="200" y2="90" stroke="rgba(167,139,250,0.7)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
 
           <g>
-            <rect x="660" y="70" width="180" height="60" rx="10" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.3"/>
-            <text x="750" y="95" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">03 · Complaint</text>
-            <text x="750" y="113" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">holder, business, or third party</text>
+            <rect x="200" y="60" width="140" height="60" rx="10" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.3"/>
+            <text x="270" y="85" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">02 · Complaint</text>
+            <text x="270" y="102" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">raised by holder or third party</text>
           </g>
-
-          <!-- Middle row: review -->
-          <g>
-            <rect x="660" y="200" width="180" height="60" rx="10" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.3"/>
-            <text x="750" y="225" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">04 · Review</text>
-            <text x="750" y="243" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">first-layer redress · casework</text>
-          </g>
-
-          <!-- Bottom row: appeal, audit/reporting, design change -->
-          <g>
-            <rect x="660" y="330" width="180" height="60" rx="10" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.5)" stroke-width="1.3"/>
-            <text x="750" y="355" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="13" font-weight="600">05 · Appeal</text>
-            <text x="750" y="373" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">formal challenge · due process</text>
-          </g>
+          <line x1="340" y1="90" x2="370" y2="90" stroke="rgba(167,139,250,0.7)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
 
           <g>
-            <rect x="360" y="330" width="180" height="60" rx="10" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.55)" stroke-width="1.3"/>
-            <text x="450" y="353" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12.5" font-weight="600">06 · Audit and reporting</text>
-            <text x="450" y="371" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">independent scrutiny · public data</text>
+            <rect x="370" y="60" width="140" height="60" rx="10" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.55)" stroke-width="1.3"/>
+            <text x="440" y="85" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">03 · Review</text>
+            <text x="440" y="102" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">first-layer redress</text>
           </g>
+          <line x1="510" y1="90" x2="540" y2="90" stroke="rgba(167,139,250,0.7)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
 
           <g>
-            <rect x="60" y="330" width="180" height="60" rx="10" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.55)" stroke-width="1.3"/>
-            <text x="150" y="353" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12.5" font-weight="600">07 · Design · policy</text>
-            <text x="150" y="371" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">change fed back into issuance</text>
+            <rect x="540" y="60" width="140" height="60" rx="10" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.5)" stroke-width="1.3"/>
+            <text x="610" y="85" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">04 · Appeal</text>
+            <text x="610" y="102" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">formal challenge</text>
+          </g>
+          <line x1="680" y1="90" x2="710" y2="90" stroke="rgba(167,139,250,0.7)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
+
+          <g>
+            <rect x="710" y="60" width="140" height="60" rx="10" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.55)" stroke-width="1.3"/>
+            <text x="780" y="85" text-anchor="middle" fill="rgba(232,232,240,0.9)" font-family="'Syne', system-ui" font-size="12" font-weight="600">05 · Audit · change</text>
+            <text x="780" y="102" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">scrutiny · reporting · redesign</text>
           </g>
 
-          <!-- Arrows, forming the loop -->
-          <!-- 01 → 02 -->
-          <line x1="240" y1="100" x2="360" y2="100" stroke="rgba(167,139,250,0.75)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
-          <!-- 02 → 03 -->
-          <line x1="540" y1="100" x2="660" y2="100" stroke="rgba(167,139,250,0.75)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
-          <!-- 03 → 04 -->
-          <line x1="750" y1="130" x2="750" y2="200" stroke="rgba(167,139,250,0.75)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
-          <!-- 04 → 05 -->
-          <line x1="750" y1="260" x2="750" y2="330" stroke="rgba(167,139,250,0.75)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
-          <!-- 05 → 06 -->
-          <line x1="660" y1="360" x2="540" y2="360" stroke="rgba(167,139,250,0.75)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
-          <!-- 06 → 07 -->
-          <line x1="360" y1="360" x2="240" y2="360" stroke="rgba(167,139,250,0.75)" stroke-width="1.5" marker-end="url(#ol-arrow)"/>
-          <!-- 07 → 01 (loop closure) -->
-          <path d="M 150 330 Q 150 230 150 130" fill="none" stroke="rgba(74,222,128,0.75)" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#ol-arrow)"/>
-          <text x="15" y="235" fill="rgba(74,222,128,0.85)" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600">
-            <tspan x="30" dy="0">loop closes</tspan>
-            <tspan x="30" dy="14">into issuance</tspan>
-          </text>
-
-          <!-- Shortcut: 04 → 06 when review produces aggregate signal without appeal -->
-          <path d="M 660 230 Q 580 250 540 360" fill="none" stroke="rgba(167,139,250,0.4)" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#ol-arrow)"/>
-          <text x="548" y="285" fill="rgba(167,139,250,0.65)" font-family="'JetBrains Mono', monospace" font-size="9">aggregate signal</text>
-
-          <!-- Emphasis: loop acts on real events -->
-          <rect x="270" y="200" width="360" height="50" rx="10" fill="rgba(11,11,17,0.4)" stroke="rgba(167,139,250,0.25)" stroke-dasharray="3 3"/>
-          <text x="450" y="222" text-anchor="middle" fill="rgba(232,232,240,0.75)" font-family="'Syne', system-ui" font-size="11" font-weight="600">
-            Each step acts on real events
-          </text>
-          <text x="450" y="238" text-anchor="middle" fill="rgba(232,232,240,0.55)" font-family="'Inter', system-ui" font-size="10">
-            not a governance box above the system
-          </text>
+          <!-- Return arrow back to Use -->
+          <path d="M 780 120 Q 780 165 440 165 Q 100 165 100 120" fill="none" stroke="rgba(74,222,128,0.55)" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#ol-arrow)"/>
+          <text x="440" y="188" text-anchor="middle" fill="rgba(74,222,128,0.8)" font-family="'JetBrains Mono', monospace" font-size="10">change feeds back into use</text>
         </svg>
-      </div>
-
-      <!-- Step descriptions -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-6 pt-5 border-t border-border/40 text-xs">
-        <div>
-          <p class="text-text-secondary font-mono text-[10px] tracking-[0.2em] uppercase mb-1">01 Issuance</p>
-          <p class="text-text-tertiary leading-relaxed">Standards, error rates, and issuance decisions are observable downstream.</p>
-        </div>
-        <div>
-          <p class="text-text-secondary font-mono text-[10px] tracking-[0.2em] uppercase mb-1">02 Use</p>
-          <p class="text-text-tertiary leading-relaxed">Every check, verification, and service delivery is a potential oversight event.</p>
-        </div>
-        <div>
-          <p class="text-text-secondary font-mono text-[10px] tracking-[0.2em] uppercase mb-1">03 Complaint</p>
-          <p class="text-text-tertiary leading-relaxed">Easy to raise at any point. Volumes and patterns are signal, not noise.</p>
-        </div>
-        <div>
-          <p class="text-text-secondary font-mono text-[10px] tracking-[0.2em] uppercase mb-1">04 Review</p>
-          <p class="text-text-tertiary leading-relaxed">First-layer redress with named responsibility and a defined response time.</p>
-        </div>
-        <div>
-          <p class="text-text-secondary font-mono text-[10px] tracking-[0.2em] uppercase mb-1">05 Appeal</p>
-          <p class="text-text-tertiary leading-relaxed">Formal challenge route for revocation, suspension, and denial of alternative routes.</p>
-        </div>
-        <div>
-          <p class="text-text-secondary font-mono text-[10px] tracking-[0.2em] uppercase mb-1">06 Audit and reporting</p>
-          <p class="text-text-tertiary leading-relaxed">Independent scrutiny plus legible public data on issuance, checks, revocations, and appeals.</p>
-        </div>
-        <div class="md:col-span-2 lg:col-span-3">
-          <p class="text-text-secondary font-mono text-[10px] tracking-[0.2em] uppercase mb-1">07 Design and policy change</p>
-          <p class="text-text-tertiary leading-relaxed">Findings feed operational, design, and legislative change. The loop closes only when change returns to issuance — otherwise oversight is performance.</p>
-        </div>
       </div>
 
     </div>
   </div>
   <p class="text-text-tertiary text-xs mt-3 text-center italic">
-    Oversight is not a box above the system. It is an operational loop that connects issuance, use, redress, scrutiny, and change.
+    Oversight is an operating loop, not a promise above the system.
   </p>
 </div>
