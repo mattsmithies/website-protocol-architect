@@ -15,9 +15,11 @@ export async function getStaticPaths() {
 
 const { response } = Astro.props;
 const { Content } = await render(response);
+
+const ogImage = `/og/${response.id}.png`;
 ---
 
-<Layout title={`${response.data.title} — Matt Smithies`} description={response.data.summary}>
+<Layout title={`${response.data.title} — Matt Smithies`} description={response.data.summary} ogImage={ogImage}>
   <Nav />
   <main>
     <article class="section-padding px-6">
