@@ -16,10 +16,71 @@ export async function getStaticPaths() {
 const { response } = Astro.props;
 const { Content } = await render(response);
 
+const siteURL = Astro.site ?? new URL('https://mattsmithies.com');
+const pageURL = new URL(`/responses/${response.id}/`, siteURL).toString();
 const ogImage = `/og/${response.id}.png`;
+const absoluteOgImage = new URL(ogImage, siteURL).toString();
+
+const published = response.data.publishedDate?.toISOString();
+const modified = response.data.modifiedDate?.toISOString() ?? published;
+const displayDate = response.data.publishedDate
+  ? response.data.publishedDate.toISOString().split('T')[0]
+  : undefined;
+
+const jsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: response.data.title,
+  description: response.data.summary,
+  image: absoluteOgImage,
+  url: pageURL,
+  mainEntityOfPage: pageURL,
+  inLanguage: 'en-GB',
+  author: {
+    '@type': 'Person',
+    name: 'Matt Smithies',
+    url: siteURL.toString(),
+  },
+  publisher: {
+    '@type': 'Person',
+    name: 'Matt Smithies',
+    url: siteURL.toString(),
+  },
+  ...(published && { datePublished: published }),
+  ...(modified && { dateModified: modified }),
+  ...(response.data.tags && { keywords: response.data.tags.join(', ') }),
+  ...(response.data.consultationUrl && {
+    about: {
+      '@type': 'CreativeWork',
+      name: 'Making public services work for you with your digital identity',
+      url: response.data.consultationUrl,
+    },
+    citation: {
+      '@type': 'CreativeWork',
+      name: 'Making public services work for you with your digital identity — GOV.UK consultation',
+      url: response.data.consultationUrl,
+    },
+  }),
+  isPartOf: {
+    '@type': 'Series',
+    name: 'Responses',
+    url: new URL('/#responses', siteURL).toString(),
+  },
+};
 ---
 
-<Layout title={`${response.data.title} — Matt Smithies`} description={response.data.summary} ogImage={ogImage}>
+<Layout
+  title={`${response.data.title} — Matt Smithies`}
+  description={response.data.summary}
+  ogImage={ogImage}
+  ogType="article"
+  publishedTime={published}
+  modifiedTime={modified}
+  author="Matt Smithies"
+  section="Responses"
+  tags={response.data.tags}
+  jsonLd={jsonLd}
+>
   <Nav />
   <main>
     <article class="section-padding px-6">
@@ -30,7 +91,10 @@ const ogImage = `/og/${response.id}.png`;
             &larr; Back
           </a>
           <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
-            Response {String(response.data.order).padStart(2, '0')} &middot; {response.data.date}
+            Response {String(response.data.order).padStart(2, '0')} &middot;{' '}
+            {displayDate
+              ? <time datetime={displayDate}>{response.data.date}</time>
+              : response.data.date}
           </p>
           <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
             {response.data.title}

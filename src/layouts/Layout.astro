@@ -3,15 +3,31 @@ interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  ogType?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  section?: string;
+  tags?: string[];
+  jsonLd?: Record<string, unknown>;
 }
 
 const {
   title = 'Matt Smithies — Protocol Architect',
   description = 'Long-horizon systems architecture for trust, authority, workflow, and incentive design. Essays, work, and thinking on the structural layer beneath products.',
   ogImage = '/og-image.png',
+  ogType = 'website',
+  publishedTime,
+  modifiedTime,
+  author,
+  section,
+  tags,
+  jsonLd,
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmithies.com');
+const siteURL = Astro.site ?? new URL('https://mattsmithies.com');
+const canonicalURL = new URL(Astro.url.pathname, siteURL);
+const absoluteOgImage = new URL(ogImage, siteURL).toString();
 ---
 
 <!doctype html>
@@ -27,17 +43,37 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mattsmit
     <link rel="canonical" href={canonicalURL} />
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={absoluteOgImage} />
+    <meta property="og:site_name" content="Matt Smithies" />
+    {ogType === 'article' && publishedTime && (
+      <meta property="article:published_time" content={publishedTime} />
+    )}
+    {ogType === 'article' && modifiedTime && (
+      <meta property="article:modified_time" content={modifiedTime} />
+    )}
+    {ogType === 'article' && author && (
+      <meta property="article:author" content={author} />
+    )}
+    {ogType === 'article' && section && (
+      <meta property="article:section" content={section} />
+    )}
+    {ogType === 'article' && tags && tags.map((t) => (
+      <meta property="article:tag" content={t} />
+    ))}
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image" content={absoluteOgImage} />
+
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

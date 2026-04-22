@@ -17,8 +17,12 @@ const responses = defineCollection({
     title: z.string(),
     summary: z.string(),
     date: z.string(),
+    publishedDate: z.coerce.date().optional(),
+    modifiedDate: z.coerce.date().optional(),
     order: z.number(),
     framing: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    consultationUrl: z.string().url().optional(),
     consultationQuestions: z
       .array(z.object({ ref: z.string(), label: z.string() }))
       .optional(),
