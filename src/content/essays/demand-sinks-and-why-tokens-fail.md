@@ -2,6 +2,7 @@
 title: "Demand sinks, supply sinks, and why most tokens fail"
 category: "Token Economy"
 order: 6
+summary: "A token holds value when network usage creates recurring reasons to buy it and routes that spend back into the people and processes that make the network more useful."
 video: "/videos/Why_Most_Tokens_Fail.mp4"
 ---
 

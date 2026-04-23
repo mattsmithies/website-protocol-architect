@@ -1,0 +1,291 @@
+---
+// ArticleMasthead.astro — The Protocol Journal masthead.
+// Treats each essay/response as a published artifact: mono metadata
+// strip + Fraunces display title + Fraunces italic lede + rule.
+
+interface Props {
+  kind: 'essay' | 'response';
+  number: number;
+  category: string;
+  title: string;
+  lede?: string;
+  date?: string;            // human-readable ("April 2026")
+  publishedDate?: Date;     // ISO for <time datetime>
+  readTime?: number;        // minutes
+  backHref: string;
+  backLabel?: string;
+}
+
+const {
+  kind,
+  number,
+  category,
+  title,
+  lede,
+  date,
+  publishedDate,
+  readTime,
+  backHref,
+  backLabel = 'Back',
+} = Astro.props;
+
+function toRoman(num: number): string {
+  const pairs: [string, number][] = [
+    ['M', 1000], ['CM', 900], ['D', 500], ['CD', 400],
+    ['C', 100], ['XC', 90], ['L', 50], ['XL', 40],
+    ['X', 10], ['IX', 9], ['V', 5], ['IV', 4], ['I', 1],
+  ];
+  let n = num;
+  let out = '';
+  for (const [sym, val] of pairs) {
+    while (n >= val) { out += sym; n -= val; }
+  }
+  return out;
+}
+
+const kindLabel = kind === 'essay' ? 'Essay' : 'Response';
+const numeral = toRoman(number);
+const isoDate = publishedDate ? publishedDate.toISOString().slice(0, 10) : undefined;
+const dateDisplay = date ?? (publishedDate ? publishedDate.toISOString().slice(0, 7) : undefined);
+---
+
+<header class="article-masthead reveal">
+
+  <a href={backHref} class="masthead-back">
+    <span aria-hidden="true">&larr;</span> {backLabel}
+  </a>
+
+  <!-- Protocol metadata strip — two mono lines, terminal/journal voice -->
+  <div class="masthead-meta">
+    <div class="masthead-meta-line">
+      <span class="masthead-meta-prefix">&#x2F;&#x2F;</span>
+      <span class="masthead-meta-primary">Protocol Journal &middot; {kindLabel} {numeral}</span>
+      <span class="masthead-meta-rule" aria-hidden="true"></span>
+      {dateDisplay && (
+        isoDate
+          ? <time datetime={isoDate} class="masthead-meta-trailing">{dateDisplay}</time>
+          : <span class="masthead-meta-trailing">{dateDisplay}</span>
+      )}
+    </div>
+    <div class="masthead-meta-line">
+      <span class="masthead-meta-prefix">&#x2F;&#x2F;</span>
+      <span class="masthead-meta-primary masthead-meta-category">{category}</span>
+      <span class="masthead-meta-rule" aria-hidden="true"></span>
+      {readTime && (
+        <span class="masthead-meta-trailing">{readTime} min read</span>
+      )}
+    </div>
+  </div>
+
+  <!-- Title: Fraunces display, generous scale, text-wrap: balance -->
+  <h1 class="masthead-title text-gradient font-display font-bold">
+    {title}
+  </h1>
+
+  {lede && (
+    <p class="masthead-lede font-editorial italic">
+      {lede}
+    </p>
+  )}
+
+  <hr class="masthead-rule" aria-hidden="true" />
+
+</header>
+
+<style>
+  .article-masthead {
+    max-width: 48rem;
+    margin-inline: auto;
+    padding-top: 7rem;
+    padding-bottom: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .article-masthead {
+      padding-top: 9rem;
+    }
+  }
+
+  .masthead-back {
+    display: inline-block;
+    color: var(--color-text-tertiary);
+    font-size: 0.8rem;
+    font-family: var(--font-system);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    margin-bottom: 3rem;
+    transition: color 0.2s ease;
+  }
+
+  .masthead-back:hover {
+    color: var(--color-signal);
+  }
+
+  /* Metadata strip — two aligned mono lines with a live rule between
+     primary and trailing tokens */
+  .masthead-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .masthead-meta-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    font-family: var(--font-system);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    font-feature-settings: "ss01", "zero", "tnum";
+    /* Allow primary + trailing tokens to stay on one line on desktop;
+       on narrow viewports the rule collapses and trailing wraps under */
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+  }
+
+  @media (min-width: 600px) {
+    .masthead-meta-line {
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .masthead-meta-line {
+      font-size: 0.72rem;
+    }
+  }
+
+  /* On very narrow viewports hide the decorative rule so the primary
+     token and the trailing metadata sit next to each other without
+     being crushed to a sliver. */
+  @media (max-width: 599px) {
+    .masthead-meta-rule {
+      display: none;
+    }
+  }
+
+  .masthead-meta-prefix {
+    color: var(--color-signal);
+    letter-spacing: 0;
+  }
+
+  .masthead-meta-primary {
+    color: var(--color-text-secondary);
+  }
+
+  .masthead-meta-category {
+    color: var(--color-signal);
+  }
+
+  .masthead-meta-rule {
+    flex: 1 1 auto;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+    margin: 0 0.25rem;
+    transform: translateY(-0.12em);
+  }
+
+  .masthead-meta-trailing {
+    color: var(--color-text-tertiary);
+    text-align: right;
+  }
+
+  /* Title — Fraunces display with scroll-driven SOFT-axis morph.
+     The `--title-soft` custom property is animated from JS as the user
+     scrolls, so the serif softens/sharpens in real time — the letterform
+     literally responds to the passage of reading (authority that moves
+     through time, which is the subject matter). */
+  .masthead-title {
+    font-size: clamp(2.25rem, 5.2vw, 4.25rem);
+    line-height: 0.98;
+    letter-spacing: -0.028em;
+    margin: 0 0 1.5rem 0;
+    text-wrap: balance;
+    --title-soft: 20;
+    font-variation-settings: "SOFT" var(--title-soft), "opsz" 144;
+    transition: font-variation-settings 0.12s linear;
+    will-change: font-variation-settings;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .masthead-title {
+      transition: none;
+    }
+  }
+
+  /* Lede — Fraunces italic, signal purple, editorial voice */
+  .masthead-lede {
+    font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+    line-height: 1.45;
+    color: var(--color-signal);
+    font-weight: 400;
+    margin: 0 0 3rem 0;
+    max-width: 42rem;
+    text-wrap: pretty;
+    font-variation-settings: "SOFT" 45, "opsz" 60;
+  }
+
+  /* Masthead terminator rule — subtle gradient fade */
+  .masthead-rule {
+    border: 0;
+    height: 1px;
+    margin: 0;
+    background: linear-gradient(
+      to right,
+      var(--color-signal) 0%,
+      rgba(167, 139, 250, 0.2) 30%,
+      transparent 80%
+    );
+    opacity: 0.5;
+  }
+</style>
+
+<script>
+  // Live SOFT-axis morph on masthead titles, scroll-driven.
+  // As the title scrolls up toward (and past) the viewport top, the
+  // Fraunces SOFT axis animates 20 → 100, so the letterforms soften.
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!prefersReducedMotion) {
+    const titles = document.querySelectorAll<HTMLElement>('.masthead-title');
+    if (titles.length > 0) {
+      let rafId: number | null = null;
+
+      const tick = () => {
+        rafId = null;
+        for (const t of titles) {
+          const rect = t.getBoundingClientRect();
+          // How far has the title's bottom edge scrolled up?
+          // Before the user reaches the title: rect.bottom ~ hero-height, progress = 0
+          // When the title has fully scrolled past the top: rect.bottom < 0, progress = 1
+          const refHeight = Math.max(window.innerHeight, 1);
+          const progress = Math.max(0, Math.min(1, 1 - rect.bottom / refHeight));
+          const soft = Math.round(20 + progress * 80); // 20..100
+          t.style.setProperty('--title-soft', String(soft));
+        }
+      };
+
+      const onScroll = () => {
+        if (rafId !== null) return;
+        rafId = window.requestAnimationFrame(tick);
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      // Initial paint after layout
+      tick();
+    }
+  }
+</script>

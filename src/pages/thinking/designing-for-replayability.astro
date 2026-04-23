@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import ArticleMasthead from '../../components/ArticleMasthead.astro';
+import { estimateReadTimeFromPath } from '../../utils/readTime';
 import CurrentVsReplayedState from '../../components/diagrams/CurrentVsReplayedState.astro';
 import ChronologyVsReplayability from '../../components/diagrams/ChronologyVsReplayability.astro';
 import ProofOfOriginLayers from '../../components/diagrams/ProofOfOriginLayers.astro';
@@ -10,6 +12,8 @@ import AlgorithmAgilityTimeline from '../../components/diagrams/AlgorithmAgility
 import ReplayAcrossBoundaries from '../../components/diagrams/ReplayAcrossBoundaries.astro';
 import StableRecordChangingViews from '../../components/diagrams/StableRecordChangingViews.astro';
 import '../../styles/global.css';
+
+const readTime = estimateReadTimeFromPath(new URL(import.meta.url).pathname);
 ---
 
 <Layout title="Designing for replayability — Matt Smithies" ogImage="/og/designing-for-replayability.png">
@@ -17,19 +21,16 @@ import '../../styles/global.css';
   <main>
     <article class="px-6">
 
-      {/* ── Header ──────────────────────────────────────── */}
-      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
-        <div class="reveal">
-          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
-          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Architecture</p>
-          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
-            Designing for replayability
-          </h1>
-          <p class="text-text-tertiary text-base">
-            A system is only trustworthy when its current state remains the latest expression of a reconstructable, attributable, and verifiable history.
-          </p>
-        </div>
-      </div>
+      {/* ── Masthead ─────────────────────────────────────── */}
+      <ArticleMasthead
+        kind="essay"
+        number={2}
+        category="Architecture"
+        title="Designing for replayability"
+        lede="A system is only trustworthy when its current state remains the latest expression of a reconstructable, attributable, and verifiable history."
+        readTime={readTime}
+        backHref="/#essays"
+      />
 
       {/* ══════════════════════════════════════════════════
           SECTION 1: Opening

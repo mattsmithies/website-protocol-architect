@@ -2,6 +2,7 @@
 title: "Where workflow systems fail"
 category: "Workflow"
 order: 4
+summary: "Workflow systems fail when they model sequence instead of the truth conditions that make a process valid under pressure."
 ---
 
 Most workflow engines model the happy path well. Step one, step two, step three, done. But real workflows involve exceptions, partial completion, authority changes mid-process, evidence requirements that vary by context, and rollback conditions that nobody anticipated at design time.

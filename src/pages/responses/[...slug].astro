@@ -3,6 +3,8 @@ import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import ArticleMasthead from '../../components/ArticleMasthead.astro';
+import { estimateReadTimeFromFile } from '../../utils/readTime';
 import '../../styles/global.css';
 
 export async function getStaticPaths() {
@@ -15,6 +17,7 @@ export async function getStaticPaths() {
 
 const { response } = Astro.props;
 const { Content } = await render(response);
+const readTime = estimateReadTimeFromFile('src/content/responses', response.id);
 
 const siteURL = Astro.site ?? new URL('https://mattsmithies.com');
 const pageURL = new URL(`/responses/${response.id}/`, siteURL).toString();
@@ -83,57 +86,52 @@ const jsonLd: Record<string, unknown> = {
 >
   <Nav />
   <main>
-    <article class="section-padding px-6">
-      <div class="max-w-3xl mx-auto">
+    <article class="px-6 pb-32">
 
-        <div class="reveal mb-12">
-          <a href="/#responses" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-6 inline-block">
-            &larr; Back
-          </a>
-          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
-            Response {String(response.data.order).padStart(2, '0')} &middot;{' '}
-            {displayDate
-              ? <time datetime={displayDate}>{response.data.date}</time>
-              : response.data.date}
-          </p>
-          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
-            {response.data.title}
-          </h1>
-          <p class="text-text-secondary text-lg leading-relaxed mb-8">
-            {response.data.summary}
-          </p>
+      <ArticleMasthead
+        kind="response"
+        number={response.data.order}
+        category="Public Intervention"
+        title={response.data.title}
+        lede={response.data.summary}
+        date={response.data.date}
+        publishedDate={response.data.publishedDate}
+        readTime={readTime}
+        backHref="/#responses"
+      />
 
-          <div class="border-l border-signal/30 pl-5 py-1 space-y-3 text-text-tertiary text-base leading-relaxed">
+      <div class="max-w-3xl mx-auto mt-10 md:mt-14">
+
+        <div class="reveal mb-12 space-y-5 text-text-tertiary text-base leading-relaxed">
+          <p>
+            This response forms part of an ongoing public record of submissions on digital identity, authority, verification, and public digital infrastructure.
+          </p>
+          {response.data.framing && (
             <p>
-              This response forms part of an ongoing public record of submissions on digital identity, authority, verification, and public digital infrastructure.
+              {response.data.framing}
             </p>
-            {response.data.framing && (
-              <p>
-                {response.data.framing}
-              </p>
-            )}
-          </div>
-
-          {response.data.consultationQuestions && response.data.consultationQuestions.length > 0 && (
-            <div class="mt-10 rounded-xl border border-border/60 p-5 md:p-6" style="background: rgba(11,11,17,0.55);">
-              <p class="text-text-tertiary text-[11px] font-semibold tracking-[0.24em] uppercase mb-4">
-                Consultation questions addressed
-              </p>
-              <ul class="divide-y divide-border/40">
-                {response.data.consultationQuestions.map((q) => (
-                  <li class="flex items-baseline gap-4 py-2.5 text-sm">
-                    <span class="font-mono text-text-tertiary tracking-tight shrink-0 w-[5.5rem]">
-                      {q.ref}
-                    </span>
-                    <span class="text-text-secondary leading-snug">
-                      {q.label}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           )}
         </div>
+
+        {response.data.consultationQuestions && response.data.consultationQuestions.length > 0 && (
+          <div class="reveal mb-14 rounded-xl border border-border/60 p-5 md:p-6" style="background: rgba(11,11,17,0.55);">
+            <p class="text-text-tertiary text-[11px] font-semibold tracking-[0.24em] uppercase mb-4">
+              Consultation questions addressed
+            </p>
+            <ul class="divide-y divide-border/40">
+              {response.data.consultationQuestions.map((q) => (
+                <li class="flex items-baseline gap-4 py-2.5 text-sm">
+                  <span class="font-mono text-text-tertiary tracking-tight shrink-0 w-[5.5rem]">
+                    {q.ref}
+                  </span>
+                  <span class="text-text-secondary leading-snug">
+                    {q.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div class="reveal prose-custom space-y-6 text-text-secondary text-lg leading-relaxed">
           <Content />

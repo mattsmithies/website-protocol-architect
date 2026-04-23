@@ -3,6 +3,8 @@ import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import ArticleMasthead from '../../components/ArticleMasthead.astro';
+import { estimateReadTimeFromFile } from '../../utils/readTime';
 import '../../styles/global.css';
 
 export async function getStaticPaths() {
@@ -15,25 +17,24 @@ export async function getStaticPaths() {
 
 const { essay } = Astro.props;
 const { Content } = await render(essay);
+const readTime = estimateReadTimeFromFile('src/content/essays', essay.id);
 ---
 
 <Layout title={`${essay.data.title} — Matt Smithies`} description={essay.data.title}>
   <Nav />
   <main>
-    <article class="section-padding px-6">
-      <div class="max-w-3xl mx-auto">
+    <article class="px-6 pb-32">
 
-        <div class="reveal mb-12">
-          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-6 inline-block">
-            &larr; Back
-          </a>
-          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">
-            {essay.data.category}
-          </p>
-          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight">
-            {essay.data.title}
-          </h1>
-        </div>
+      <ArticleMasthead
+        kind="essay"
+        number={essay.data.order}
+        category={essay.data.category}
+        title={essay.data.title}
+        readTime={readTime}
+        backHref="/#essays"
+      />
+
+      <div class="max-w-3xl mx-auto mt-10 md:mt-14">
 
         {essay.data.video ? (
           <div class="reveal mb-12 glass-card overflow-hidden">

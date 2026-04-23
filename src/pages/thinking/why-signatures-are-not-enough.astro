@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import ArticleMasthead from '../../components/ArticleMasthead.astro';
+import { estimateReadTimeFromPath } from '../../utils/readTime';
 import AnchorVsFact from '../../components/diagrams/AnchorVsFact.astro';
 import SignatureVsProofPackage from '../../components/diagrams/SignatureVsProofPackage.astro';
 import BoundVsReusableProof from '../../components/diagrams/BoundVsReusableProof.astro';
@@ -11,6 +13,8 @@ import VerificationAcrossTime from '../../components/diagrams/VerificationAcross
 import RigidVsAgnosticProof from '../../components/diagrams/RigidVsAgnosticProof.astro';
 import LocalVsPortableProof from '../../components/diagrams/LocalVsPortableProof.astro';
 import '../../styles/global.css';
+
+const readTime = estimateReadTimeFromPath(new URL(import.meta.url).pathname);
 ---
 
 <Layout title="Why signatures are not enough — Matt Smithies" ogImage="/og/why-signatures-are-not-enough.png">
@@ -18,19 +22,16 @@ import '../../styles/global.css';
   <main>
     <article class="px-6">
 
-      {/* ── Header ──────────────────────────────────────── */}
-      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
-        <div class="reveal">
-          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
-          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Cryptographic Architecture</p>
-          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
-            Why signatures are not enough
-          </h1>
-          <p class="text-text-tertiary text-base">
-            A system is only trustworthy when proof can survive time, movement, and changing assumptions without relying on the system that created it.
-          </p>
-        </div>
-      </div>
+      {/* ── Masthead ─────────────────────────────────────── */}
+      <ArticleMasthead
+        kind="essay"
+        number={1}
+        category="Cryptographic Architecture"
+        title="Why signatures are not enough"
+        lede="A system is only trustworthy when proof can survive time, movement, and changing assumptions without relying on the system that created it."
+        readTime={readTime}
+        backHref="/#essays"
+      />
 
       {/* ══════════════════════════════════════════════════
           SECTION 1: Opening — anchor is not fact

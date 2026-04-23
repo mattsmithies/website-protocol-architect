@@ -2,6 +2,7 @@
 title: "Designing for replayability"
 category: "Architecture"
 order: 2
+summary: "A system is only trustworthy when its current state remains the latest expression of a reconstructable, attributable, and verifiable history."
 ---
 
 If you cannot reconstruct how a system reached its current state, you cannot audit it, you cannot debug it, and you cannot trust it. Replayability is not a feature you add later. It is an architectural property that shapes every design decision from the start.

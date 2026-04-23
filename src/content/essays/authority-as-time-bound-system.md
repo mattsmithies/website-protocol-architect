@@ -2,6 +2,7 @@
 title: "Authority as a time-bound system"
 category: "Authority"
 order: 3
+summary: "Authority is not a static property of identity. It is a time-bound claim that must remain replayable if it is to be trusted."
 ---
 
 Most permission models treat authority as a static property. A user has a role. The role has permissions. The permissions are checked. But this misses the dimension that causes most real-world failures: time.

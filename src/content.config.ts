@@ -7,6 +7,7 @@ const essays = defineCollection({
     title: z.string(),
     category: z.string(),
     order: z.number(),
+    summary: z.string().optional(),
     video: z.string().optional(),
   }),
 });

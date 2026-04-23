@@ -2,6 +2,7 @@
 title: "Assets need containers before they need markets"
 category: "Meta Structures"
 order: 5
+summary: "Markets do not make assets legible. Containers do."
 video: "/videos/Assets_Need_Containers.mp4"
 ---
 

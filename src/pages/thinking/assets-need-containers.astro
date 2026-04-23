@@ -2,12 +2,16 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import ArticleMasthead from '../../components/ArticleMasthead.astro';
+import { estimateReadTimeFromPath } from '../../utils/readTime';
 import FragmentedAssetHandling from '../../components/diagrams/FragmentedAssetHandling.astro';
 import IssuanceVsContainment from '../../components/diagrams/IssuanceVsContainment.astro';
 import ContainerAnatomy from '../../components/diagrams/ContainerAnatomy.astro';
 import ProvenanceUnderMovement from '../../components/diagrams/ProvenanceUnderMovement.astro';
 import MarketDepthEmergence from '../../components/diagrams/MarketDepthEmergence.astro';
 import '../../styles/global.css';
+
+const readTime = estimateReadTimeFromPath(new URL(import.meta.url).pathname);
 ---
 
 <Layout title="Assets need containers before they need markets — Matt Smithies" ogImage="/og/assets-need-containers.png">
@@ -15,19 +19,16 @@ import '../../styles/global.css';
   <main>
     <article class="px-6">
 
-      {/* ── Header ──────────────────────────────────────── */}
-      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
-        <div class="reveal">
-          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
-          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Meta Structures</p>
-          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
-            Assets need containers before they need markets
-          </h1>
-          <p class="text-text-tertiary text-base">
-            Markets do not make assets legible. Containers do.
-          </p>
-        </div>
-      </div>
+      {/* ── Masthead ─────────────────────────────────────── */}
+      <ArticleMasthead
+        kind="essay"
+        number={5}
+        category="Meta Structures"
+        title="Assets need containers before they need markets"
+        lede="Markets do not make assets legible. Containers do."
+        readTime={readTime}
+        backHref="/#essays"
+      />
 
       {/* ── Video ───────────────────────────────────────── */}
       <div class="max-w-3xl mx-auto pb-12">

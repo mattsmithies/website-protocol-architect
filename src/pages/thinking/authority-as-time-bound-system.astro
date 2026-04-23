@@ -2,12 +2,16 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
+import ArticleMasthead from '../../components/ArticleMasthead.astro';
+import { estimateReadTimeFromPath } from '../../utils/readTime';
 import AuthorityTimeline from '../../components/diagrams/AuthorityTimeline.astro';
 import SilentFailurePlayback from '../../components/diagrams/SilentFailurePlayback.astro';
 import DelegationChain from '../../components/diagrams/DelegationChain.astro';
 import AuthorityReplay from '../../components/diagrams/AuthorityReplay.astro';
 import CurrentVsHistorical from '../../components/diagrams/CurrentVsHistorical.astro';
 import '../../styles/global.css';
+
+const readTime = estimateReadTimeFromPath(new URL(import.meta.url).pathname);
 ---
 
 <Layout title="Authority as a time-bound system — Matt Smithies" ogImage="/og/authority-as-time-bound-system.png">
@@ -15,19 +19,16 @@ import '../../styles/global.css';
   <main>
     <article class="px-6">
 
-      {/* ── Header ──────────────────────────────────────── */}
-      <div class="max-w-3xl mx-auto pt-32 md:pt-40 pb-16">
-        <div class="reveal">
-          <a href="/#essays" class="text-text-tertiary text-sm hover:text-signal transition-colors mb-8 inline-block">&larr; Back</a>
-          <p class="text-signal text-xs font-semibold tracking-[0.3em] uppercase mb-4">Authority</p>
-          <h1 class="text-gradient text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight leading-tight mb-6">
-            Authority as a time-bound system
-          </h1>
-          <p class="text-text-tertiary text-base">
-            Authority is not a static property of identity. It is a time-bound claim that must remain replayable if it is to be trusted.
-          </p>
-        </div>
-      </div>
+      {/* ── Masthead ─────────────────────────────────────── */}
+      <ArticleMasthead
+        kind="essay"
+        number={3}
+        category="Authority"
+        title="Authority as a time-bound system"
+        lede="Authority is not a static property of identity. It is a time-bound claim that must remain replayable if it is to be trusted."
+        readTime={readTime}
+        backHref="/#essays"
+      />
 
       {/* ── Opening ─────────────────────────────────────── */}
       <div class="max-w-3xl mx-auto pb-8">
