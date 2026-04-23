@@ -26,10 +26,20 @@
   --color-text-secondary: rgba(232, 232, 240, 0.55);
   --color-text-tertiary: rgba(232, 232, 240, 0.30);
 
-  /* Fonts — break from Montserrat completely */
+  /* ── Typographic system — The Protocol Journal ────────────
+     Three voices, one family-pair (Plex family + Fraunces) plus
+     Inter for dense reading.
+     sans       — reading voice (Inter, body prose)
+     display    — brand voice (IBM Plex Sans, nav/hero/buttons)
+     system     — system voice (IBM Plex Mono, labels/data/IDs)
+     editorial  — editorial voice (Fraunces, titles/callouts)
+     mono       — alias for system (back-compat with existing classes)
+  */
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Syne', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --font-display: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-system: 'IBM Plex Mono', 'SF Mono', ui-monospace, monospace;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', ui-monospace, monospace;
+  --font-editorial: 'Fraunces', 'Iowan Old Style', Georgia, serif;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -65,6 +75,12 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  /* Inter OpenType: cv11 (single-story 'a' → open counter), ss03 (curved r),
+     cv05 (alt l), tnum (tabular numerals — numbers align in tables). */
+  font-feature-settings: "cv11", "ss03", "cv05", "tnum";
+  /* Smart text rendering for proper kerning */
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -72,6 +88,19 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  /* Body reading: balanced tracking, default leading */
+  letter-spacing: -0.003em;
+}
+
+/* Modern line-break heuristics — browsers resolve orphans/widows
+   automatically. Balance for headings (equal line lengths), pretty for
+   paragraphs (avoids single-word last-lines). */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 ::selection {
@@ -329,12 +358,119 @@ body {
   transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* ────────────────────────────────────────────────────────────
-   Prose (markdown-rendered article body)
-   ──────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   EDITORIAL TYPOGRAPHY — The Protocol Journal
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Fraunces display cuts — SOFT axis slightly tempered, stylistic
+   set 01 for sharper terminals. Applied wherever Fraunces lives. */
+.font-editorial,
+.prose-custom h2,
+.prose-custom h3,
+.prose-custom blockquote,
+article h1.font-display,
+article h2.font-display,
+article p.font-display,
+#essays .font-display,
+#responses .font-display {
+  font-family: var(--font-editorial);
+  font-variation-settings: "SOFT" 30, "opsz" 144;
+  font-feature-settings: "ss01", "kern";
+}
+
+/* ── Display / editorial title tightening. Big serif deserves tight
+   tracking so letterfit reads as one word, not a string of glyphs. */
+article h1.font-display,
+#essays .font-display,
+#responses .font-display,
+.prose-custom h2,
+.prose-custom h3 {
+  letter-spacing: -0.025em;
+}
+
+/* ── Homepage section titles + card titles (writing + responses) */
+#essays .font-display,
+#responses .font-display {
+  font-family: var(--font-editorial);
+}
+
+/* ── Essay/response pages: H1 title + in-body H2 display headings */
+article h1.font-display,
+article h2.font-display {
+  font-family: var(--font-editorial);
+}
+
+/* ── Callouts inside articles (e.g. "It does not.") read as editorial
+   asides — Fraunces italic with slightly softer SOFT axis. */
+article p.font-display {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-variation-settings: "SOFT" 50, "opsz" 72;
+}
+
+/* ── Blockquote unified with callouts: Fraunces italic, editorial
+   note voice. Replaces the generic Inter italic that used to live here. */
+.prose-custom blockquote {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-variation-settings: "SOFT" 50, "opsz" 40;
+  font-weight: 450;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  border-left: 2px solid var(--color-signal);
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+}
+
+/* ── Drop cap on first body paragraph (paragraph immediately after
+   first H2, skipping italic byline / meta above). Three-line drop in
+   Fraunces display. Em-based sizing so it scales with the paragraph. */
+.prose-custom h2:first-of-type + p::first-letter {
+  font-family: var(--font-editorial);
+  font-variation-settings: "SOFT" 20, "opsz" 144;
+  font-weight: 700;
+  font-size: 4.2em;
+  line-height: 0.82;
+  float: left;
+  /* Tight kerning into the next letter, small vertical lift to align
+     cap-height with the body text top. */
+  margin: 0.02em 0.08em -0.1em 0;
+  padding-top: 0.04em;
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, #fff 0%, #c4b5fd 60%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SYSTEM VOICE — IBM Plex Mono for micro-labels, data, IDs
+   Replaces the old Syne/Inter-uppercase treatment with a terminal/
+   protocol/oracle aesthetic. Matches the hash-footer vocabulary
+   already on essay pages.
+   ════════════════════════════════════════════════════════════ */
+
+[class*="tracking-[0.3em]"][class*="uppercase"],
+[class*="tracking-[0.24em]"][class*="uppercase"],
+[class*="tracking-[0.2em]"][class*="uppercase"],
+[class*="tracking-[0.15em]"][class*="uppercase"] {
+  font-family: var(--font-system);
+  font-weight: 500;
+  /* Mono uppercase with tight-but-legible tracking. Overrides the
+     per-component arbitrary trackings; all labels now read at one
+     consistent rhythm. */
+  letter-spacing: 0.22em !important;
+  font-feature-settings: "ss01", "zero", "tnum";
+}
+
+/* ── Display-voice (Plex Sans) tightening on hero + brand sans */
+.font-display {
+  letter-spacing: -0.02em;
+}
 
 .prose-custom h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-editorial);
   color: var(--color-text-primary);
   font-weight: 700;
   font-size: 1.5rem;
@@ -351,7 +487,7 @@ body {
 }
 
 .prose-custom h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-editorial);
   color: var(--color-text-primary);
   font-weight: 600;
   font-size: 1.25rem;
@@ -412,13 +548,8 @@ body {
   margin: 3rem 0;
 }
 
-.prose-custom blockquote {
-  border-left: 2px solid var(--color-signal);
-  padding-left: 1.25rem;
-  margin: 1.5rem 0;
-  color: var(--color-text-primary);
-  font-style: italic;
-}
+/* (blockquote styling lives in the Editorial scope block above —
+   Fraunces italic with SOFT axis, unified with callout voice) */
 
 /* Figure block — captioned placeholder for referenced diagrams */
 .prose-custom .response-figure {
@@ -429,24 +560,30 @@ body {
   overflow: hidden;
 }
 
+/* Figure label — system voice, protocol/terminal register */
 .prose-custom .response-figure-label {
   display: inline-block;
-  font-family: var(--font-display);
+  font-family: var(--font-system);
   font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  font-weight: 500;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--color-signal);
   padding: 1rem 1.25rem 0;
+  font-feature-settings: "ss01", "zero", "tnum";
 }
 
+/* Figure title — editorial voice, academic-paper aesthetic */
 .prose-custom .response-figure-title {
-  font-family: var(--font-display);
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-family: var(--font-editorial);
+  font-variation-settings: "SOFT" 40, "opsz" 60;
+  font-style: italic;
+  font-size: 1.2rem;
+  font-weight: 500;
   color: var(--color-text-primary);
-  padding: 0.25rem 1.25rem 0;
+  padding: 0.35rem 1.25rem 0;
   line-height: 1.3;
+  letter-spacing: -0.005em;
 }
 
 .prose-custom .response-figure-body {

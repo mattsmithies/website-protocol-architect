@@ -1,25 +1,42 @@
 ---
-// Footer.astro — Site footer with copyright and external links
+// Footer.astro — Protocol colophon: an editorial acknowledgment that
+// the site is itself a typographic artifact. Mono voice throughout.
 const year = new Date().getFullYear();
 ---
 
-<footer class="border-t border-border py-10 px-6">
-  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+<footer class="border-t border-border py-14 px-6" style="font-family: var(--font-system);">
+  <div class="max-w-6xl mx-auto">
 
-    <!-- Copyright -->
-    <span class="text-text-tertiary text-xs tracking-wide">
-      &copy; {year} Matt Smithies
-    </span>
+    <!-- Top row: identity + meta -->
+    <div class="flex flex-col md:flex-row md:items-baseline justify-between gap-4 mb-6">
+      <span class="text-text-secondary text-xs uppercase" style="letter-spacing: 0.22em;">
+        &frasl;&frasl;&nbsp; Matt Smithies &nbsp;&middot;&nbsp; Protocol Journal
+      </span>
+      <span class="text-text-tertiary text-xs uppercase" style="letter-spacing: 0.22em;">
+        &copy; {year} &nbsp;&middot;&nbsp; Personal capacity
+      </span>
+    </div>
 
-    <!-- Links -->
+    <!-- Colophon row: typographic attribution -->
+    <div class="border-t border-border/40 pt-5 mb-6">
+      <p class="text-text-tertiary text-[11px] leading-relaxed" style="letter-spacing: 0.08em;">
+        Set in <span class="text-text-secondary">Fraunces</span> (editorial),
+        <span class="text-text-secondary">IBM Plex Sans</span> (brand),
+        <span class="text-text-secondary">IBM Plex Mono</span> (system), and
+        <span class="text-text-secondary">Inter</span> (reading).
+        &nbsp;Rendered on void.
+      </p>
+    </div>
+
+    <!-- External links -->
     <div class="flex items-center gap-6">
-      <a href="https://github.com/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-xs hover:text-text-primary transition-colors">
+      <a href="https://github.com/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-xs uppercase hover:text-signal transition-colors" style="letter-spacing: 0.22em;">
         GitHub
       </a>
-      <a href="https://linkedin.com/in/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-xs hover:text-text-primary transition-colors">
+      <a href="https://linkedin.com/in/mattsmithies" target="_blank" rel="noopener" class="text-text-tertiary text-xs uppercase hover:text-signal transition-colors" style="letter-spacing: 0.22em;">
         LinkedIn
       </a>
-      <a href="https://dovu.ai" target="_blank" rel="noopener" class="text-text-tertiary text-xs hover:text-text-primary transition-colors">
+      <a href="https://dovu.ai" target="_blank" rel="noopener" class="text-text-tertiary text-xs uppercase hover:text-signal transition-colors" style="letter-spacing: 0.22em;">
         DOVU
       </a>
     </div>

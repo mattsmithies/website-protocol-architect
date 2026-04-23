@@ -80,11 +80,18 @@ const absoluteOgImage = new URL(ogImage, siteURL).toString();
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- Fonts: Syne (display) + Inter (body) + JetBrains Mono (code) -->
+    <!--
+      Typographic system — The Protocol Journal
+        IBM Plex Sans   → brand voice (nav, hero, UI, buttons)
+        IBM Plex Mono   → system voice (labels, timestamps, IDs, data)
+        Fraunces        → editorial voice (titles, callouts, blockquotes, drop caps)
+                          axes: ital, opsz (9..144), SOFT (0..100), wght (400..900)
+        Inter           → reading voice (body prose)
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,SOFT,wght@0,9..144,0..100,400..900;1,9..144,0..100,400..900&display=swap"
       rel="stylesheet"
     />
   </head>
